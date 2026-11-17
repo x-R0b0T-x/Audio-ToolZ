@@ -1,0 +1,56 @@
+name: Audit du ZIP portable
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/audit-portable.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Rechercher les references aux medias de public
+        shell: pwsh
+        run: |
+          $refs = foreach ($file in (Get-ChildItem public -File -Recurse | Where-Object { $_.Name -notin @('icon.ico','icon.png') })) {
+            git grep -n -F -e $file.Name -- src electron scripts index.html README.md .github
+            if ($LASTEXITCODE -gt 1) { throw 'Recherche des references en echec' }
+          }
+          if ($refs) { $refs | Write-Host; throw 'Examiner les references avant de continuer' }
+      - name: Compiler le paquet
+        shell: pwsh
+        run: ./scripts/build-portable.ps1
+      - name: Inspecter le ZIP et lancer le programme
+        shell: pwsh
+        run: |
+          $zip = Get-Item release-output/Audio-ToolZ-1.4-Windows-Portable-x64.zip
+          Write-Host ('ZIP: {0:N2} Mio' -f ($zip.Length / 1MB))
+          $root = Join-Path $env:RUNNER_TEMP 'portable-audit'
+          Expand-Archive $zip.FullName $root
+          $app = Join-Path $root 'Audio ToolZ'
+          $dist = Join-Path $app 'resources/app/dist'
+          foreach ($name in @('index.html','icon.ico','icon.png','assets')) {
+            if (-not (Test-Path (Join-Path $dist $name))) { throw "Ressource manquante : $name" }
+          }
+          $extra = Get-ChildItem $dist -Force | Where-Object { $_.Name -notin @('index.html','icon.ico','icon.png','assets') }
+          $media = Get-ChildItem $dist -File -Recurse | Where-Object { $_.Extension -in @('.jpg','.jpeg','.mp4','.mp3','.zip','.7z') -or $_.FullName -match '[\\/]aistudio[\\/]' }
+          if ($extra -or $media) { throw 'Fichiers superflus dans dist' }
+          $exe = Join-Path $app 'Audio ToolZ.exe'
+          $p = Start-Process -FilePath $exe -WorkingDirectory $app -PassThru
+          try {
+            Start-Sleep -Seconds 8
+            $p.Refresh()
+            if ($p.HasExited -or $p.MainWindowHandle -eq 0) { throw 'La fenetre principale ne demarre pas' }
+          } finally {
+            if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          }
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.4-ZIP-verifie
+          path: release-output/
+          if-no-files-found: error
