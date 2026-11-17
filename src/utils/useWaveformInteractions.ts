@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import type { SelectionChangeReason } from '../components/WaveformView';
 import { dragFrame } from './waveformNavigation.mjs';
-type Edge = 'resize-start' | 'resize-end';
+type Edge = 'resize-start' | 'resize-end' | 'cursor';
 interface Options {
   canvas: RefObject<HTMLCanvasElement | null>;
   doc: AudioDocument | null;
@@ -40,17 +40,19 @@ export function useWaveformInteractions(options: Options) {
       const rect = canvas.getBoundingClientRect();
       const width = Math.max(1, rect.width - 52);
       const frame = dragFrame(drag.start, drag.end, total, rect.left + 52, width, drag.x, delta);
-      if (frame.viewStart !== drag.start) {
+      if (frame.viewStart !== drag.start || frame.viewEnd !== drag.end) {
         drag.start = frame.viewStart; drag.end = frame.viewEnd;
         latest.current.onViewRangeChange(drag.start, drag.end);
       }
       const point = snap(frame.sample, width, drag.end - drag.start, drag.alt);
-      const next = drag.edge === 'resize-start'
+      const next = drag.edge === 'cursor'
+        ? { startSample: Math.min(total - 1, point), endSample: Math.min(total - 1, point) }
+        : drag.edge === 'resize-start'
         ? { startSample: Math.max(0, Math.min(drag.selection.endSample - 1, point)), endSample: drag.selection.endSample }
         : { startSample: drag.selection.startSample, endSample: Math.min(total, Math.max(drag.selection.startSample + 1, point)) };
       if (next.startSample !== drag.selection.startSample || next.endSample !== drag.selection.endSample) {
         drag.selection = next;
-        latest.current.onSelectionChange(next, drag.edge);
+        latest.current.onSelectionChange(next, drag.edge === 'cursor' ? 'cursor-drag' : drag.edge);
       }
     };
     const tick = (time: number) => {
@@ -93,9 +95,15 @@ export function useWaveformInteractions(options: Options) {
       const next = event.button === 0
         ? { startSample: Math.min(total - 1, point), endSample: Math.min(total - 1, point) }
         : { startSample: Math.min(selection.startSample, point), endSample: Math.max(selection.startSample, point) };
-      const reason = event.button === 0 ? 'cursor' : 'new';
-      latest.current.onSelectionChange(next, reason);
-      latest.current.onSelectionCommit?.(next, reason);
+      if (event.button === 0) {
+        latest.current.onSelectionChange(next, 'cursor-drag');
+        drag = { edge: 'cursor', x: event.clientX, alt: event.altKey, selection: next, start: doc.viewStartSample, end: doc.viewEndSample };
+        canvas.style.cursor = 'ew-resize';
+        lastTime = performance.now(); raf = requestAnimationFrame(tick);
+      } else {
+        latest.current.onSelectionChange(next, 'new');
+        latest.current.onSelectionCommit?.(next, 'new');
+      }
     };
     const mousemove = (event: MouseEvent) => {
       if (!drag) return;

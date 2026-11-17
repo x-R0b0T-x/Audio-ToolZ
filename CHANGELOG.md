@@ -1,3 +1,9 @@
+### Dezoom automatique — correctif v1.4
+- Elargissement progressif de la vue lors du glissement vers un bord, a gauche comme a droite.
+- Correction de la mise a jour du bord droit et ajout du glissement du curseur simple.
+- Pendant le glissement du curseur, la lecture continue ; le repositionnement audio est valide au relachement, sans devoir appuyer sur Stop.
+- Tests de calcul automatiques ; validation interactive Windows encore necessaire.
+
 ### Correctifs de navigation — v1.4
 - Clic gauche : curseur de départ sans sélection implicite ; Lecture démarre au curseur. Un nouveau clic pendant la lecture repositionne celle-ci.
 - Clic droit : définition de la fin de sélection. Le bouton Boucle utilise uniquement une sélection existante.

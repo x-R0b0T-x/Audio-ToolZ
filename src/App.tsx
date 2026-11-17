@@ -1128,6 +1128,7 @@ export default function App() {
         onCloseDocument={handleCloseDoc}
         onSelectionChange={(sel, reason: SelectionChangeReason) => {
           updateActiveDoc((doc) => ({ ...doc, selection: sel }));
+          if (reason === 'cursor-drag') return;
           if (isPaused) setIsPaused(false);
           if (reason === 'cursor') {
             setIsLooping(false);
@@ -1145,7 +1146,20 @@ export default function App() {
             audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
           }
         }}
-        onSelectionCommit={(sel) => {
+        onSelectionCommit={(sel, reason) => {
+          if (reason === 'cursor') {
+            setIsPaused(false);
+            setIsLooping(false);
+            setPlayMode(isPlaying ? 'play' : 'idle');
+            if (isPlaying && activeDoc) {
+              const total = activeDoc.channels[0]?.length ?? 0;
+              audioEngine.play(activeDoc.channels, activeDoc.sampleRate, sel.startSample, total, {
+                loop: false, reverse: false, volumeDb, balance, speedRatio, enabledChannels,
+                onEnded: () => { setIsPlaying(false); setIsPaused(false); setIsLooping(false); setPlayMode('idle'); },
+              });
+            }
+            return;
+          }
           if (isPlaying && isLooping && sel.endSample > sel.startSample) {
             audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
           }

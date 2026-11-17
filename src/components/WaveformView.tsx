@@ -10,7 +10,8 @@ export type SelectionChangeReason =
   | 'new'
   | 'resize-start'
   | 'resize-end'
-  | 'cursor';
+  | 'cursor'
+  | 'cursor-drag';
 
 interface WaveformViewProps {
   documents: AudioDocument[];
