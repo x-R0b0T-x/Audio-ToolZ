@@ -1,0 +1,76 @@
+name: Correctifs v1.4 - preparation
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prepare-1.4-fixes.yml
+      - scripts/prepare-1.4-interactions.cjs
+      - scripts/test-1.4-navigation.mjs
+      - src/utils/useWaveformInteractions.ts
+      - src/utils/waveformNavigation.mjs
+      - src/utils/waveformNavigation.d.mts
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: audio-toolz-release-1.4
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - name: Garder les fins de ligne originales
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Appliquer la version 1.4 puis ses correctifs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/prepare-1.4-interactions.cjs
+          node scripts/prepare-1.4.cjs
+          node scripts/prepare-1.4-interactions.cjs
+      - name: Verifier JavaScript et les tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in electron/main.cjs electron/preload.cjs electron/recent-store.cjs scripts/set-exe-icon.cjs; do node --check "$f"; done
+          node scripts/test-1.4.cjs
+          node scripts/test-1.4-navigation.mjs
+      - name: Verifier PowerShell
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'scripts/build-portable.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+      - name: Verifier TypeScript, compiler et preparer Windows x64
+        shell: pwsh
+        run: ./scripts/build-portable.ps1
+      - name: Conserver le ZIP et les notes pour validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio-ToolZ-1.4-correctifs-Windows-x64
+          path: |
+            release-output/Audio-ToolZ-1.4-Windows-Portable-x64.zip
+            release-output/SHA256SUMS.txt
+            RELEASE_NOTES_1.4.md
+          if-no-files-found: error
+      - name: Enregistrer les corrections verifiees sur main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/App.tsx src/components/WaveformView.tsx src/audio/engine.ts src/components/ControlWindow.tsx src/components/TopMenuBar.tsx src/components/InfoModal.tsx scripts/build-portable.ps1 scripts/set-exe-icon.cjs scripts/.v1.4-applied scripts/.v1.4-interactions-applied package.json CHANGELOG.md RELEASE_NOTES_1.4.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: appliquer les corrections de lecture et navigation v1.4'
+            git push origin HEAD:main
+          fi
