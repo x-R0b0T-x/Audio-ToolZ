@@ -1,0 +1,72 @@
+name: Version portable Windows 1.4
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release-1.4.yml
+      - scripts/prepare-1.4.cjs
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publier la release v1.4 apres compilation
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: audio-toolz-release-1.4
+  cancel-in-progress: false
+jobs:
+  portable:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Appliquer les modifications source 1.4
+        run: node scripts/prepare-1.4.cjs
+      - name: Verifier JavaScript et historique
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in electron/main.cjs electron/preload.cjs electron/recent-store.cjs scripts/prepare-1.4.cjs scripts/publish-1.4.cjs scripts/set-exe-icon.cjs scripts/test-1.4.cjs; do node --check "$f"; done
+          node scripts/test-1.4.cjs
+      - name: Verifier la syntaxe PowerShell
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'scripts/build-portable.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+      - name: Compiler et empaqueter Windows x64
+        shell: pwsh
+        run: ./scripts/build-portable.ps1
+      - name: Conserver le ZIP et sa somme de controle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio-ToolZ-1.4-Windows-Portable-x64
+          path: |
+            release-output/Audio-ToolZ-1.4-Windows-Portable-x64.zip
+            release-output/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Enregistrer les sources migrees sur main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/App.tsx src/components/ControlWindow.tsx src/components/TopMenuBar.tsx src/components/InfoModal.tsx scripts/build-portable.ps1 scripts/set-exe-icon.cjs scripts/.v1.4-applied package.json CHANGELOG.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'feat: appliquer les modifications source de la version 1.4'
+            git push origin HEAD:main
+          fi
+      - name: Publier la release 1.4
+        if: github.event_name == 'push' || inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish-1.4.cjs
