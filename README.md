@@ -22,6 +22,19 @@ Traitement 100 % local : votre audio ne quitte jamais votre machine.
 <img src="public/matrix-prop-1.jpg" alt="Aperçu de l'interface d'Audio ToolZ" width="720"/>
 </div>
 
+## 🖼️ Galerie
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%"><img src="public/flyer-v4-prop-1.jpg" alt="Visuel Audio ToolZ 1" width="420"/></td>
+    <td align="center" width="50%"><img src="public/flyer-v4-prop-2.jpg" alt="Visuel Audio ToolZ 2" width="420"/></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="public/flyer-v4-prop-3.jpg" alt="Visuel Audio ToolZ 3" width="420"/></td>
+    <td align="center"><img src="public/flyer-v4-prop-4.jpg" alt="Visuel Audio ToolZ 4" width="420"/></td>
+  </tr>
+</table>
+
 ## ✨ Fonctionnalités
 
 ### 🎛️ Édition
