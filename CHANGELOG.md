@@ -1,3 +1,9 @@
+## Navigation et boucles — v1.4
+
+- Lecture depuis le curseur ; clic gauche pour le début, clic droit pour la fin de la sélection.
+- Une boucle en cours reste active quand une borne valide est ajustée.
+- Forme d’onde visible pendant le déplacement des bornes, avec dézoom progressif et limité hors de la vue.
+
 ### Dezoom automatique — correctif v1.4
 - Elargissement progressif de la vue lors du glissement vers un bord, a gauche comme a droite.
 - Correction de la mise a jour du bord droit et ajout du glissement du curseur simple.

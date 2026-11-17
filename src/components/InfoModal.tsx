@@ -22,7 +22,9 @@ const CHANGELOG_ADDITIONS = [
 ];
 
 const CHANGELOG_FIXES = [
-  'Bouton Lecture démarrant au début de la piste et Boucle dédiée à la sélection',
+  'Lecture depuis le curseur ; clic gauche pour le début, clic droit pour la fin de la sélection.',
+  'Une boucle en cours reste active quand une borne valide est ajustée.',
+  'Forme d’onde visible pendant le déplacement des bornes, avec dézoom progressif et limité hors de la vue.',
   'Isolation réelle des canaux Gauche (G) et Droite (D) au décochement',
   'Effets DSP appliqués uniquement sur la sélection avec assombrissement du hors-sélection',
   'Recentrage parfait de l’accueil et suppression des éléments superflus dans Contrôle',
@@ -167,8 +169,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
           {activeTab === 'shortcuts' ? (
             <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono-tabular">
               {[
-                ['Clic gauche', 'Départ de lecture'],
-                ['Clic droit', 'Créer la sélection / boucle'],
+                ['Clic gauche', 'Départ de lecture / début de sélection'],
+                ['Clic droit', 'Définir la fin de sélection'],
                 ['Glisser ligne', 'Ajuster début / fin'],
                 ['Molette souris', 'Zoom sur le pointeur'],
                 ['Espace', 'Lecture / Pause'],
