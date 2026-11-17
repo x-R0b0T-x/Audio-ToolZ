@@ -1,3 +1,11 @@
+### Correctifs de navigation — v1.4
+- Clic gauche : curseur de départ sans sélection implicite ; Lecture démarre au curseur. Un nouveau clic pendant la lecture repositionne celle-ci.
+- Clic droit : définition de la fin de sélection. Le bouton Boucle utilise uniquement une sélection existante.
+- Bornes déplaçables avec défilement automatique aux bords, même avec un pointeur immobile et pendant la lecture. Le zoom et la borne opposée sont conservés.
+- Ajustement de boucle sans redémarrage lorsque la tête de lecture reste dans les nouvelles bornes.
+- Annulation du glissement au changement de document et nettoyage des événements ; fin du glissement au relâchement ou à la perte de focus.
+- Vérifications automatiques avant préparation du ZIP ; essais interactifs Windows toujours nécessaires.
+
 ## 1.4 — Confort et communauté
 
 - Défilement de la forme d’onde colorée réglé à 240 colonnes par seconde, soit deux fois plus lent que le précédent affichage à 60 Hz. La vitesse audio ne change pas.

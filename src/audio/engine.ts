@@ -329,10 +329,11 @@ export class AudioEngine {
 
     const current = this.getCurrentSample();
     const outsideRange = current < safeStart || current >= safeEnd;
-    const startChanged = safeStart !== this.playbackStartSample;
 
-    if (!restartFromStart && !outsideRange && !startChanged && this.sourceNode) {
-      this.offsetSamplesAtStart = current - this.playbackStartSample;
+    if (!restartFromStart && !outsideRange && this.sourceNode) {
+      this.playbackStartSample = safeStart;
+      this.sourceNode.loopStart = safeStart / this.currentDocSampleRate;
+      this.offsetSamplesAtStart = current - safeStart;
       this.startedAtCtxTime = this.ctx.currentTime;
       this.playbackEndSample = safeEnd;
       this.sourceNode.loopEnd = safeEnd / this.currentDocSampleRate;

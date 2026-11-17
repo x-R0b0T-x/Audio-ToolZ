@@ -14,8 +14,8 @@ async function main() {
   if (typeof edit !== 'function') throw new Error('API rcedit introuvable.');
   await edit(path.resolve(exePath), {
     icon: path.resolve(iconPath),
-    'file-version': '1.3.0',
-    'product-version': '1.3.0',
+    'file-version': '1.4.0',
+    'product-version': '1.4.0',
     'version-string': {
       ProductName: 'Audio ToolZ',
       FileDescription: 'Audio ToolZ',

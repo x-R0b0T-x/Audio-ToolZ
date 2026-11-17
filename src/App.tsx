@@ -16,6 +16,7 @@ import {
   trimToRange,
 } from './audio/dsp';
 import { audioEngine } from './audio/engine';
+import { desktop, notifyRecentFilesChanged, fileFromDesktop } from './utils/desktop';
 import type {
   AudioDocument,
   AudioExportFormat,
@@ -109,7 +110,6 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cueInputRef = useRef<HTMLInputElement | null>(null);
   const toastTimerRef = useRef<number | null>(null);
-  const lastLoopSeekAtRef = useRef<number>(0);
 
   const activeDoc = documents.find((d) => d.id === activeDocId) ?? null;
 
@@ -568,7 +568,7 @@ export default function App() {
   );
 
   const decodeAndOpenFile = useCallback(
-    async (file: File) => {
+    async (file: File, recentToken?: string) => {
       try {
         const buffer = await file.arrayBuffer();
         const decoded = await audioEngine.decodeFile(buffer);
@@ -593,6 +593,11 @@ export default function App() {
         setDocuments((prev) => [...prev, doc]);
         setActiveDocId(doc.id);
         showToast(`Fichier ouvert : ${file.name}`);
+        try {
+          if (recentToken) await desktop()?.confirmOpened(recentToken);
+          else await desktop()?.rememberFile(file);
+          notifyRecentFilesChanged();
+        } catch (error) { console.warn('Historique non enregistre', error); }
       } catch {
         showToast(
           `Impossible de décoder « ${file.name} ». Formats supportés : WAV, MP3, FLAC, OGG.`,
@@ -603,7 +608,27 @@ export default function App() {
     [showToast]
   );
 
+  const handleOpenRecent = useCallback(async (id: string) => {
+    try {
+      const api = desktop();
+      if (!api) return;
+      const payload = await api.openRecent(id);
+      await decodeAndOpenFile(fileFromDesktop(payload), payload.token);
+    } catch {
+      showToast('Fichier recent introuvable, deplace ou inaccessible.', true);
+    }
+  }, [decodeAndOpenFile, showToast]);
+
   const handleOpenFile = useCallback(async () => {
+    const api = desktop();
+    if (api) {
+      try {
+        for (const payload of await api.pickAudioFiles()) {
+          await decodeAndOpenFile(fileFromDesktop(payload), payload.token);
+        }
+      } catch { showToast('Impossible de lire le fichier choisi.', true); }
+      return;
+    }
     const win = window as unknown as {
       showOpenFilePicker?: (opts: {
         startIn?: string;
@@ -649,17 +674,17 @@ export default function App() {
       if (total === 0) return;
 
       const { startSample, endSample } = activeDoc.selection;
+      loop = loop && endSample > startSample;
       const targetMode: TransportPlayMode = loop ? 'loop' : 'play';
 
-      // Play always reads the full track from the beginning (0 -> total),
-      // whereas Loop reads the active selection loop (or full track if none).
+      // Lecture depuis le curseur ; aucune boucle implicite sans selection.
       const playStart = loop
         ? isPaused && playMode === 'loop'
           ? Math.min(total - 1, Math.round(audioEngine.getCurrentSample()))
           : startSample
         : isPaused && playMode === 'play'
         ? Math.min(total - 1, Math.round(audioEngine.getCurrentSample()))
-        : 0;
+        : Math.min(total - 1, startSample);
 
       const playEnd = loop
         ? endSample > startSample
@@ -1027,6 +1052,7 @@ export default function App() {
       />
 
       <TopMenuBar
+        onOpenRecent={(id) => void handleOpenRecent(id)}
         hasDocument={Boolean(activeDoc)}
         hasSelection={hasSelection}
         hasClipboard={Boolean(clipboard && clipboard[0]?.length)}
@@ -1102,34 +1128,26 @@ export default function App() {
         onCloseDocument={handleCloseDoc}
         onSelectionChange={(sel, reason: SelectionChangeReason) => {
           updateActiveDoc((doc) => ({ ...doc, selection: sel }));
-          if (!isPlaying && isPaused) {
-            setIsPaused(false);
-          }
-          if (isPlaying && isLooping && activeDoc) {
-            const total = activeDoc.channels[0]?.length ?? 0;
-            const end = sel.endSample > sel.startSample ? sel.endSample : total;
-            if (reason === 'resize-end') {
-              audioEngine.updateLoopRegion(sel.startSample, end, false);
-            } else if (reason === 'resize-start') {
-              const now = performance.now();
-              if (now - lastLoopSeekAtRef.current >= 90) {
-                lastLoopSeekAtRef.current = now;
-                audioEngine.updateLoopRegion(sel.startSample, end, true);
-              }
+          if (isPaused) setIsPaused(false);
+          if (reason === 'cursor') {
+            setIsLooping(false);
+            setPlayMode(isPlaying ? 'play' : 'idle');
+            if (isPlaying && activeDoc) {
+              const total = activeDoc.channels[0]?.length ?? 0;
+              audioEngine.play(activeDoc.channels, activeDoc.sampleRate, sel.startSample, total, {
+                loop: false, reverse: false, volumeDb, balance, speedRatio, enabledChannels,
+                onEnded: () => { setIsPlaying(false); setIsPaused(false); setIsLooping(false); setPlayMode('idle'); },
+              });
             }
+            return;
+          }
+          if (isPlaying && isLooping && sel.endSample > sel.startSample) {
+            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
           }
         }}
-        onSelectionCommit={(sel, reason: SelectionChangeReason) => {
-          if (isPlaying && isLooping && activeDoc) {
-            const total = activeDoc.channels[0]?.length ?? 0;
-            const end = sel.endSample > sel.startSample ? sel.endSample : total;
-            // Immediately jump loop playback to the start of the selected/resized section
-            // unless the user only dragged the right edge inside an already-playing loop
-            audioEngine.updateLoopRegion(
-              sel.startSample,
-              end,
-              reason !== 'resize-end'
-            );
+        onSelectionCommit={(sel) => {
+          if (isPlaying && isLooping && sel.endSample > sel.startSample) {
+            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
           }
         }}
         onViewRangeChange={(viewStartSample, viewEndSample) =>
@@ -1158,7 +1176,7 @@ export default function App() {
         playheadSeconds={playheadSec}
         getPlayheadSeconds={() =>
           activeDoc
-            ? audioEngine.getCurrentSample() / activeDoc.sampleRate
+            ? (isPlaying || isPaused ? audioEngine.getCurrentSample() : activeDoc.selection.startSample) / activeDoc.sampleRate
             : 0
         }
         onVolumeChange={(db) => {

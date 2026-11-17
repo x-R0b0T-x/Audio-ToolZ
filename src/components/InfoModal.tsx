@@ -7,9 +7,13 @@ interface InfoModalProps {
   onClose: () => void;
 }
 
-export const APP_VERSION = 'v1.3';
+export const APP_VERSION = 'v1.4';
 
 const CHANGELOG_ADDITIONS = [
+  'Les dix derniers fichiers audio dans le menu Fichier, avec effacement de la liste',
+  'Invitation a rejoindre la communaute Telegram Audio ToolZ',
+  'Dossier portable stable : Audio ToolZ',
+  'Defilement de la forme onde coloree ralenti et independant de la frequence ecran', 
   'Joindre plusieurs fichiers audio avec import et export de fichier .cue',
   'Menu Outils → Paramètres pour choisir les périphériques audio et micro',
   'Analyseur temps réel 3 vues : Oscilloscope, Spectre et Waveforme colorée selon le volume',
@@ -112,6 +116,16 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
             </p>
           </div>
 
+          <section className="p-4 rounded-lg border text-center space-y-3"
+            style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--accent-primary)', color: 'var(--text-primary)' }}>
+            <h3 className="font-semibold">Rejoignez la communaute Audio ToolZ</h3>
+            <p>Venez discuter du logiciel, partager vos idees, poser vos questions et echanger avec la communaute.</p>
+            <a href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer"
+              className="inline-block px-4 py-2 rounded-md font-semibold"
+              style={{ backgroundColor: 'var(--accent-primary)', color: '#fff' }}>
+              Rejoindre la communaute Telegram
+            </a>
+          </section>
           {/* Sélecteur Raccourcis / Changelog */}
           <div
             className="flex items-center gap-1 p-1 rounded-lg border"
@@ -153,8 +167,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
           {activeTab === 'shortcuts' ? (
             <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono-tabular">
               {[
-                ['Clic gauche', 'Début de sélection'],
-                ['Clic droit', 'Fin de sélection'],
+                ['Clic gauche', 'Départ de lecture'],
+                ['Clic droit', 'Créer la sélection / boucle'],
                 ['Glisser ligne', 'Ajuster début / fin'],
                 ['Molette souris', 'Zoom sur le pointeur'],
                 ['Espace', 'Lecture / Pause'],

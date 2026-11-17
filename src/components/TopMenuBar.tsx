@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download } from 'lucide-react';
+import { RecentFilesMenu } from './RecentFilesMenu';
 import {
   IconBpm,
   IconControlPanel,
@@ -26,6 +27,7 @@ import { BrandLogo } from './BrandLogo';
 import type { EffectModalId } from '../audio/types';
 
 interface TopMenuBarProps {
+  onOpenRecent: (id: string) => void;
   hasDocument: boolean;
   hasSelection: boolean;
   hasClipboard: boolean;
@@ -63,6 +65,7 @@ interface TopMenuBarProps {
 type MenuKey = 'fichier' | 'edition' | 'effets' | 'outils' | null;
 
 export const TopMenuBar: React.FC<TopMenuBarProps> = ({
+  onOpenRecent,
   hasDocument,
   hasSelection,
   hasClipboard,
@@ -187,6 +190,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                   disabled={!hasDocument}
                   onClick={() => runAndClose(onOpenExport)}
                 />
+                <RecentFilesMenu onOpen={(id) => runAndClose(() => onOpenRecent(id))} />
               </div>
             )}
           </div>

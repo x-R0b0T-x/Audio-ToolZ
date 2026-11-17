@@ -109,6 +109,10 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     l: Array<{ min: number; max: number }>;
     r: Array<{ min: number; max: number }>;
   }>({ l: [], r: [] });
+  const coloredClockRef = useRef({ lastMs: 0, remainder: 0 });
+  useEffect(() => {
+    coloredClockRef.current = { lastMs: performance.now(), remainder: 0 };
+  }, [visible, collapsed, visualMode, isPlaying, isRecording]);
   const timeDisplayRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
@@ -578,12 +582,16 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
             const maxHistoryCols = Math.max(60, Math.floor(leftPane.width));
             if (isPlaying || isRecording) {
-              // High-resolution 8 slices per frame (128 samples/px) for razor-sharp crest detail
-              const slicesPerFrame =
-                coloredHistoryRef.current.l.length === 0 ? maxHistoryCols : 8;
+              // 240 colonnes/s : moitie du defilement precedent sur un ecran 60 Hz.
+              const clock = coloredClockRef.current;
+              const elapsed = Math.min(100, Math.max(0, now - clock.lastMs));
+              clock.lastMs = now;
+              const budget = clock.remainder + elapsed * 240 / 1000;
+              const slicesPerFrame = Math.min(maxHistoryCols, Math.floor(budget));
+              clock.remainder = budget - Math.floor(budget);
               const chunk = Math.max(
                 1,
-                Math.floor(waveLData.length / slicesPerFrame)
+                Math.floor(waveLData.length / Math.max(1, slicesPerFrame))
               );
               for (let p = 0; p < slicesPerFrame; p++) {
                 const s0 = Math.min(waveLData.length - 1, p * chunk);

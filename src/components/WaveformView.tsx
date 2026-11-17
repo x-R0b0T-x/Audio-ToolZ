@@ -4,6 +4,7 @@ import { findTrackAtSample } from '../audio/cueSheet';
 import { computeWaveformPeaks, formatTimecode } from '../audio/dsp';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import { BrandLogo } from './BrandLogo';
+import { useWaveformInteractions } from '../utils/useWaveformInteractions';
 
 export type SelectionChangeReason =
   | 'new'
@@ -82,6 +83,9 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
   const [hoverSnapSample, setHoverSnapSample] = React.useState<number | null>(
     null
   );
+
+  useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording,
+    onSelectionChange, onSelectionCommit, onViewRangeChange });
 
   const readCssVar = (name: string, fallback: string): string => {
     if (typeof window === 'undefined') return fallback;

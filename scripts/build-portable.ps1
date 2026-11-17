@@ -15,7 +15,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Compilation Vite en echec.' }
 Get-ChildItem dist -Recurse -File -Filter '*.zip' | Remove-Item -Force
 $out = Join-Path $PWD 'release-output'
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
-$bundle = Join-Path $out 'Audio-ToolZ-1.3-Windows-Portable-x64'
+$bundle = Join-Path $out 'Audio ToolZ'
 New-Item $bundle -ItemType Directory -Force | Out-Null
 $manifestPath = Join-Path $env:RUNNER_TEMP 'electron-SHASUMS256.txt'
 Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/SHASUMS256.txt" -OutFile $manifestPath
@@ -37,7 +37,9 @@ $appDir = Join-Path $bundle 'resources/app'
 New-Item $appDir -ItemType Directory -Force | Out-Null
 Copy-Item 'dist' (Join-Path $appDir 'dist') -Recurse
 Copy-Item 'electron/main.cjs' (Join-Path $appDir 'main.cjs')
-@{ name = 'audio-toolz'; version = '1.3.0'; main = 'main.cjs'; private = $true } | ConvertTo-Json | Set-Content (Join-Path $appDir 'package.json') -Encoding utf8
+Copy-Item 'electron/preload.cjs' (Join-Path $appDir 'preload.cjs')
+Copy-Item 'electron/recent-store.cjs' (Join-Path $appDir 'recent-store.cjs')
+@{ name = 'audio-toolz'; version = '1.4.0'; main = 'main.cjs'; private = $true } | ConvertTo-Json | Set-Content (Join-Path $appDir 'package.json') -Encoding utf8
 $toolsDir = Join-Path $env:RUNNER_TEMP 'audio-toolz-resource-tools'
 npm install --prefix "$toolsDir" --no-package-lock --no-audit --no-fund rcedit@4.0.1
 if ($LASTEXITCODE -ne 0) { throw 'Installation de rcedit en echec.' }
@@ -63,6 +65,6 @@ foreach ($unwanted in @('LIRE-MOI.txt', 'MANIFEST-SHA256.txt')) {
   if (Test-Path $unwantedPath) { Remove-Item $unwantedPath -Force }
 }
 Copy-Item 'CHANGELOG.md' $bundle
-$zip = Join-Path $out 'Audio-ToolZ-1.3-Windows-Portable-x64.zip'
+$zip = Join-Path $out 'Audio-ToolZ-1.4-Windows-Portable-x64.zip'
 Compress-Archive -Path $bundle -DestinationPath $zip -CompressionLevel Optimal
 '{0}  {1}' -f (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower(), (Split-Path $zip -Leaf) | Set-Content (Join-Path $out 'SHA256SUMS.txt') -Encoding ascii
