@@ -1,21 +1,20 @@
 import assert from 'node:assert/strict';
 import { dragFrame } from '../src/utils/waveformNavigation.mjs';
-const l = dragFrame(4000, 5000, 10000, 52, 800, 52, 16);
-assert.ok(l.viewStart < 4000); assert.equal(l.viewEnd, 5000);
-const r = dragFrame(4000, 5000, 10000, 52, 800, 852, 16);
-assert.equal(r.viewStart, 4000); assert.ok(r.viewEnd > 5000);
-const center = dragFrame(4000, 5000, 10000, 52, 800, 452, 16);
-assert.equal(center.viewStart, 4000); assert.equal(center.viewEnd, 5000); assert.equal(center.sample, 4500);
-for (const x of [-500, 5000]) {
-  let a = 4000, b = 5000;
-  for (let i = 0; i < 600; i++) {
-    const f = dragFrame(a, b, 10000, 52, 800, x, 16);
-    assert.ok(f.viewStart >= 0); assert.ok(f.viewEnd <= 10000);
-    assert.ok(f.viewEnd - f.viewStart >= b - a - 1e-8);
-    a = f.viewStart; b = f.viewEnd;
+const frame = (start, end, x, dt = 16) => dragFrame(start, end, 10000, 52, 800, x, dt);
+assert.deepEqual(frame(4000, 5000, 452), { viewStart: 4000, viewEnd: 5000, sample: 4500 });
+assert.equal(frame(4000, 5000, 852, 0).viewStart, 4000);
+assert.equal(frame(4000, 5000, 852).viewStart, 4016);
+assert.equal(frame(4000, 5000, 52).viewStart, 3984);
+assert.equal(frame(4000, 5000, 834).viewStart, 4008);
+for (const [x, limit] of [[52, 0], [852, 9000]]) {
+  let start = 4000, end = 5000;
+  for (let i = 0; i < 400; i++) {
+    const next = frame(start, end, x);
+    assert.ok(Math.abs(next.viewEnd - next.viewStart - 1000) < 1e-8);
+    start = next.viewStart; end = next.viewEnd;
   }
-  assert.equal(a, 0); assert.equal(b, 10000);
+  assert.equal(start, limit);
+  assert.equal(frame(start, end, 452).viewStart, limit);
 }
-const zero = dragFrame(4000, 5000, 10000, 52, 800, 852, 0);
-assert.equal(zero.viewEnd, 5000);
-console.log('Dezoom : gauche, droite, centre stable, pointeur immobile et limites valides.');
+assert.equal(frame(0, 10000, 852).viewStart, 0);
+console.log('Defilement : zoom constant, deux directions, arret au centre et limites.');
