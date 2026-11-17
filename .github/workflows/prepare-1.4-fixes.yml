@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/prepare-1.4-fixes.yml
       - scripts/prepare-1.4-interactions.cjs
+      - scripts/prepare-1.4-autozoom.cjs
       - scripts/test-1.4-navigation.mjs
       - src/utils/useWaveformInteractions.ts
       - src/utils/waveformNavigation.mjs
@@ -30,13 +31,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Appliquer la version 1.4 puis ses correctifs
+      - name: Appliquer la version 1.4 et tous les correctifs
         shell: bash
         run: |
           set -euo pipefail
-          node --check scripts/prepare-1.4-interactions.cjs
+          node --check scripts/prepare-1.4-autozoom.cjs
           node scripts/prepare-1.4.cjs
           node scripts/prepare-1.4-interactions.cjs
+          node scripts/prepare-1.4-autozoom.cjs
       - name: Verifier JavaScript et les tests
         shell: bash
         run: |
@@ -57,7 +59,7 @@ jobs:
       - name: Conserver le ZIP et les notes pour validation
         uses: actions/upload-artifact@v4
         with:
-          name: Audio-ToolZ-1.4-correctifs-Windows-x64
+          name: Audio-ToolZ-1.4-autozoom-Windows-x64
           path: |
             release-output/Audio-ToolZ-1.4-Windows-Portable-x64.zip
             release-output/SHA256SUMS.txt
@@ -69,8 +71,8 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add src/App.tsx src/components/WaveformView.tsx src/audio/engine.ts src/components/ControlWindow.tsx src/components/TopMenuBar.tsx src/components/InfoModal.tsx scripts/build-portable.ps1 scripts/set-exe-icon.cjs scripts/.v1.4-applied scripts/.v1.4-interactions-applied package.json CHANGELOG.md RELEASE_NOTES_1.4.md
+          git add src/App.tsx src/components/WaveformView.tsx src/utils/useWaveformInteractions.ts src/audio/engine.ts src/components/ControlWindow.tsx src/components/TopMenuBar.tsx src/components/InfoModal.tsx scripts/build-portable.ps1 scripts/set-exe-icon.cjs scripts/.v1.4-applied scripts/.v1.4-interactions-applied scripts/.v1.4-autozoom-applied package.json CHANGELOG.md RELEASE_NOTES_1.4.md
           if ! git diff --cached --quiet; then
-            git commit -m 'fix: appliquer les corrections de lecture et navigation v1.4'
+            git commit -m 'fix: appliquer le dezoom automatique et le curseur deplacable v1.4'
             git push origin HEAD:main
           fi
