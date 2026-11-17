@@ -1,17 +1,17 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 Set-Location (Split-Path $PSScriptRoot -Parent)
-if (-not $env:RUNNER_TEMP) { throw 'Exécuter ce script dans GitHub Actions.' }
+if (-not $env:RUNNER_TEMP) { throw 'Executer ce script dans GitHub Actions.' }
 $versions = npm view electron@43 version --json | ConvertFrom-Json
-if ($LASTEXITCODE -ne 0) { throw 'Impossible de résoudre Electron.' }
+if ($LASTEXITCODE -ne 0) { throw 'Impossible de resoudre Electron.' }
 $electronVersion = @($versions)[-1]
 if ($electronVersion -notmatch '^43\.\d+\.\d+$') { throw 'Version Electron inattendue.' }
 npm install
-if ($LASTEXITCODE -ne 0) { throw 'Installation npm en échec.' }
+if ($LASTEXITCODE -ne 0) { throw 'Installation npm en echec.' }
 npm run lint
-if ($LASTEXITCODE -ne 0) { throw 'Vérification TypeScript en échec.' }
+if ($LASTEXITCODE -ne 0) { throw 'Verification TypeScript en echec.' }
 npm run build
-if ($LASTEXITCODE -ne 0) { throw 'Compilation Vite en échec.' }
+if ($LASTEXITCODE -ne 0) { throw 'Compilation Vite en echec.' }
 Get-ChildItem dist -Recurse -File -Filter '*.zip' | Remove-Item -Force
 $out = Join-Path $PWD 'release-output'
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
@@ -26,7 +26,7 @@ foreach ($line in (Get-Content -LiteralPath $manifestPath -Encoding utf8)) {
   }
 }
 $name = "electron-v$electronVersion-win32-x64.zip"
-if (-not $checksums.ContainsKey($name)) { throw "Somme de contrôle absente : $name" }
+if (-not $checksums.ContainsKey($name)) { throw "Somme de controle absente : $name" }
 $archive = Join-Path $env:RUNNER_TEMP 'electron-x64.zip'
 Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/$name" -OutFile $archive
 if ((Get-FileHash $archive -Algorithm SHA256).Hash -ine $checksums[$name]) { throw 'Archive Electron corrompue.' }
@@ -43,16 +43,16 @@ foreach ($item in @('Audio ToolZ.exe', 'locales', 'resources', 'chrome_100_perce
 }
 $bytes = [IO.File]::ReadAllBytes((Join-Path $bundle 'Audio ToolZ.exe'))
 $pe = [BitConverter]::ToInt32($bytes, 0x3c)
-if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x8664) { throw 'Le binaire n’est pas x64.' }
+if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x8664) { throw 'Architecture du binaire incorrecte : x64 requis.' }
 Copy-Item 'CHANGELOG.md' $bundle
 @"
-Audio ToolZ 1.3 — Windows x64 uniquement
-Extraire entièrement le ZIP dans un dossier accessible en écriture.
-Lancer Audio ToolZ.exe sans déplacer les DLL et dossiers associés.
-Les préférences sont conservées dans user-data à côté de l’exécutable.
+Audio ToolZ 1.3 - Windows x64 uniquement
+Extraire entierement le ZIP dans un dossier accessible en ecriture.
+Lancer Audio ToolZ.exe sans deplacer les DLL et dossiers associes.
+Les preferences sont conservees dans user-data a cote du fichier executable.
 Exporter les documents audio avant fermeture.
-Distribution non signée numériquement. Electron : $electronVersion
-Les fichiers internes varient selon le moteur ; Desktop.ini n’est pas requis.
+Distribution non signee numeriquement. Electron : $electronVersion
+Les fichiers internes varient selon le moteur ; Desktop.ini non requis.
 "@ | Set-Content (Join-Path $bundle 'LIRE-MOI.txt') -Encoding utf8
 $manifest = @(Get-ChildItem $bundle -Recurse -File | ForEach-Object {
   '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), ([IO.Path]::GetRelativePath($bundle, $_.FullName))
