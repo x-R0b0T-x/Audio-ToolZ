@@ -20,17 +20,27 @@ $out = Join-Path $root 'release-output'
 $bundle = Join-Path $out 'Audio-ToolZ-1.3-Windows-Portable'
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
 New-Item $bundle -ItemType Directory -Force | Out-Null
+if (-not $env:RUNNER_TEMP) { throw 'Exécuter ce script dans GitHub Actions (RUNNER_TEMP requis).' }
+$manifestPath = Join-Path $env:RUNNER_TEMP 'electron-SHASUMS256.txt'
+Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/SHASUMS256.txt" -OutFile $manifestPath
+$checksums = @{}
+foreach ($manifestLine in (Get-Content -LiteralPath $manifestPath -Encoding utf8)) {
+  if ($manifestLine.Trim() -match '^([a-fA-F0-9]{64})\s+\*?(.+)$') {
+    $checksums[$Matches[2].Trim()] = $Matches[1]
+  }
+}
+if ($checksums.Count -eq 0) { throw 'Manifeste SHA256 Electron vide ou illisible.' }
 foreach ($target in @(@{ Electron = 'ia32'; Folder = 'x86' }, @{ Electron = 'x64'; Folder = 'x64' })) {
   $arch = $target.Electron
   $destination = Join-Path $bundle $target.Folder
   $archive = Join-Path $env:RUNNER_TEMP "electron-$arch.zip"
-  if (-not $env:RUNNER_TEMP) { throw 'Exécuter ce script dans GitHub Actions (RUNNER_TEMP requis).' }
-  Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/electron-v$electronVersion-win32-$arch.zip" -OutFile $archive
-  $checksums = (Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/SHASUMS256.txt").Content
   $name = "electron-v$electronVersion-win32-$arch.zip"
-  $line = @($checksums -split "`n" | Where-Object { $_.Trim().EndsWith(" $name") })
-  if ($line.Count -ne 1) { throw "Somme de contrôle absente : $name" }
-  $expected = ($line[0].Trim() -split '\s+')[0]
+  if (-not $checksums.ContainsKey($name)) {
+    $available = ($checksums.Keys | Where-Object { $_ -like '*win32*' }) -join ', '
+    throw "Somme de contrôle absente : $name. Entrées Windows disponibles : $available"
+  }
+  Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$electronVersion/$name" -OutFile $archive
+  $expected = $checksums[$name]
   if ((Get-FileHash $archive -Algorithm SHA256).Hash -ine $expected) { throw 'Archive Electron corrompue.' }
   Expand-Archive $archive $destination
   Rename-Item (Join-Path $destination 'electron.exe') 'Audio ToolZ.exe'
