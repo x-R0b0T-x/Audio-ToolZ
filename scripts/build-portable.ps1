@@ -39,7 +39,7 @@ Copy-Item 'dist' (Join-Path $appDir 'dist') -Recurse
 Copy-Item 'electron/main.cjs' (Join-Path $appDir 'main.cjs')
 @{ name = 'audio-toolz'; version = '1.3.0'; main = 'main.cjs'; private = $true } | ConvertTo-Json | Set-Content (Join-Path $appDir 'package.json') -Encoding utf8
 $toolsDir = Join-Path $env:RUNNER_TEMP 'audio-toolz-resource-tools'
-npm install --prefix "$toolsDir" --no-package-lock --no-audit --no-fund @electron/rcedit@5.0.2
+npm install --prefix "$toolsDir" --no-package-lock --no-audit --no-fund rcedit@4.0.1
 if ($LASTEXITCODE -ne 0) { throw 'Installation de rcedit en echec.' }
 node scripts/set-exe-icon.cjs "$toolsDir" (Join-Path $bundle 'Audio ToolZ.exe') (Join-Path $bundle 'icon.ico')
 if ($LASTEXITCODE -ne 0) { throw 'Integration de cette icone dans le binaire en echec.' }

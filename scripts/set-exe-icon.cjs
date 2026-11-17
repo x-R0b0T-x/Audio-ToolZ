@@ -1,6 +1,5 @@
 const path = require('node:path');
 const fs = require('node:fs');
-const { pathToFileURL } = require('node:url');
 
 async function main() {
   const [toolsDir, exePath, iconPath] = process.argv.slice(2);
@@ -9,9 +8,9 @@ async function main() {
   if (ico.length < 6 || ico.readUInt16LE(0) !== 0 || ico.readUInt16LE(2) !== 1 || ico.readUInt16LE(4) < 1) {
     throw new Error('Fichier ICO invalide.');
   }
-  const entry = require.resolve('@electron/rcedit', { paths: [path.resolve(toolsDir)] });
-  const mod = await import(pathToFileURL(entry).href);
-  const edit = mod.rcedit || mod.default?.rcedit || mod.default;
+  const entry = require.resolve('rcedit', { paths: [path.resolve(toolsDir)] });
+  const mod = require(entry);
+  const edit = typeof mod === 'function' ? mod : mod.rcedit;
   if (typeof edit !== 'function') throw new Error('API rcedit introuvable.');
   await edit(path.resolve(exePath), {
     icon: path.resolve(iconPath),
