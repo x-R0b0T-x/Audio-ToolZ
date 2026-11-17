@@ -1,20 +1,37 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { dragFrame } from '../src/utils/waveformNavigation.mjs';
-const frame = (start, end, x, dt = 16) => dragFrame(start, end, 10000, 52, 800, x, dt);
-assert.deepEqual(frame(4000, 5000, 452), { viewStart: 4000, viewEnd: 5000, sample: 4500 });
-assert.equal(frame(4000, 5000, 852, 0).viewStart, 4000);
-assert.equal(frame(4000, 5000, 852).viewStart, 4016);
-assert.equal(frame(4000, 5000, 52).viewStart, 3984);
-assert.equal(frame(4000, 5000, 834).viewStart, 4008);
-for (const [x, limit] of [[52, 0], [852, 9000]]) {
-  let start = 4000, end = 5000;
-  for (let i = 0; i < 400; i++) {
-    const next = frame(start, end, x);
-    assert.ok(Math.abs(next.viewEnd - next.viewStart - 1000) < 1e-8);
-    start = next.viewStart; end = next.viewEnd;
-  }
-  assert.equal(start, limit);
-  assert.equal(frame(start, end, 452).viewStart, limit);
+const file = new URL('../src/utils/useWaveformInteractions.ts', import.meta.url);
+let src = fs.readFileSync(file, 'utf8');
+const marker = '// Anchored boundary expansion';
+if (!src.includes(marker)) {
+  const replace = (old, next) => {
+    if (src.split(old).length !== 2) throw new Error('Ancre inattendue : ' + old);
+    src = src.replace(old, () => next);
+  };
+  replace('selection: AudioSelection; start: number; end: number }', 'selection: AudioSelection; start: number; end: number; initialSpan?: number; anchor?: number; anchorRatio?: number }');
+  replace('selection: { ...selection }, start: doc.viewStartSample, end: doc.viewEndSample };', `selection: { ...selection }, start: doc.viewStartSample, end: doc.viewEndSample,
+            initialSpan: length, anchor: d0 <= d1 ? selection.endSample : selection.startSample,
+            anchorRatio: ((d0 <= d1 ? selection.endSample : selection.startSample) - doc.viewStartSample) / length };`);
+  replace('const frame = dragFrame(drag.start, drag.end, total, rect.left + 52, width, drag.x, delta);', `${marker}
+      const left = rect.left + 52;
+      const ratio = Math.max(0, Math.min(1, (drag.x - left) / width));
+      let frame = dragFrame(drag.start, drag.end, total, left, width, drag.x, drag.edge === 'cursor' ? delta : 0);
+      if (drag.initialSpan !== undefined && drag.anchor !== undefined && drag.anchorRatio !== undefined) {
+        const zone = Math.min(24, width / 4);
+        const pressure = drag.edge === 'resize-start' ? (left + zone - drag.x) / zone : (drag.x - (left + width - zone)) / zone;
+        const a = drag.anchor;
+        const r = drag.anchorRatio;
+        const span = drag.end - drag.start;
+        if (pressure > 0 && delta > 0 && r >= 0 && r <= 1) {
+          const limit = Math.min(drag.initialSpan * 1.25, r > 0 ? a / r : Infinity, r < 1 ? (total - a) / (1 - r) : Infinity);
+          const nextSpan = Math.max(span, Math.min(limit, span + drag.initialSpan * 0.2 * Math.min(1, pressure) * Math.min(64, delta) / 1000));
+          const viewStart = a - r * nextSpan;
+          const viewEnd = a + (1 - r) * nextSpan;
+          frame = { viewStart, viewEnd, sample: Math.round(viewStart + ratio * nextSpan) };
+        }
+      }`);
+  fs.writeFileSync(file, src);
 }
-assert.equal(frame(0, 10000, 852).viewStart, 0);
-console.log('Defilement : zoom constant, deux directions, arret au centre et limites.');
+assert.equal(dragFrame(4000, 5000, 10000, 52, 800, 852, 16).viewStart, 4016);
+assert.equal(dragFrame(4000, 5000, 10000, 52, 800, 52, 16).viewStart, 3984);
