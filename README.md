@@ -8,7 +8,7 @@
 
 Traitement 100 % local : votre audio ne quitte jamais votre machine.
 
-[![Licence](https://img.shields.io/badge/licence-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.fr.html)
+[![Licence](https://img.shields.io/badge/licence-GPL%20v3-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6.svg)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-8-646cff.svg)](https://vite.dev)
@@ -173,4 +173,4 @@ Les contributions sont bienvenues ! Ouvrez une *issue* pour proposer une fonctio
 
 ## 📄 Licence
 
-Ce projet est distribué sous licence **[GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.fr.html)** — gratuit, sans publicité, sans télémétrie.
+Ce projet est distribué sous licence **[GNU GPL v3](LICENSE)** — gratuit, sans publicité, sans télémétrie.
