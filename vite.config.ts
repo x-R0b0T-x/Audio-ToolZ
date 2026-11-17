@@ -1,23 +1,26 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { copyFileSync, mkdirSync } from 'node:fs';
+import { defineConfig } from 'vite';
 
-export default defineConfig(() => {
-  return {
-    base: './',
-    plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
+export default defineConfig(({ command }) => ({
+  base: './',
+  publicDir: command === 'build' ? false : 'public',
+  plugins: [react(), tailwindcss(), {
+    name: 'audio-toolz-runtime-icons',
+    apply: 'build',
+    writeBundle(options) {
+      const output = options.dir ?? 'dist';
+      mkdirSync(output, { recursive: true });
+      for (const icon of ['icon.ico', 'icon.png']) {
+        copyFileSync(path.resolve(__dirname, 'public', icon), path.join(output, icon));
+      }
     },
-    server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
-    },
-  };
-});
+  }],
+  resolve: { alias: { '@': path.resolve(__dirname, '.') } },
+  server: {
+    hmr: process.env.DISABLE_HMR !== 'true',
+    watch: process.env.DISABLE_HMR === 'true' ? null : {},
+  },
+}));
