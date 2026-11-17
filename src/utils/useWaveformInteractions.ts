@@ -59,7 +59,10 @@ export function useWaveformInteractions(options: Options) {
       }
       if (frame.viewStart !== drag.start || frame.viewEnd !== drag.end) {
         drag.start = frame.viewStart; drag.end = frame.viewEnd;
-        latest.current.onViewRangeChange(drag.start, drag.end);
+        // Publish integer sample bounds; keep drag accumulation fractional.
+        const start = Math.max(0, Math.min(total - 1, Math.round(drag.start)));
+        const end = Math.min(total, Math.max(start + 1, Math.round(drag.end)));
+        latest.current.onViewRangeChange(start, end);
       }
       const point = snap(frame.sample, width, drag.end - drag.start, drag.alt);
       const next = drag.edge === 'cursor'
@@ -111,17 +114,23 @@ export function useWaveformInteractions(options: Options) {
       }
       const frame = dragFrame(doc.viewStartSample, doc.viewEndSample, total, left, width, event.clientX, 0);
       const point = snap(frame.sample, width, length, event.altKey);
-      const next = event.button === 0
-        ? { startSample: Math.min(total - 1, point), endSample: Math.min(total - 1, point) }
-        : { startSample: Math.min(selection.startSample, point), endSample: Math.max(selection.startSample, point) };
-      if (event.button === 0) {
+      if (event.button === 2 || selection.endSample > selection.startSample) {
+        const next = event.button === 0
+          ? { startSample: point, endSample: selection.endSample }
+          : { startSample: selection.startSample, endSample: point };
+        if (next.endSample <= next.startSample) return;
+        const reason = event.button === 0 ? 'resize-start' : 'resize-end';
+        latest.current.onSelectionChange(next, reason);
+        latest.current.onSelectionCommit?.(next, reason);
+        return;
+      }
+      const startSample = Math.min(total - 1, point);
+      const next = { startSample, endSample: startSample };
+      {
         latest.current.onSelectionChange(next, 'cursor-drag');
         drag = { edge: 'cursor', x: event.clientX, alt: event.altKey, selection: next, start: doc.viewStartSample, end: doc.viewEndSample };
         canvas.style.cursor = 'ew-resize';
         lastTime = performance.now(); raf = requestAnimationFrame(tick);
-      } else {
-        latest.current.onSelectionChange(next, 'new');
-        latest.current.onSelectionCommit?.(next, 'new');
       }
     };
     const mousemove = (event: MouseEvent) => {
