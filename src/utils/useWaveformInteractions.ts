@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import type { SelectionChangeReason } from '../components/WaveformView';
 import { dragFrame } from './waveformNavigation.mjs';
+
 type Edge = 'resize-start' | 'resize-end' | 'cursor';
 interface Options {
   canvas: RefObject<HTMLCanvasElement | null>;
@@ -18,7 +19,7 @@ export function useWaveformInteractions(options: Options) {
   useEffect(() => {
     const canvas = latest.current.canvas.current;
     if (!canvas || !options.doc || options.isRecording) return;
-    let drag: { edge: Edge; x: number; alt: boolean; selection: AudioSelection; start: number; end: number; initialSpan?: number; anchor?: number; anchorRatio?: number } | null = null;
+    let drag: { edge: Edge; x: number; alt: boolean; selection: AudioSelection; start: number; end: number } | null = null;
     let raf = 0;
     let lastTime = 0;
     const snap = (sample: number, width: number, length: number, alt: boolean) => {
@@ -37,31 +38,21 @@ export function useWaveformInteractions(options: Options) {
       const doc = latest.current.doc;
       if (!drag || !doc) return;
       const total = doc.channels[0]?.length ?? 0;
+      if (!total) return;
       const rect = canvas.getBoundingClientRect();
-      const width = Math.max(1, rect.width - 52);
-      // Anchored boundary expansion
       const left = rect.left + 52;
-      const ratio = Math.max(0, Math.min(1, (drag.x - left) / width));
-      let frame = dragFrame(drag.start, drag.end, total, left, width, drag.x, drag.edge === 'cursor' ? delta : 0);
-      if (drag.initialSpan !== undefined && drag.anchor !== undefined && drag.anchorRatio !== undefined) {
-        // Expand only beyond the visible waveform
-        const pressure = drag.edge === 'resize-start' ? (left - drag.x) / 24 : (drag.x - (left + width)) / 24;
-        const a = drag.anchor;
-        const r = drag.anchorRatio;
-        const span = drag.end - drag.start;
-        if (pressure > 0 && delta > 0 && r >= 0 && r <= 1) {
-          const limit = Math.min(drag.initialSpan * 1.08, r > 0 ? a / r : Infinity, r < 1 ? (total - a) / (1 - r) : Infinity);
-          const nextSpan = Math.max(span, Math.min(limit, span + drag.initialSpan * 0.04 * Math.min(1, pressure) * Math.min(64, delta) / 1000));
-          const viewStart = a - r * nextSpan;
-          const viewEnd = a + (1 - r) * nextSpan;
-          frame = { viewStart, viewEnd, sample: Math.round(viewStart + ratio * nextSpan) };
-        }
+      const width = Math.max(1, rect.width - 52);
+      if (doc.viewStartSample !== Math.round(drag.start) || doc.viewEndSample !== Math.round(drag.end)) {
+        drag.start = doc.viewStartSample;
+        drag.end = doc.viewEndSample;
       }
-      if (frame.viewStart !== drag.start || frame.viewEnd !== drag.end) {
-        drag.start = frame.viewStart; drag.end = frame.viewEnd;
-        // Publish integer sample bounds; keep drag accumulation fractional.
-        const start = Math.max(0, Math.min(total - 1, Math.round(drag.start)));
-        const end = Math.min(total, Math.max(start + 1, Math.round(drag.end)));
+      // Pan at either edge without changing the visible span.
+      const frame = dragFrame(drag.start, drag.end, total, left, width, drag.x, delta);
+      const start = Math.round(frame.viewStart);
+      const end = start + Math.round(frame.viewEnd - frame.viewStart);
+      drag.start = frame.viewStart;
+      drag.end = frame.viewEnd;
+      if (start !== doc.viewStartSample || end !== doc.viewEndSample) {
         latest.current.onViewRangeChange(start, end);
       }
       const point = snap(frame.sample, width, drag.end - drag.start, drag.alt);
@@ -105,9 +96,7 @@ export function useWaveformInteractions(options: Options) {
         const d1 = x1 >= left && x1 <= rect.right ? Math.abs(event.clientX - x1) : Infinity;
         if (Math.min(d0, d1) <= 9) {
           drag = { edge: d0 <= d1 ? 'resize-start' : 'resize-end', x: event.clientX, alt: event.altKey,
-            selection: { ...selection }, start: doc.viewStartSample, end: doc.viewEndSample,
-            initialSpan: length, anchor: d0 <= d1 ? selection.endSample : selection.startSample,
-            anchorRatio: ((d0 <= d1 ? selection.endSample : selection.startSample) - doc.viewStartSample) / length };
+            selection: { ...selection }, start: doc.viewStartSample, end: doc.viewEndSample };
           canvas.style.cursor = 'ew-resize';
           lastTime = performance.now(); raf = requestAnimationFrame(tick); return;
         }
@@ -126,12 +115,10 @@ export function useWaveformInteractions(options: Options) {
       }
       const startSample = Math.min(total - 1, point);
       const next = { startSample, endSample: startSample };
-      {
-        latest.current.onSelectionChange(next, 'cursor-drag');
-        drag = { edge: 'cursor', x: event.clientX, alt: event.altKey, selection: next, start: doc.viewStartSample, end: doc.viewEndSample };
-        canvas.style.cursor = 'ew-resize';
-        lastTime = performance.now(); raf = requestAnimationFrame(tick);
-      }
+      latest.current.onSelectionChange(next, 'cursor-drag');
+      drag = { edge: 'cursor', x: event.clientX, alt: event.altKey, selection: next, start: doc.viewStartSample, end: doc.viewEndSample };
+      canvas.style.cursor = 'ew-resize';
+      lastTime = performance.now(); raf = requestAnimationFrame(tick);
     };
     const mousemove = (event: MouseEvent) => {
       if (!drag) return;
