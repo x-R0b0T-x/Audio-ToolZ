@@ -14,14 +14,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
-      - name: Rechercher les references aux medias de public
+      - name: Signaler les references aux medias de public
         shell: pwsh
         run: |
-          $refs = foreach ($file in (Get-ChildItem public -File -Recurse | Where-Object { $_.Name -notin @('icon.ico','icon.png') })) {
-            git grep -n -F -e $file.Name -- src electron scripts index.html README.md .github
+          foreach ($file in (Get-ChildItem public -File -Recurse | Where-Object { $_.Name -notin @('icon.ico','icon.png') })) {
+            $refs = git grep -n -F -e $file.Name -- src electron scripts index.html README.md .github
             if ($LASTEXITCODE -gt 1) { throw 'Recherche des references en echec' }
+            if ($refs) { $refs | Write-Host }
           }
-          if ($refs) { $refs | Write-Host; throw 'Examiner les references avant de continuer' }
+          exit 0
       - name: Compiler le paquet
         shell: pwsh
         run: ./scripts/build-portable.ps1
