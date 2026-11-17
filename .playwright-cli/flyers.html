@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Audio ToolZ — 4 Propositions Flyer v4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: #040509;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans', 'Liberation Sans', sans-serif;
+    color: #f8f8f2;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+
+  .flyer-canvas {
+    position: relative;
+    width: 1080px;
+    height: 1440px;
+    overflow: hidden;
+    background-color: #05060b;
+    flex-shrink: 0;
+  }
+
+  .bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* Intense ambient back-glow layers to boost power */
+  .power-glow {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%);
+    width: 960px;
+    height: 680px;
+    pointer-events: none;
+    z-index: 2;
+    mix-blend-mode: screen;
+  }
+
+  .bg-scrim-1 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(6, 8, 14, 0.88) 0%, rgba(6, 8, 14, 0.34) 26%, rgba(6, 8, 14, 0.08) 54%, rgba(6, 8, 14, 0.42) 86%, rgba(4, 5, 10, 0.90) 100%);
+  }
+
+  .bg-scrim-2 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(4, 7, 13, 0.88) 0%, rgba(4, 7, 13, 0.28) 28%, rgba(4, 7, 13, 0.05) 56%, rgba(4, 7, 13, 0.32) 88%, rgba(4, 6, 10, 0.84) 100%);
+  }
+
+  .bg-scrim-3 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(6, 7, 13, 0.88) 0%, rgba(6, 7, 13, 0.36) 27%, rgba(6, 7, 13, 0.06) 56%, rgba(6, 7, 13, 0.42) 88%, rgba(4, 5, 10, 0.92) 100%);
+  }
+
+  .bg-scrim-4 {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(5, 6, 11, 0.90) 0%, rgba(5, 6, 11, 0.24) 26%, rgba(5, 6, 11, 0.02) 55%, rgba(5, 6, 11, 0.28) 86%, rgba(4, 5, 10, 0.86) 100%);
+  }
+
+  .layer-svg {
+    position: absolute;
+    inset: 0;
+    width: 1080px;
+    height: 1440px;
+    z-index: 25;
+    pointer-events: none;
+  }
+
+  /* Brand */
+  .brand-row {
+    position: relative;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .brand-logo-wrap {
+    width: 62px;
+    height: 62px;
+    border-radius: 16px;
+    padding: 4px;
+    background: rgba(15, 18, 28, 0.88);
+    border: 1.5px solid rgba(189, 147, 249, 0.58);
+    box-shadow: 0 0 32px rgba(69, 248, 130, 0.42), 0 0 56px rgba(189, 147, 249, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-logo-wrap img {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .brand-name {
+    font-family: 'Plus Jakarta Sans', 'Noto Sans', sans-serif;
+    font-size: 50px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.9);
+  }
+  .brand-name .w { color: #f8f8f2; }
+  .brand-name .g { color: #45f882; text-shadow: 0 0 28px rgba(69, 248, 130, 0.5); }
+
+  .hero-title {
+    font-family: 'Barlow Condensed', 'Liberation Sans Narrow', 'Noto Sans', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.015em;
+    line-height: 0.95;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 6px 30px rgba(0, 0, 0, 0.96);
+  }
+
+  .intro-box {
+    position: relative;
+    z-index: 15;
+    margin: 0 auto;
+    padding: 15px 26px;
+    border-radius: 14px;
+    background: rgba(10, 13, 21, 0.82);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.46;
+    color: #e4e8f3;
+    font-weight: 500;
+  }
+  .intro-box strong { color: #ffffff; font-weight: 700; }
+  .intro-box .hl-g { color: #45f882; font-weight: 700; }
+  .intro-box .hl-c { color: #8be9fd; font-weight: 700; }
+  .intro-box .hl-p { color: #bd93f9; font-weight: 700; }
+
+  /* UI Stage */
+  .ui-stage {
+    position: absolute;
+    z-index: 10;
+    border-radius: 12px;
+    background: #14161e;
+    overflow: hidden;
+  }
+  .ui-stage img.ui-full {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ui-highlight {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 5px;
+    z-index: 12;
+  }
+
+  /* Zoom Cards */
+  .zoom-card {
+    position: absolute;
+    z-index: 30;
+    border-radius: 14px;
+    background: rgba(10, 13, 22, 0.93);
+    padding: 11px;
+    backdrop-filter: blur(14px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .zoom-card.mirror-bottom {
+    flex-direction: column-reverse;
+  }
+
+  .zoom-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 4px;
+  }
+
+  .zoom-title {
+    font-family: 'Barlow Condensed', 'Liberation Sans Narrow', sans-serif;
+    font-size: 20.5px;
+    font-weight: 800;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    line-height: 1.05;
+  }
+
+  .zoom-mag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    opacity: 0.86;
+    white-space: nowrap;
+  }
+
+  .zoom-sub {
+    font-size: 12.4px;
+    line-height: 1.24;
+    color: #cfd6e8;
+    padding: 0 4px;
+    font-weight: 500;
+  }
+
+  .zoom-viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #0e1017;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .zoom-viewport img {
+    position: absolute;
+    max-width: none !important;
+    display: block;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  /* ==============================================================
+     PROP 1 — SHOCKBURST CYBER HUD (Symmetrical Intense Halo)
+  ============================================================== */
+  .prop-1 .power-glow {
+    background: radial-gradient(circle, rgba(69, 248, 130, 0.34) 0%, rgba(189, 147, 249, 0.24) 42%, transparent 72%);
+  }
+  .prop-1 .header-zone { position: relative; z-index: 15; padding: 34px 58px 0; }
+  .prop-1 .hero-title { margin-top: 12px; font-size: 58px; }
+  .prop-1 .hero-title .grad-g {
+    background: linear-gradient(90deg, #45f882 0%, #8be9fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .prop-1 .intro-box {
+    margin-top: 14px;
+    max-width: 930px;
+    border-top: 2px solid rgba(69, 248, 130, 0.72);
+  }
+  .prop-1 .ui-stage {
+    border: 1.5px solid rgba(69, 248, 130, 0.65);
+    box-shadow: 0 0 75px rgba(69, 248, 130, 0.32), 0 0 130px rgba(189, 147, 249, 0.25), 0 28px 75px rgba(0, 0, 0, 0.94);
+  }
+  .prop-1 .zoom-card {
+    border-radius: 10px;
+  }
+
+  /* ==============================================================
+     PROP 2 — SOUNDSTAGE ARCHITECTURAL SPLIT HEADER + WIDE STAGE
+  ============================================================== */
+  .prop-2 .power-glow {
+    top: 58%;
+    background: radial-gradient(ellipse, rgba(139, 233, 253, 0.32) 0%, rgba(69, 248, 130, 0.22) 45%, transparent 72%);
+  }
+  .prop-2 .header-zone { position: relative; z-index: 15; padding: 34px 54px 0; }
+  .prop-2 .hero-split {
+    display: grid;
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: 26px;
+    align-items: center;
+    margin-top: 18px;
+  }
+  .prop-2 .brand-row {
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  .prop-2 .brand-logo-wrap { width: 56px; height: 56px; }
+  .prop-2 .brand-name { font-size: 44px; }
+  .prop-2 .top-bar-split {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(139, 233, 253, 0.22);
+  }
+  .prop-2 .top-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #8be9fd;
+    text-transform: uppercase;
+  }
+  .prop-2 .hero-title {
+    text-align: left;
+    font-size: 56px;
+    line-height: 0.94;
+  }
+  .prop-2 .hero-title .grad {
+    background: linear-gradient(90deg, #45f882 0%, #8be9fd 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .prop-2 .intro-box {
+    margin: 0;
+    text-align: left;
+    padding: 16px 20px;
+    font-size: 15.2px;
+    line-height: 1.48;
+    background: rgba(8, 13, 24, 0.84);
+    border: 1px solid rgba(139, 233, 253, 0.30);
+  }
+  .prop-2 .ui-stage {
+    border: 1.5px solid rgba(139, 233, 253, 0.68);
+    box-shadow: 0 0 80px rgba(139, 233, 253, 0.28), 0 0 130px rgba(69, 248, 130, 0.22), 0 30px 75px rgba(0, 0, 0, 0.95);
+  }
+
+  /* ==============================================================
+     PROP 3 — PLASMA HARMONIC ANGULAR CHAMFERED STUDIO
+  ============================================================== */
+  .prop-3 .power-glow {
+    background: radial-gradient(ellipse, rgba(189, 147, 249, 0.34) 0%, rgba(69, 248, 130, 0.22) 48%, transparent 74%);
+  }
+  .prop-3 .header-zone { position: relative; z-index: 15; padding: 32px 54px 0; }
+  .prop-3 .hero-title { margin-top: 12px; font-size: 62px; letter-spacing: 0.01em; }
+  .prop-3 .hero-title .p-accent { color: #bd93f9; text-shadow: 0 0 28px rgba(189, 147, 249, 0.55); }
+  .prop-3 .hero-title .g-accent { color: #45f882; text-shadow: 0 0 28px rgba(69, 248, 130, 0.55); }
+  .prop-3 .intro-box {
+    margin-top: 12px;
+    max-width: 940px;
+    background: rgba(10, 10, 19, 0.84);
+    border: 1px solid rgba(189, 147, 249, 0.36);
+    border-radius: 4px;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  }
+  .prop-3 .ui-stage {
+    border: 1.5px solid rgba(189, 147, 249, 0.7);
+    box-shadow: 0 0 85px rgba(189, 147, 249, 0.34), 0 0 135px rgba(69, 248, 130, 0.22), 0 28px 75px rgba(0, 0, 0, 0.95);
+  }
+  .prop-3 .zoom-card {
+    border-radius: 6px;
+  }
+
+  /* ==============================================================
+     PROP 4 — ECLIPSE HALO FLAGSHIP (Compact Loupes + Wide Open Ring)
+  ============================================================== */
+  .prop-4 .power-glow {
+    top: 57%;
+    background: radial-gradient(circle, rgba(69, 248, 130, 0.26) 0%, rgba(139, 233, 253, 0.20) 46%, transparent 72%);
+  }
+  .prop-4 .header-zone { position: relative; z-index: 15; padding: 28px 54px 0; }
+  .prop-4 .hero-title { margin-top: 10px; font-size: 56px; }
+  .prop-4 .hero-title .e-grad {
+    background: linear-gradient(90deg, #ffffff 0%, #45f882 55%, #8be9fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .prop-4 .intro-box {
+    margin-top: 10px;
+    max-width: 900px;
+    padding: 13px 24px;
+    font-size: 15.6px;
+    background: rgba(8, 11, 18, 0.80);
+    border: 1px solid rgba(69, 248, 130, 0.30);
+  }
+  .prop-4 .ui-stage {
+    border: 1.5px solid rgba(69, 248, 130, 0.75);
+    box-shadow: 0 0 65px rgba(69, 248, 130, 0.35), 0 0 140px rgba(139, 233, 253, 0.24), 0 28px 75px rgba(0, 0, 0, 0.95);
+  }
+</style>
+</head>
+<body>
+
+  <!-- PROPOSITION 1 — SHOCKBURST CYBER HUD -->
+  <div id="flyer-1" class="flyer-canvas prop-1">
+    <img class="bg-img" src="http://localhost:3000/src/assets/images/flyer_bg_shockburst_1794825962650.jpg" alt="" />
+    <div class="bg-scrim-1"></div>
+    <div class="power-glow"></div>
+    <div class="header-zone">
+      <div class="brand-row">
+        <div class="brand-logo-wrap"><img src="http://localhost:3000/icon.png" alt="Audio ToolZ" /></div>
+        <div class="brand-name"><span class="w">Audio </span><span class="g">ToolZ</span></div>
+      </div>
+      <h1 class="hero-title">CRÉEZ DES BOUCLES.<br/><span class="grad-g">SAMPLEZ AU MILLIMÈTRE.</span></h1>
+      <div class="intro-box">
+        <strong>Audio ToolZ</strong> simplifie le sampling et la création de boucles : isolez un passage, calez votre sélection sur l'attaque des kicks, détectez le BPM en un clic et écoutez en boucle dans une interface sombre et minimaliste.
+      </div>
+    </div>
+    <div class="ui-stage" data-ui></div>
+    <svg class="layer-svg" viewBox="0 0 1080 1440"></svg>
+  </div>
+
+  <!-- PROPOSITION 2 — SOUNDSTAGE ARCHITECTURAL SPLIT -->
+  <div id="flyer-2" class="flyer-canvas prop-2">
+    <img class="bg-img" src="http://localhost:3000/src/assets/images/flyer_bg_soundstage_1794825963381.jpg" alt="" />
+    <div class="bg-scrim-2"></div>
+    <div class="power-glow"></div>
+    <div class="header-zone">
+      <div class="top-bar-split">
+        <div class="brand-row">
+          <div class="brand-logo-wrap"><img src="http://localhost:3000/icon.png" alt="Audio ToolZ" /></div>
+          <div class="brand-name"><span class="w">Audio </span><span class="g">ToolZ</span></div>
+        </div>
+        <div class="top-tag">BOUCLES · SAMPLING · PRÉCISION</div>
+      </div>
+      <div class="hero-split">
+        <h1 class="hero-title">LA PUISSANCE<br/>DU SAMPLING.<br/><span class="grad">SANS COMPLEXITÉ.</span></h1>
+        <div class="intro-box">
+          Conçu pour aller à l'essentiel : chargez un titre, repérez son tempo, <span class="hl-c">calez vos boucles sur chaque kick</span> et écoutez votre sample en continu. L'outil direct pour créer sans menus interminables.
+        </div>
+      </div>
+    </div>
+    <div class="ui-stage" data-ui></div>
+    <svg class="layer-svg" viewBox="0 0 1080 1440"></svg>
+  </div>
+
+  <!-- PROPOSITION 3 — PLASMA HARMONIC -->
+  <div id="flyer-3" class="flyer-canvas prop-3">
+    <img class="bg-img" src="http://localhost:3000/src/assets/images/flyer_bg_plasmabeats_1794825963820.jpg" alt="" />
+    <div class="bg-scrim-3"></div>
+    <div class="power-glow"></div>
+    <div class="header-zone">
+      <div class="brand-row">
+        <div class="brand-logo-wrap"><img src="http://localhost:3000/icon.png" alt="Audio ToolZ" /></div>
+        <div class="brand-name"><span class="w">Audio </span><span class="g">ToolZ</span></div>
+      </div>
+      <h1 class="hero-title"><span class="g-accent">ISOLEZ.</span> BOUCLEZ. <span class="p-accent">DOMPTEZ LE KICK.</span></h1>
+      <div class="intro-box">
+        Pensé pour créer des boucles nettes et des samples propres : sélection au clic gauche/droit, <span class="hl-g">aimant précis sur les kicks</span>, détection BPM instantanée et contrôle complet dans un espace minimaliste.
+      </div>
+    </div>
+    <div class="ui-stage" data-ui></div>
+    <svg class="layer-svg" viewBox="0 0 1080 1440"></svg>
+  </div>
+
+  <!-- PROPOSITION 4 — ECLIPSE HALO FLAGSHIP (Compact Loupes + Wide Open Ring) -->
+  <div id="flyer-4" class="flyer-canvas prop-4">
+    <img class="bg-img" src="http://localhost:3000/src/assets/images/flyer_bg_eclipse_1794825967745.jpg" alt="" />
+    <div class="bg-scrim-4"></div>
+    <div class="power-glow"></div>
+    <div class="header-zone">
+      <div class="brand-row">
+        <div class="brand-logo-wrap"><img src="http://localhost:3000/icon.png" alt="Audio ToolZ" /></div>
+        <div class="brand-name"><span class="w">Audio </span><span class="g">ToolZ</span></div>
+      </div>
+      <h1 class="hero-title"><span class="e-grad">CHAQUE KICK À LA BONNE PLACE.</span></h1>
+      <div class="intro-box">
+        <strong>Créez vos boucles et samplez vos morceaux en quelques secondes.</strong> Détection des BPM, sélection calée sur l'attaque des kicks et panneau de contrôle épuré pour rester 100 % concentré sur le groove.
+      </div>
+    </div>
+    <div class="ui-stage" data-ui></div>
+    <svg class="layer-svg" viewBox="0 0 1080 1440"></svg>
+  </div>
+
+<script>
+const UI_SRC = "http://localhost:3000/assets/aistudio/image_2312c380.png";
+const NW = 1199;
+const NH = 855;
+
+// Exact pixel-verified crop regions on 1199x855 UI screenshot
+const CROPS = [
+  {
+    id: "interface",
+    pos: "tl",
+    title: "Interface agréable & minimaliste",
+    sub: "Menus clairs et outils essentiels toujours à portée.",
+    color: "#45f882",
+    cropX: 4, cropY: 34, cropW: 356, cropH: 103,
+    anchorRelX: 0.80, anchorRelY: 0.02, // cleanly in dark titlebar right of "Éditeur audio de précision"
+  },
+  {
+    id: "kicks",
+    pos: "tr",
+    title: "Précision sur les kicks",
+    sub: "Sélection clic gauche / droit calée sur l'attaque.",
+    color: "#8be9fd",
+    cropX: 525, cropY: 236, cropW: 285, cropH: 82,
+    anchorRelX: 0.351, anchorRelY: 0.0, // exact cyan cut top edge (x=625)
+  },
+  {
+    id: "bpm",
+    pos: "bl",
+    title: "Détection des BPM",
+    sub: "Analyse 65–300 BPM par attaque · aimant kicks actif.",
+    color: "#bd93f9",
+    cropX: 412, cropY: 790, cropW: 222, cropH: 64, // cleanly starts right after 00:10.000 -> "· 96.0 BPM Aimant kicks actif"
+    anchorRelX: 0.50, anchorRelY: 0.96,
+  },
+  {
+    id: "simplicite",
+    pos: "br",
+    title: "Simplicité · Boucles & Sampling",
+    sub: "Lecture en boucle, vitesse et niveaux en un panneau.",
+    color: "#50fa7b",
+    cropX: 782, cropY: 384, cropW: 414, cropH: 130, // complete Contrôle header + Play/Boucle + Volume + complete Balance slider!
+    anchorRelX: 0.62, anchorRelY: 0.98, // clean empty dark zone inside Contrôle between dropdown and slider text
+  }
+];
+
+const LAYOUTS = {
+  "flyer-1": {
+    uiX: 118, uiY: 590, uiW: 844, lineStyle: "stepped",
+    topCardsY: 374, botCardsY: 1216, cardW: 454, vpW: 430, vpH: 124, sidePad: 54
+  },
+  "flyer-2": {
+    uiX: 112, uiY: 586, uiW: 856, lineStyle: "straight",
+    topCardsY: 370, botCardsY: 1216, cardW: 454, vpW: 430, vpH: 124, sidePad: 54
+  },
+  "flyer-3": {
+    uiX: 125, uiY: 584, uiW: 830, lineStyle: "curve",
+    topCardsY: 368, botCardsY: 1214, cardW: 454, vpW: 430, vpH: 124, sidePad: 54
+  },
+  "flyer-4": {
+    // Compact outer cards leaving wide central aperture so the glowing Eclipse Ring shines between them!
+    uiX: 145, uiY: 562, uiW: 790, lineStyle: "straight",
+    topCardsY: 332, botCardsY: 1182, cardW: 376, vpW: 352, vpH: 102, sidePad: 38
+  }
+};
+
+for (const [id, cfg] of Object.entries(LAYOUTS)) {
+  const root = document.getElementById(id);
+  const uiEl = root.querySelector("[data-ui]");
+  const svg = root.querySelector("svg.layer-svg");
+  const uiScale = cfg.uiW / NW;
+  const uiH = Math.round(NH * uiScale);
+
+  uiEl.style.left = cfg.uiX + "px";
+  uiEl.style.top = cfg.uiY + "px";
+  uiEl.style.width = cfg.uiW + "px";
+  uiEl.style.height = uiH + "px";
+
+  const fullImg = document.createElement("img");
+  fullImg.className = "ui-full";
+  fullImg.src = UI_SRC;
+  uiEl.appendChild(fullImg);
+
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  defs.innerHTML = `
+    <filter id="glow-${id}" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  CROPS.forEach((c) => {
+    const isTop = c.pos === "tl" || c.pos === "tr";
+    const isLeft = c.pos === "tl" || c.pos === "bl";
+    const cardW = cfg.cardW;
+    const vpW = cfg.vpW;
+    const vpH = Math.round(vpW * (c.cropH / c.cropW));
+    const cardX = isLeft ? cfg.sidePad : 1080 - cfg.sidePad - cardW;
+    const cardY = isTop ? cfg.topCardsY : cfg.botCardsY;
+
+    // 1. Exact highlight bracket on central UI
+    const hl = document.createElement("div");
+    hl.className = "ui-highlight";
+    hl.style.left = (c.cropX * uiScale) + "px";
+    hl.style.top = (c.cropY * uiScale) + "px";
+    hl.style.width = (c.cropW * uiScale) + "px";
+    hl.style.height = (c.cropH * uiScale) + "px";
+    hl.style.border = `2px solid ${c.color}`;
+    hl.style.boxShadow = `0 0 14px ${c.color}, inset 0 0 10px ${c.color}33`;
+    uiEl.appendChild(hl);
+
+    // 2. Zoom card DOM
+    const card = document.createElement("div");
+    card.className = "zoom-card" + (isTop ? "" : " mirror-bottom");
+    card.style.width = cardW + "px";
+    card.style.left = cardX + "px";
+    card.style.top = cardY + "px";
+    card.style.border = `1.5px solid ${c.color}b8`;
+    card.style.boxShadow = `0 0 34px ${c.color}40, 0 18px 42px rgba(0,0,0,0.88), inset 0 0 18px ${c.color}1a`;
+
+    const zoomScale = vpW / c.cropW;
+    const magFactor = (zoomScale / uiScale).toFixed(1);
+
+    const textGroup = document.createElement("div");
+    textGroup.innerHTML = `
+      <div class="zoom-header">
+        <div class="zoom-title" style="color:${c.color};font-size:${cardW < 400 ? '18px' : '20.5px'}">${c.title}</div>
+        <div class="zoom-mag" style="color:${c.color}">×${magFactor}</div>
+      </div>
+      <div class="zoom-sub" style="font-size:${cardW < 400 ? '11.3px' : '12.4px'}">${c.sub}</div>
+    `;
+
+    const vp = document.createElement("div");
+    vp.className = "zoom-viewport";
+    vp.style.width = vpW + "px";
+    vp.style.height = vpH + "px";
+    vp.style.borderColor = `${c.color}77`;
+
+    const zImg = document.createElement("img");
+    zImg.src = UI_SRC;
+    zImg.style.width = (NW * zoomScale) + "px";
+    zImg.style.height = (NH * zoomScale) + "px";
+    zImg.style.left = (-c.cropX * zoomScale) + "px";
+    zImg.style.top = (-c.cropY * zoomScale) + "px";
+    vp.appendChild(zImg);
+
+    card.appendChild(textGroup);
+    card.appendChild(vp);
+    root.appendChild(card);
+
+    requestAnimationFrame(() => {
+      const startX = isLeft ? cardX + cardW * 0.62 : cardX + cardW * 0.38;
+      const startY = isTop ? (cardY + card.offsetHeight) : cardY;
+
+      const targetX = cfg.uiX + (c.cropX + c.cropW * c.anchorRelX) * uiScale;
+      const targetY = cfg.uiY + (c.cropY + c.cropH * c.anchorRelY) * uiScale;
+
+      let d = "";
+      if (cfg.lineStyle === "straight") {
+        d = `M ${startX} ${startY} L ${targetX} ${targetY}`;
+      } else if (cfg.lineStyle === "stepped") {
+        const midY = isTop ? (startY + (targetY - startY) * 0.44) : (startY - (startY - targetY) * 0.45);
+        d = `M ${startX} ${startY} L ${startX} ${midY} L ${targetX} ${midY} L ${targetX} ${targetY}`;
+      } else {
+        const cy1 = isTop ? startY + (targetY - startY) * 0.55 : startY - (startY - targetY) * 0.55;
+        d = `M ${startX} ${startY} C ${startX} ${cy1}, ${targetX} ${cy1}, ${targetX} ${targetY}`;
+      }
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", c.color);
+      path.setAttribute("stroke-width", "2.6");
+      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("stroke-linejoin", "round");
+      path.setAttribute("filter", `url(#glow-${id})`);
+      svg.appendChild(path);
+
+      const pin = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      pin.setAttribute("cx", startX);
+      pin.setAttribute("cy", startY);
+      pin.setAttribute("r", "4.5");
+      pin.setAttribute("fill", c.color);
+      svg.appendChild(pin);
+
+      const ringOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      ringOuter.setAttribute("cx", targetX);
+      ringOuter.setAttribute("cy", targetY);
+      ringOuter.setAttribute("r", "8.5");
+      ringOuter.setAttribute("fill", "none");
+      ringOuter.setAttribute("stroke", c.color);
+      ringOuter.setAttribute("stroke-width", "2");
+      ringOuter.setAttribute("filter", `url(#glow-${id})`);
+      svg.appendChild(ringOuter);
+
+      const dotInner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dotInner.setAttribute("cx", targetX);
+      dotInner.setAttribute("cy", targetY);
+      dotInner.setAttribute("r", "3.8");
+      dotInner.setAttribute("fill", "#ffffff");
+      svg.appendChild(dotInner);
+    });
+  });
+}
+</script>
+</body>
+</html>

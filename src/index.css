@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette harmonisée sur le logo Audio ToolZ (Charbon #161820 + Anneau Lavande #bd93f9 + Impulsion Vert Kick #45f882 + Points blancs #f8f8f2) */
+  --bg-canvas: #161820;
+  --bg-surface: #1f222d;
+  --bg-elevated: #282c3a;
+  --bg-hover: #34394b;
+  --bg-input: #191b24;
+  --border-subtle: #35394b;
+  --border-strong: #4e546d;
+  --text-primary: #f8f8f2;
+  --text-secondary: #c4c9dc;
+  --text-muted: #7f87a6;
+  --accent-primary: #7c4dff;
+  --accent-primary-hover: #bd93f9;
+  --accent-secondary: #45f882;
+  --accent-soft: rgba(189, 147, 249, 0.18);
+  --wave-bg: #13151c;
+  --wave-grid: rgba(127, 135, 166, 0.16);
+  --wave-left: #bd93f9;
+  --wave-right: #45f882;
+  --wave-selection: rgba(189, 147, 249, 0.20);
+  --wave-selection-border: #8be9fd;
+  --playhead: #f8f8f2;
+  --beat-grid: rgba(248, 248, 242, 0.34);
+  --beat-bar: rgba(248, 248, 242, 0.70);
+  --meter-low: #45f882;
+  --meter-mid: #f1fa8c;
+  --meter-high: #ff5555;
+  --record-color: #ff5555;
+  --icon-stroke: #bd93f9;
+  --icon-fill: rgba(69, 248, 130, 0.15);
+  --icon-accent: #45f882;
+  --icon-highlight: #f8f8f2;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.005em;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  }
+
+  .font-mono-tabular {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, SFMono-Regular, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom sleek studio scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Range sliders tuned for studio precision */
+input[type="range"].studio-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].studio-slider::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+}
+input[type="range"].studio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--accent-secondary);
+  border: 2px solid var(--bg-canvas);
+  margin-top: -4.5px;
+  transition: transform 0.12s ease;
+}
+input[type="range"].studio-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+input[type="range"].studio-slider::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+}
+input[type="range"].studio-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--accent-secondary);
+  border: 2px solid var(--bg-canvas);
+}

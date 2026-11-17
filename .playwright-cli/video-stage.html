@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Audio ToolZ — Gridline Showcase Engine</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #000000;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans', 'Liberation Sans', sans-serif;
+    color: #f8f8f2;
+    user-select: none;
+  }
+
+  #stage {
+    position: relative;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #000000;
+    perspective: 1400px;
+  }
+
+  #grid-canvas {
+    position: absolute;
+    inset: 0;
+    width: 1280px;
+    height: 720px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 44%, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
+  }
+
+  /* Subtle bottom gradient scrim so captions always read clearly even during deep UI zooms */
+  #caption-scrim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 130px;
+    z-index: 45;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.78) 55%, rgba(0, 0, 0, 0.94) 100%);
+    opacity: 0;
+  }
+
+  /* Brand Intro & Outro Layer */
+  #brand-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+  }
+
+  .brand-badge {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: #14161e;
+    border: 2px solid rgba(189, 147, 249, 0.6);
+    box-shadow: 0 0 42px rgba(69, 248, 130, 0.34), 0 0 70px rgba(189, 147, 249, 0.25);
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-badge img {
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+    display: block;
+  }
+
+  .brand-badge-flash {
+    position: absolute;
+    inset: 0;
+    background: #ffffff;
+    border-radius: 24px;
+    opacity: 0;
+  }
+
+  .brand-wordmark {
+    font-size: 74px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    white-space: nowrap;
+    padding-right: 14px;
+  }
+  .brand-wordmark .w { color: #f8f8f2; }
+  .brand-wordmark .g { color: #45f882; text-shadow: 0 0 28px rgba(69, 248, 130, 0.42); }
+
+  .brand-tagline {
+    margin-top: 22px;
+    font-size: 21px;
+    color: #d4dceb;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-align: center;
+  }
+
+  .brand-sub-outro {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: #45f882;
+    letter-spacing: 0.08em;
+    opacity: 0;
+  }
+
+  /* 3D Showcase Window Wrapper */
+  #ui-world {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+
+  .win-frame {
+    position: absolute;
+    width: 960px;
+    height: 600px; /* exact 1440x900 ratio */
+    top: 38px;
+    left: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #14161e;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow:
+      0 30px 90px rgba(0, 0, 0, 0.92),
+      0 0 50px rgba(69, 248, 130, 0.14),
+      0 0 80px rgba(189, 147, 249, 0.12);
+    transform-style: preserve-3d;
+    opacity: 0;
+  }
+
+  .win-frame img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  #ui-playhead {
+    position: absolute;
+    top: 86px;
+    bottom: 62px;
+    width: 2.5px;
+    background: #ffffff;
+    box-shadow: 0 0 12px #45f882, 0 0 24px rgba(69, 248, 130, 0.6);
+    z-index: 5;
+    opacity: 0;
+  }
+
+  #ui-focus-box {
+    position: absolute;
+    border-radius: 7px;
+    border: 2px solid #45f882;
+    box-shadow: 0 0 20px rgba(69, 248, 130, 0.5), inset 0 0 12px rgba(69, 248, 130, 0.15);
+    z-index: 6;
+    opacity: 0;
+  }
+
+  /* Pixel-locked Virtual Cursor & Ripples directly inside #main-win coordinates */
+  #ui-cursor {
+    position: absolute;
+    z-index: 25;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    opacity: 0;
+    transform-origin: 2px 2px;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.9));
+  }
+
+  #ui-ripple {
+    position: absolute;
+    z-index: 23;
+    width: 44px;
+    height: 44px;
+    margin-left: -22px;
+    margin-top: -22px;
+    border-radius: 50%;
+    border: 2.5px solid #45f882;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  #ui-pill {
+    position: absolute;
+    z-index: 24;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0b0d14;
+    background: #8be9fd;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+  }
+
+  /* Clean Non-Intersecting 3D Fan Cards (Scene 6) */
+  .fan-card {
+    position: absolute;
+    width: 448px;
+    height: 280px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.92);
+    opacity: 0;
+    z-index: 12;
+  }
+  .fan-card img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  /* Bottom-Left Gridline Minimalist Caption System */
+  #caption-wrap {
+    position: absolute;
+    left: 42px;
+    bottom: 24px;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .cap-kicker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #a6b0c5;
+    letter-spacing: 0.04em;
+    margin-bottom: 5px;
+  }
+
+  .cap-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #45f882;
+    font-size: 11px;
+  }
+
+  .cap-line {
+    font-size: 19px;
+    font-weight: 600;
+    color: #f8f8f2;
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.98);
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="grid-canvas" width="1280" height="720"></canvas>
+  <div class="vignette"></div>
+  <div id="caption-scrim"></div>
+
+  <!-- Brand Intro / Outro -->
+  <div id="brand-scene">
+    <div class="brand-lockup">
+      <div class="brand-badge" id="brand-badge">
+        <img src="http://localhost:3000/icon.png" alt="Audio ToolZ" />
+        <div class="brand-badge-flash" id="brand-flash"></div>
+      </div>
+      <div class="brand-wordmark" id="brand-wordmark"><span class="w">Audio </span><span class="g">ToolZ</span></div>
+    </div>
+    <div class="brand-tagline" id="brand-tagline">Éditeur audio de précision · Boucles et sampling sur les kicks</div>
+    <div class="brand-sub-outro" id="brand-outro-meta">AUDIO TOOLZ v1.0  ·  WAV / MP3 / FLAC / OGG  ·  GPL v3</div>
+  </div>
+
+  <!-- Main 3D Stage -->
+  <div id="ui-world">
+    <div class="win-frame" id="main-win">
+      <img id="main-img" src="http://127.0.0.1:3001/.playwright-cli/shots/shot-1-clean.png" alt="" />
+      <div id="ui-playhead"></div>
+      <div id="ui-focus-box"></div>
+      <div id="ui-ripple"></div>
+      <div id="ui-pill"></div>
+      <svg id="ui-cursor" viewBox="0 0 24 24">
+        <path d="M4 2 L19 13 L12 14.5 L15.5 21 L12.5 22.3 L9 15.8 L4 19.5 Z" fill="#ffffff" stroke="#0d0f16" stroke-width="1.6" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- Multi-panel 2x2 Showcase Cards for Section E -->
+    <div class="fan-card" id="fan-1"><img src="http://127.0.0.1:3001/.playwright-cli/shots/shot-2-bpm.png" alt="" /></div>
+    <div class="fan-card" id="fan-2"><img src="http://127.0.0.1:3001/.playwright-cli/shots/shot-4-zoom-kick.png" alt="" /></div>
+    <div class="fan-card" id="fan-3"><img src="http://127.0.0.1:3001/.playwright-cli/shots/shot-7-effects.png" alt="" /></div>
+    <div class="fan-card" id="fan-4"><img src="http://127.0.0.1:3001/.playwright-cli/shots/shot-8-export.png" alt="" /></div>
+  </div>
+
+  <!-- Minimalist Gridline Bottom-Left Caption -->
+  <div id="caption-wrap">
+    <div class="cap-kicker"><span class="cap-key" id="cap-key">A</span><span id="cap-title">Interface minimaliste</span></div>
+    <div class="cap-line" id="cap-text">Ce que vous entendez a été samplé dans Audio ToolZ.</div>
+  </div>
+</div>
+
+<script>
+const SHOTS = {
+  clean: "http://127.0.0.1:3001/.playwright-cli/shots/shot-1-clean.png",
+  bpm: "http://127.0.0.1:3001/.playwright-cli/shots/shot-2-bpm.png",
+  select: "http://127.0.0.1:3001/.playwright-cli/shots/shot-3-select-kicks.png",
+  zoom: "http://127.0.0.1:3001/.playwright-cli/shots/shot-4-zoom-kick.png",
+  oscillo: "http://127.0.0.1:3001/.playwright-cli/shots/shot-6-oscillo.png",
+  effects: "http://127.0.0.1:3001/.playwright-cli/shots/shot-7-effects.png",
+  export: "http://127.0.0.1:3001/.playwright-cli/shots/shot-8-export.png",
+  live: Array.from({ length: 18 }, (_, i) => `http://127.0.0.1:3001/.playwright-cli/shots/live-${String(i).padStart(2, "0")}.png`)
+};
+
+// Preload all frames cleanly
+const preloadBox = document.createElement("div");
+preloadBox.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;";
+document.body.appendChild(preloadBox);
+for (const s of [SHOTS.clean, SHOTS.bpm, SHOTS.select, SHOTS.zoom, SHOTS.oscillo, SHOTS.effects, SHOTS.export, ...SHOTS.live]) {
+  const im = new Image();
+  im.src = s;
+  preloadBox.appendChild(im);
+}
+
+const BEAT = 0.48; // 125 BPM
+
+function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+function lerp(a, b, t) { return a + (b - a) * clamp01(t); }
+function easeOutCubic(t) { t = clamp01(t); return 1 - Math.pow(1 - t, 3); }
+function easeInOutCubic(t) { t = clamp01(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function norm(t, a, b) { return clamp01((t - a) / (b - a)); }
+
+const canvas = document.getElementById("grid-canvas");
+const ctx = canvas.getContext("2d");
+
+function drawPerspectiveGrid(t) {
+  ctx.clearRect(0, 0, 1280, 720);
+  const fadeOut = t > 56.5 ? clamp01((59.6 - t) / 3.1) : 1.0;
+  if (fadeOut <= 0.001) return;
+
+  const horizonY = 395;
+  const vanishX = 640;
+  const bottomY = 720;
+
+  const beatPhase = (t % BEAT) / BEAT;
+  const beatPulse = t >= 5.76 && t < 51.2 ? Math.exp(-beatPhase * 5.5) * 0.14 : 0;
+  const speed = t < 5.76 ? 0.35 : 0.72;
+  const zScroll = (t * speed) % 1;
+
+  const numH = 14;
+  for (let i = 0; i < numH; i++) {
+    const reveal = t < 2.88 ? clamp01((t - i * 0.14) / 0.45) : 1.0;
+    if (reveal <= 0) continue;
+
+    const u = (i + zScroll) / numH;
+    const persp = Math.pow(u, 2.15);
+    const y = horizonY + persp * (bottomY - horizonY);
+    if (y > bottomY) continue;
+
+    const alpha = (0.04 + persp * 0.24 + beatPulse * persp * 0.4) * reveal * fadeOut;
+    const widthFactor = t < 2.4 ? easeOutCubic(reveal) : 1;
+    const halfSpan = 900 * widthFactor;
+
+    ctx.beginPath();
+    ctx.moveTo(vanishX - halfSpan, y);
+    ctx.lineTo(vanishX + halfSpan, y);
+    ctx.strokeStyle = i % 4 === 0
+      ? `rgba(69, 248, 130, ${alpha * 0.75})`
+      : `rgba(180, 195, 225, ${alpha})`;
+    ctx.lineWidth = i % 4 === 0 ? 1.3 : 1.0;
+    ctx.stroke();
+  }
+
+  const numV = 18;
+  for (let k = -numV / 2; k <= numV / 2; k++) {
+    const absK = Math.abs(k);
+    const reveal = t < 2.88 ? clamp01((t - absK * 0.22) / 0.55) : 1.0;
+    if (reveal <= 0) continue;
+
+    const xBottom = vanishX + k * 145;
+    const xTop = vanishX + k * 18;
+    const progress = easeOutCubic(reveal);
+    const curX = lerp(xTop, xBottom, progress);
+    const curY = lerp(horizonY, bottomY, progress);
+
+    const distFade = clamp01(1 - absK / (numV * 0.62));
+    const isAccent = k === 0 || Math.abs(k) === 3 || Math.abs(k) === 6;
+    const alpha = (isAccent ? 0.28 : 0.14 + beatPulse * 0.25) * distFade * fadeOut;
+
+    const grad = ctx.createLinearGradient(xTop, horizonY, xBottom, bottomY);
+    if (isAccent && Math.abs(k) === 3) {
+      grad.addColorStop(0, `rgba(189, 147, 249, 0)`);
+      grad.addColorStop(0.35, `rgba(189, 147, 249, ${alpha * 0.9})`);
+      grad.addColorStop(1, `rgba(189, 147, 249, ${alpha * 1.25})`);
+    } else if (k === 0) {
+      grad.addColorStop(0, `rgba(69, 248, 130, 0)`);
+      grad.addColorStop(0.35, `rgba(69, 248, 130, ${alpha * 0.95})`);
+      grad.addColorStop(1, `rgba(69, 248, 130, ${alpha * 1.25})`);
+    } else {
+      grad.addColorStop(0, `rgba(210, 220, 240, 0)`);
+      grad.addColorStop(0.3, `rgba(210, 220, 240, ${alpha * 0.7})`);
+      grad.addColorStop(1, `rgba(210, 220, 240, ${alpha})`);
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(xTop, horizonY);
+    ctx.lineTo(curX, curY);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = isAccent ? 1.4 : 1.0;
+    ctx.stroke();
+  }
+}
+
+const brandScene = document.getElementById("brand-scene");
+const brandBadge = document.getElementById("brand-badge");
+const brandFlash = document.getElementById("brand-flash");
+const brandWordmark = document.getElementById("brand-wordmark");
+const brandTagline = document.getElementById("brand-tagline");
+const brandOutroMeta = document.getElementById("brand-outro-meta");
+
+const mainWin = document.getElementById("main-win");
+const mainImg = document.getElementById("main-img");
+const uiPlayhead = document.getElementById("ui-playhead");
+const uiFocusBox = document.getElementById("ui-focus-box");
+const uiCursor = document.getElementById("ui-cursor");
+const uiRipple = document.getElementById("ui-ripple");
+const uiPill = document.getElementById("ui-pill");
+
+const fanCards = [
+  document.getElementById("fan-1"),
+  document.getElementById("fan-2"),
+  document.getElementById("fan-3"),
+  document.getElementById("fan-4"),
+];
+
+const capScrim = document.getElementById("caption-scrim");
+const capWrap = document.getElementById("caption-wrap");
+const capKey = document.getElementById("cap-key");
+const capTitle = document.getElementById("cap-title");
+const capText = document.getElementById("cap-text");
+
+function setCaption(visible, key, title, text) {
+  capWrap.style.opacity = visible ? 1 : 0;
+  capScrim.style.opacity = visible ? 1 : 0;
+  if (visible) {
+    capKey.textContent = key;
+    capTitle.textContent = title;
+    capText.textContent = text;
+  }
+}
+
+// Position cursor strictly inside 960x600 #main-win pixel space so zooms & 3D tilt stay 100% accurate
+function setUICursor(ux, uy, opacity, clickAt = -1, t = 0, label = "", pillColor = "#8be9fd") {
+  uiCursor.style.opacity = opacity;
+  uiCursor.style.left = ux + "px";
+  uiCursor.style.top = uy + "px";
+  if (clickAt >= 0 && t >= clickAt && t < clickAt + 0.65) {
+    const p = (t - clickAt) / 0.65;
+    const sc = p < 0.2 ? 0.82 : 1.0;
+    uiCursor.style.transform = `scale(${sc})`;
+    uiRipple.style.opacity = clamp01(1 - p);
+    uiRipple.style.left = ux + "px";
+    uiRipple.style.top = uy + "px";
+    uiRipple.style.borderColor = pillColor;
+    uiRipple.style.transform = `scale(${0.4 + p * 1.3})`;
+    if (label) {
+      uiPill.textContent = label;
+      uiPill.style.background = pillColor;
+      uiPill.style.opacity = p < 0.8 ? 1 : clamp01((1 - p) * 5);
+      uiPill.style.left = (ux + 16) + "px";
+      uiPill.style.top = (uy - 10) + "px";
+    } else {
+      uiPill.style.opacity = 0;
+    }
+  } else {
+    uiCursor.style.transform = "scale(1)";
+    uiRipple.style.opacity = 0;
+    uiPill.style.opacity = 0;
+  }
+}
+
+let lastSrc = "";
+function setMainShot(src) {
+  if (lastSrc !== src) {
+    mainImg.src = src;
+    lastSrc = src;
+  }
+}
+
+window.renderFrame = function(t) {
+  drawPerspectiveGrid(t);
+  uiPlayhead.style.opacity = 0;
+  uiFocusBox.style.opacity = 0;
+  for (const fc of fanCards) fc.style.opacity = 0;
+  setUICursor(0, 0, 0);
+
+  // ==============================================================
+  // SCENE 1 (0.00s - 5.76s): GRID INTRO + AUDIO TOOLZ LOGO REVEAL
+  // ==============================================================
+  if (t < 5.76) {
+    mainWin.style.opacity = 0;
+    setCaption(false);
+
+    if (t < 2.2) {
+      brandScene.style.opacity = 0;
+    } else {
+      const inB = easeOutCubic(norm(t, 2.2, 2.9));
+      const wordIn = easeOutCubic(norm(t, 2.9, 3.6));
+      const tagIn = easeOutCubic(norm(t, 3.5, 4.1));
+      const exitOut = t > 5.15 ? 1 - easeInOutCubic(norm(t, 5.15, 5.76)) : 1;
+
+      brandScene.style.opacity = exitOut;
+      brandScene.style.transform = `scale(${lerp(0.92, 1.0, inB) * lerp(1.06, 1.0, 1 - exitOut)}) translateY(${lerp(28, 0, inB)}px)`;
+
+      brandFlash.style.opacity = t < 2.68 ? clamp01(1 - (t - 2.2) / 0.48) : 0;
+      brandBadge.style.transform = `translateX(${lerp(175, 0, wordIn)}px) scale(${lerp(0.65, 1.0, inB)})`;
+
+      brandWordmark.style.clipPath = `inset(0 ${(1 - wordIn) * 100}% 0 0)`;
+      brandWordmark.style.opacity = wordIn;
+      brandTagline.textContent = "Éditeur audio de précision · Boucles et sampling sur les kicks";
+      brandTagline.style.opacity = tagIn;
+      brandTagline.style.transform = `translateY(${lerp(12, 0, tagIn)}px)`;
+      brandOutroMeta.style.opacity = 0;
+    }
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 2 (5.76s - 15.36s): 3D UI ENTRANCE + INTERFACE MINIMALISTE
+  // ==============================================================
+  if (t < 15.36) {
+    brandScene.style.opacity = 0;
+    const enter = easeOutCubic(norm(t, 5.76, 6.9));
+    const exitP = t > 14.8 ? easeInOutCubic(norm(t, 14.8, 15.36)) : 0;
+
+    if (t < 8.5) {
+      setMainShot(SHOTS.clean);
+    } else {
+      const idx = Math.floor((t - 8.5) * 10) % SHOTS.live.length;
+      setMainShot(SHOTS.live[idx]);
+    }
+
+    const rotX = lerp(34, 2.5, enter) - Math.sin(t * 0.7) * 1.2;
+    const rotY = lerp(-8, Math.sin(t * 0.55) * 3.8, enter) + exitP * -12;
+    const ty = lerp(240, -10, enter) + exitP * -20;
+    const sc = lerp(0.76, 0.94, enter);
+
+    mainWin.style.opacity = enter * (1 - exitP * 0.15);
+    mainWin.style.transform = `translateY(${ty}px) scale(${sc}) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+
+    if (t >= 7.2) {
+      const p = ((t - 7.2) % 3.84) / 3.84;
+      uiPlayhead.style.opacity = 0.92;
+      uiPlayhead.style.left = lerp(34, 945, p) + "px";
+    }
+
+    setCaption(
+      true,
+      "A",
+      "Interface minimaliste",
+      t < 10.2
+        ? "Ce morceau est chargé et analysé directement dans Audio ToolZ."
+        : "Barre d'outils épurée, canaux G / D séparés et zéro distraction."
+    );
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 3 (15.36s - 24.96s): DÉTECTION DES BPM PAR KICK
+  // ==============================================================
+  if (t < 24.96) {
+    brandScene.style.opacity = 0;
+    const clicked = t >= 17.5;
+    setMainShot(clicked ? SHOTS.bpm : SHOTS.clean);
+
+    const p1 = easeInOutCubic(norm(t, 15.36, 17.0));
+    const p2 = easeInOutCubic(norm(t, 19.2, 21.2));
+
+    let sc = lerp(0.94, 1.48, p1);
+    let tx = lerp(0, 45, p1);
+    let ty = lerp(-10, 200, p1);
+    let rotX = lerp(2, 5, p1);
+    let rotY = lerp(2, -4, p1);
+
+    if (t >= 19.2) {
+      sc = lerp(1.48, 1.42, p2);
+      tx = lerp(45, 75, p2);
+      ty = lerp(200, -210, p2);
+      rotX = lerp(5, -2, p2);
+      rotY = lerp(-4, 4, p2);
+    }
+
+    mainWin.style.opacity = 1;
+    mainWin.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sc}) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+
+    if (t >= 16.5 && t < 19.2) {
+      uiFocusBox.style.opacity = clamp01((t - 16.5) * 4);
+      uiFocusBox.style.borderColor = "#bd93f9";
+      uiFocusBox.style.left = "456px";
+      uiFocusBox.style.top = "36px";
+      uiFocusBox.style.width = "28px";
+      uiFocusBox.style.height = "28px";
+    } else if (t >= 20.6) {
+      uiFocusBox.style.opacity = clamp01((t - 20.6) * 3);
+      uiFocusBox.style.borderColor = "#bd93f9";
+      uiFocusBox.style.left = "282px";
+      uiFocusBox.style.top = "574px";
+      uiFocusBox.style.width = "182px";
+      uiFocusBox.style.height = "24px";
+    }
+
+    // Cursor directly inside #main-win coords targeting exact BPM icon center (470, 50)!
+    if (t < 19.2) {
+      const m = easeInOutCubic(norm(t, 15.8, 17.3));
+      setUICursor(lerp(330, 470, m), lerp(165, 50, m), norm(t, 15.5, 16.0), 17.5, t, "Détecter BPM", "#bd93f9");
+    }
+
+    setCaption(
+      true,
+      "B",
+      "Détection des BPM par kick",
+      clicked
+        ? "125.0 BPM détecté instantanément — repères calés sur chaque attaque."
+        : "Un clic lance l'analyse de tempo (65 à 300 BPM)."
+    );
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 4 (24.96s - 34.56s): SÉLECTION CLIC GAUCHE / DROIT + ZOOM KICK
+  // ==============================================================
+  if (t < 34.56) {
+    brandScene.style.opacity = 0;
+
+    if (t < 29.5) {
+      setMainShot(t < 28.0 ? SHOTS.bpm : SHOTS.select);
+      const trans = easeInOutCubic(norm(t, 24.96, 26.0));
+      const sc = lerp(1.42, 0.96, trans);
+      const tx = lerp(75, 0, trans);
+      const ty = lerp(-210, -10, trans);
+
+      mainWin.style.opacity = 1;
+      mainWin.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sc}) rotateX(2deg) rotateY(${Math.sin(t * 0.6) * 3}deg)`;
+
+      // Exact cyan selection boundaries inside 960x600 #main-win: left=242px, right=482px
+      if (t < 27.2) {
+        const m = easeInOutCubic(norm(t, 25.3, 26.3));
+        setUICursor(lerp(360, 242, m), lerp(280, 210, m), 1, 26.40, t, "Clic gauche · Début", "#8be9fd");
+      } else {
+        const m = easeInOutCubic(norm(t, 27.2, 27.95));
+        setUICursor(lerp(242, 482, m), lerp(210, 210, m), 1, 28.00, t, "Clic droit · Fin", "#45f882");
+      }
+
+      if (t >= 28.0) {
+        uiFocusBox.style.opacity = 1;
+        uiFocusBox.style.borderColor = "#8be9fd";
+        uiFocusBox.style.left = "242px";
+        uiFocusBox.style.top = "86px";
+        uiFocusBox.style.width = "240px";
+        uiFocusBox.style.height = "445px";
+      }
+
+      setCaption(
+        true,
+        "C",
+        "Précision sur les kicks",
+        "Clic gauche pour poser le début, clic droit pour la fin sur l'attaque exacte."
+      );
+    } else {
+      setMainShot(SHOTS.zoom);
+      const zIn = easeOutCubic(norm(t, 29.5, 30.3));
+      const sc = lerp(0.95, 1.16, zIn);
+      const rotY = lerp(-7, 4, clamp01((t - 29.5) / 5.0));
+
+      mainWin.style.opacity = 1;
+      mainWin.style.transform = `translate3d(20px, -12px, 0) scale(${sc}) rotateX(3deg) rotateY(${rotY}deg)`;
+
+      const pLoop = ((t - 29.5) % (BEAT * 4)) / (BEAT * 4);
+      uiPlayhead.style.opacity = 0.95;
+      uiPlayhead.style.left = lerp(38, 920, pLoop) + "px";
+
+      setCaption(
+        true,
+        "C",
+        "Calage à la milliseconde",
+        "L'aimant verrouille votre boucle pile au démarrage de la membrane du kick."
+      );
+    }
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 5 (34.56s - 44.16s): CONTRÔLE FLOTTANT, BOUCLE & ANALYSEUR
+  // ==============================================================
+  if (t < 44.16) {
+    brandScene.style.opacity = 0;
+    const zoomControl = easeInOutCubic(norm(t, 34.56, 35.8));
+
+    if (t < 40.5) {
+      const idx = Math.floor((t - 34.56) * 12) % SHOTS.live.length;
+      setMainShot(SHOTS.live[idx]);
+    } else {
+      setMainShot(SHOTS.oscillo);
+    }
+
+    const sc = lerp(1.00, 1.66, zoomControl);
+    const tx = lerp(0, -250, zoomControl);
+    const ty = lerp(-10, -22, zoomControl);
+    const rotY = lerp(0, -5, zoomControl) + Math.sin(t * 0.8) * 1.5;
+
+    mainWin.style.opacity = 1;
+    mainWin.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sc}) rotateX(3deg) rotateY(${rotY}deg)`;
+
+    uiFocusBox.style.opacity = zoomControl;
+    uiFocusBox.style.borderColor = "#45f882";
+    uiFocusBox.style.left = "574px";
+    uiFocusBox.style.top = "174px";
+    uiFocusBox.style.width = "270px";
+    uiFocusBox.style.height = "248px";
+
+    setCaption(
+      true,
+      "D",
+      "Simplicité · Boucles & Contrôle",
+      t < 40.5
+        ? "Lecture en boucle, volume, balance, vitesse et analyseur spectre temps réel."
+        : "Bascule instantanée vers l'oscilloscope stéréo G / D haute fluidité."
+    );
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 6 (44.16s - 50.88s): EFFETS & EXPORT MULTI-FORMATS (3D SPLIT / 2x2 GRID)
+  // ==============================================================
+  if (t < 50.88) {
+    brandScene.style.opacity = 0;
+    mainWin.style.opacity = 0;
+
+    if (t < 47.52) {
+      // Split 2 windows cleanly side-by-side in 3D space: Effets (left) + Exporter (right)
+      const enter = easeOutCubic(norm(t, 44.16, 45.1));
+      const beatShift = Math.sin(t * 1.5) * 3;
+
+      fanCards[2].style.opacity = enter;
+      fanCards[2].style.left = "140px";
+      fanCards[2].style.top = "155px";
+      fanCards[2].style.transform = `translateX(${lerp(-160, 0, enter)}px) rotateY(${10 + beatShift * 0.3}deg)`;
+      fanCards[2].style.borderColor = "rgba(189, 147, 249, 0.72)";
+
+      fanCards[3].style.opacity = enter;
+      fanCards[3].style.left = "692px";
+      fanCards[3].style.top = "155px";
+      fanCards[3].style.transform = `translateX(${lerp(160, 0, enter)}px) rotateY(${-10 - beatShift * 0.3}deg)`;
+      fanCards[3].style.borderColor = "rgba(69, 248, 130, 0.72)";
+
+      setCaption(
+        true,
+        "E",
+        "Effets & Export multi-formats",
+        "Normaliser, fondus, vitesse/pitch et export propre en WAV, MP3, FLAC ou OGG."
+      );
+    } else {
+      // Clean non-intersecting 2x2 3D wall showcase!
+      const gridPos = [
+        { x: 168, y: 42,  ry: 8,  rx: 4,  color: "rgba(189, 147, 249, 0.65)" },
+        { x: 664, y: 42,  ry: -8, rx: 4,  color: "rgba(139, 233, 253, 0.65)" },
+        { x: 168, y: 344, ry: 8,  rx: -4, color: "rgba(69, 248, 130, 0.65)" },
+        { x: 664, y: 344, ry: -8, rx: -4, color: "rgba(255, 255, 255, 0.45)" },
+      ];
+      fanCards.forEach((fc, i) => {
+        const cardIn = easeOutCubic(norm(t, 47.52 + i * 0.48, 48.0 + i * 0.48));
+        const pos = gridPos[i];
+        fc.style.opacity = cardIn;
+        fc.style.left = pos.x + "px";
+        fc.style.top = pos.y + "px";
+        fc.style.borderColor = pos.color;
+        fc.style.transform = `scale(${lerp(0.86, 0.96, cardIn)}) rotateY(${pos.ry}deg) rotateX(${pos.rx}deg)`;
+      });
+      setCaption(true, "E", "Tout-en-un studio", "De la détection du kick jusqu'au sample final exporté.");
+    }
+    return;
+  }
+
+  // ==============================================================
+  // SCENE 7 (50.88s - 60.00s): FINAL IMPACT + OUTRO AUDIO TOOLZ
+  // ==============================================================
+  mainWin.style.opacity = 0;
+  setCaption(false);
+
+  const inFinal = easeOutCubic(norm(t, 50.88, 51.6));
+  const fadeOutEnd = t > 57.4 ? 1 - easeInOutCubic(norm(t, 57.4, 59.6)) : 1;
+
+  brandScene.style.opacity = inFinal * fadeOutEnd;
+  brandScene.style.transform = `scale(${lerp(1.12, 1.0, inFinal)})`;
+  brandFlash.style.opacity = t < 51.25 ? clamp01(1 - (t - 50.88) / 0.37) : 0;
+  brandBadge.style.transform = "translateX(0) scale(1)";
+  brandWordmark.style.clipPath = "inset(0 0 0 0)";
+  brandWordmark.style.opacity = 1;
+
+  brandTagline.textContent = "Créez des boucles. Samplez au millimètre.";
+  brandTagline.style.opacity = easeOutCubic(norm(t, 51.4, 52.1));
+  brandTagline.style.transform = `translateY(${lerp(10, 0, norm(t, 51.4, 52.1))}px)`;
+
+  brandOutroMeta.style.opacity = easeOutCubic(norm(t, 52.4, 53.2));
+};
+
+window.renderFrame(0);
+</script>
+</body>
+</html>
