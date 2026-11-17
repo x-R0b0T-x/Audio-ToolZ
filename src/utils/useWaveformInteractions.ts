@@ -44,14 +44,14 @@ export function useWaveformInteractions(options: Options) {
       const ratio = Math.max(0, Math.min(1, (drag.x - left) / width));
       let frame = dragFrame(drag.start, drag.end, total, left, width, drag.x, drag.edge === 'cursor' ? delta : 0);
       if (drag.initialSpan !== undefined && drag.anchor !== undefined && drag.anchorRatio !== undefined) {
-        const zone = Math.min(24, width / 4);
-        const pressure = drag.edge === 'resize-start' ? (left + zone - drag.x) / zone : (drag.x - (left + width - zone)) / zone;
+        // Expand only beyond the visible waveform
+        const pressure = drag.edge === 'resize-start' ? (left - drag.x) / 24 : (drag.x - (left + width)) / 24;
         const a = drag.anchor;
         const r = drag.anchorRatio;
         const span = drag.end - drag.start;
         if (pressure > 0 && delta > 0 && r >= 0 && r <= 1) {
-          const limit = Math.min(drag.initialSpan * 1.25, r > 0 ? a / r : Infinity, r < 1 ? (total - a) / (1 - r) : Infinity);
-          const nextSpan = Math.max(span, Math.min(limit, span + drag.initialSpan * 0.2 * Math.min(1, pressure) * Math.min(64, delta) / 1000));
+          const limit = Math.min(drag.initialSpan * 1.08, r > 0 ? a / r : Infinity, r < 1 ? (total - a) / (1 - r) : Infinity);
+          const nextSpan = Math.max(span, Math.min(limit, span + drag.initialSpan * 0.04 * Math.min(1, pressure) * Math.min(64, delta) / 1000));
           const viewStart = a - r * nextSpan;
           const viewEnd = a + (1 - r) * nextSpan;
           frame = { viewStart, viewEnd, sample: Math.round(viewStart + ratio * nextSpan) };
