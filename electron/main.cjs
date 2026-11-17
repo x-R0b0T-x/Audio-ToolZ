@@ -2,7 +2,7 @@ const { app, BrowserWindow, session } = require('electron');
 const path = require('node:path');
 
 app.setName('Audio ToolZ');
-// Les préférences restent dans le dossier extrait : ne pas utiliser Program Files.
+app.commandLine.appendSwitch('lang', 'fr');
 app.setPath('userData', path.join(path.dirname(process.execPath), 'user-data'));
 
 app.whenReady().then(() => {

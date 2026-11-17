@@ -38,26 +38,31 @@ New-Item $appDir -ItemType Directory -Force | Out-Null
 Copy-Item 'dist' (Join-Path $appDir 'dist') -Recurse
 Copy-Item 'electron/main.cjs' (Join-Path $appDir 'main.cjs')
 @{ name = 'audio-toolz'; version = '1.3.0'; main = 'main.cjs'; private = $true } | ConvertTo-Json | Set-Content (Join-Path $appDir 'package.json') -Encoding utf8
-foreach ($item in @('Audio ToolZ.exe', 'locales', 'resources', 'chrome_100_percent.pak', 'chrome_200_percent.pak', 'ffmpeg.dll', 'icudtl.dat', 'resources.pak', 'v8_context_snapshot.bin', 'version', 'icon.ico')) {
+$toolsDir = Join-Path $env:RUNNER_TEMP 'audio-toolz-resource-tools'
+npm install --prefix "$toolsDir" --no-package-lock --no-audit --no-fund @electron/rcedit@5.0.2
+if ($LASTEXITCODE -ne 0) { throw 'Installation de rcedit en echec.' }
+node scripts/set-exe-icon.cjs "$toolsDir" (Join-Path $bundle 'Audio ToolZ.exe') (Join-Path $bundle 'icon.ico')
+if ($LASTEXITCODE -ne 0) { throw 'Integration de cette icone dans le binaire en echec.' }
+$localeDir = Join-Path $bundle 'locales'
+if (-not (Test-Path (Join-Path $localeDir 'fr.pak'))) { throw 'Langue francaise absente.' }
+Get-ChildItem $localeDir -File | Where-Object { $_.Name -ne 'fr.pak' } | Remove-Item -Force
+$licensesDir = Join-Path $bundle 'resources/licenses'
+New-Item $licensesDir -ItemType Directory -Force | Out-Null
+foreach ($license in @('LICENSE', 'LICENSES.chromium.html')) {
+  if (-not (Test-Path (Join-Path $bundle $license))) { throw "Licence requise absente : $license" }
+  Move-Item (Join-Path $bundle $license) (Join-Path $licensesDir $license) -Force
+}
+foreach ($item in @('Audio ToolZ.exe', 'locales/fr.pak', 'resources', 'chrome_100_percent.pak', 'chrome_200_percent.pak', 'ffmpeg.dll', 'icudtl.dat', 'resources.pak', 'v8_context_snapshot.bin', 'version', 'icon.ico')) {
   if (-not (Test-Path (Join-Path $bundle $item))) { throw "Fichier requis absent : $item" }
 }
 $bytes = [IO.File]::ReadAllBytes((Join-Path $bundle 'Audio ToolZ.exe'))
 $pe = [BitConverter]::ToInt32($bytes, 0x3c)
 if ([BitConverter]::ToUInt16($bytes, $pe + 4) -ne 0x8664) { throw 'Architecture du binaire incorrecte : x64 requis.' }
+foreach ($unwanted in @('LIRE-MOI.txt', 'MANIFEST-SHA256.txt')) {
+  $unwantedPath = Join-Path $bundle $unwanted
+  if (Test-Path $unwantedPath) { Remove-Item $unwantedPath -Force }
+}
 Copy-Item 'CHANGELOG.md' $bundle
-@"
-Audio ToolZ 1.3 - Windows x64 uniquement
-Extraire entierement le ZIP dans un dossier accessible en ecriture.
-Lancer Audio ToolZ.exe sans deplacer les DLL et dossiers associes.
-Les preferences sont conservees dans user-data a cote du fichier executable.
-Exporter les documents audio avant fermeture.
-Distribution non signee numeriquement. Electron : $electronVersion
-Les fichiers internes varient selon le moteur ; Desktop.ini non requis.
-"@ | Set-Content (Join-Path $bundle 'LIRE-MOI.txt') -Encoding utf8
-$manifest = @(Get-ChildItem $bundle -Recurse -File | ForEach-Object {
-  '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), ([IO.Path]::GetRelativePath($bundle, $_.FullName))
-})
-$manifest | Set-Content (Join-Path $bundle 'MANIFEST-SHA256.txt') -Encoding utf8
 $zip = Join-Path $out 'Audio-ToolZ-1.3-Windows-Portable-x64.zip'
 Compress-Archive -Path $bundle -DestinationPath $zip -CompressionLevel Optimal
 '{0}  {1}' -f (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower(), (Split-Path $zip -Leaf) | Set-Content (Join-Path $out 'SHA256SUMS.txt') -Encoding ascii
