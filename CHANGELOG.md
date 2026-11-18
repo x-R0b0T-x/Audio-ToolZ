@@ -1,60 +1,26 @@
-## Navigation et boucles — v1.4
-
-- Lecture depuis le curseur ; clic gauche pour le début, clic droit pour la fin de la sélection.
-- Une boucle en cours reste active quand une borne valide est ajustée.
-- Forme d’onde visible pendant le déplacement des bornes, avec dézoom progressif et limité hors de la vue.
-
-### Dezoom automatique — correctif v1.4
-- Elargissement progressif de la vue lors du glissement vers un bord, a gauche comme a droite.
-- Correction de la mise a jour du bord droit et ajout du glissement du curseur simple.
-- Pendant le glissement du curseur, la lecture continue ; le repositionnement audio est valide au relachement, sans devoir appuyer sur Stop.
-- Tests de calcul automatiques ; validation interactive Windows encore necessaire.
-
-### Correctifs de navigation — v1.4
-- Clic gauche : curseur de départ sans sélection implicite ; Lecture démarre au curseur. Un nouveau clic pendant la lecture repositionne celle-ci.
-- Clic droit : définition de la fin de sélection. Le bouton Boucle utilise uniquement une sélection existante.
-- Bornes déplaçables avec défilement automatique aux bords, même avec un pointeur immobile et pendant la lecture. Le zoom et la borne opposée sont conservés.
-- Ajustement de boucle sans redémarrage lorsque la tête de lecture reste dans les nouvelles bornes.
-- Annulation du glissement au changement de document et nettoyage des événements ; fin du glissement au relâchement ou à la perte de focus.
-- Vérifications automatiques avant préparation du ZIP ; essais interactifs Windows toujours nécessaires.
-
 # Journal des modifications
 
-## 1.4 — Confort et communauté
+## 1.4
 
-- Défilement de la forme d’onde colorée réglé à 240 colonnes par seconde, soit deux fois plus lent que le précédent affichage à 60 Hz. La vitesse audio ne change pas.
-- Lien vers la communauté Telegram https://t.me/Audio_ToolZ dans la fenêtre « ? », ouvert dans le navigateur par défaut.
-- Historique local des dix derniers fichiers ouverts avec succès, sans doublons, réouverture et bouton « Supprimer les fichiers récents » dans « Fichier » (version Windows).
-- Message si un fichier récent a été déplacé, supprimé ou rendu inaccessible. Effacer la liste ne supprime aucun fichier audio.
-- Dossier extrait nommé exactement « Audio ToolZ » pour les mises à jour. Le dossier personnel user-data reste hors de l’archive.
-- Conservation du paquet x64, de l’icône intégrée, de fr.pak seul et des licences dans resources/licenses.
-- Numérotation 1.4.0 dans le paquet et les métadonnées de l’exécutable.
+### Navigation et lecture
 
-### Vérifications et limites
-- Vérifications de syntaxe JavaScript, des types TypeScript, compilation Vite et tests de l’historique avant publication.
-- Les essais interactifs du son, du lien externe et de l’affichage sous Windows restent nécessaires. Exécutable non signé.
+- Déplacement des bornes de sélection vers l’avant ou l’arrière, même lorsque la borne opposée est hors écran. La vue défile aux bords sans modifier le zoom ni déplacer l’autre borne.
+- Zoom et dézoom indépendants de la sélection. Les bornes restent ajustables pendant la lecture en boucle.
+- Défilement ralenti de la forme d’onde dans l’analyseur, sans changement de la vitesse de lecture.
 
-## 1.3 — Windows portable x64
+### Historique et aide
 
-### Distribution corrigée
-- Windows 64 bits uniquement, sans paquet x86.
-- Intégration de icon.ico dans les ressources de Audio ToolZ.exe pendant la préparation du paquet.
-- Métadonnées du programme : Audio ToolZ, version 1.3.0.
-- Conservation de la seule langue fr.pak dans locales et lancement du moteur en français.
-- Déplacement des mentions Electron et Chromium dans resources/licenses, sans suppression des licences.
-- Retrait de LIRE-MOI.txt et MANIFEST-SHA256.txt du dossier principal.
-- Conservation de CHANGELOG.md et icon.ico à côté du programme.
-- Contrôle SHA-256 du téléchargement Electron, vérification de l’architecture x64 et somme SHA256SUMS.txt jointe séparément à la release.
-- Publication manuelle permettant de créer ou de mettre à jour la release v1.3.
+- Le menu « Fichier » mémorise les dix derniers fichiers ouverts, sans doublons. Effacer l’historique ne supprime aucun fichier audio.
+- Le bouton « ? » donne accès à la [communauté Telegram](https://t.me/Audio_ToolZ).
 
-### Documentation
-- Présentation du logiciel enrichie dans le README : fonctions audio, formats et prise en main.
+### Distribution Windows
 
-### Précisions
-- Les fonctions audio existantes ne sont pas modifiées par cette préparation.
-- Branche Electron 43 conservée par rapport à la compilation précédente ; sa maintenance doit être suivie.
-- Extraire entièrement le ZIP avant de lancer Audio ToolZ.exe et conserver les DLL et ressources associées.
-- Les préférences restent dans user-data à côté du programme. Exporter les documents audio avant fermeture.
-- Cette version ne fonctionne pas sur Windows 32 bits.
-- La compilation ne remplace pas les essais fonctionnels sous Windows x64, notamment après réduction des langues.
+- Version portable pour Windows 64 bits, sans installation. Extrayez le ZIP, copiez le dossier complet `Audio ToolZ` sur une clé USB, puis lancez `Audio ToolZ.exe` depuis ce dossier.
+- Les réglages et l’historique restent dans `user-data`, à côté de l’exécutable. Ce dossier est créé à l’usage et n’est pas livré dans le ZIP.
 - Exécutable non signé numériquement.
+
+## 1.3
+
+- Paquet portable pour Windows 64 bits, avec icône intégrée et moteur configuré en français.
+- Licences Electron et Chromium regroupées dans `resources/licenses`. Somme de contrôle SHA-256 fournie séparément.
+- README enrichi avec les fonctions audio, les formats et la prise en main.
