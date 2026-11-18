@@ -1,0 +1,41 @@
+name: Publier Audio ToolZ v1.4
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-v1.4.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+concurrency: audio-toolz-publish-v1.4
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET: 39fbc06215632039a67c2dd8287997e572a15e4f
+      OLD: 149f35e7fec8a1b7d627e61c098cc1241a15609c
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Verifier le paquet puis publier
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view v1.4 >/dev/null 2>&1; then echo 'La release v1.4 existe deja'; exit 1; fi
+          run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/build-v1.4.yml/runs?head_sha=$TARGET&status=success" --jq '.workflow_runs[0].id // empty')
+          test -n "$run" || { echo 'Aucune compilation reussie du commit cible'; exit 1; }
+          gh run download "$run" -n Audio-ToolZ-v1.4-Windows-x64 -D release-package
+          cd release-package
+          test -s Audio-ToolZ-1.4-Windows-Portable-x64.zip
+          sha256sum --ignore-missing --check SHA256SUMS.txt
+          git show "$TARGET:CHANGELOG.md" | awk '/^## 1\.4$/{p=1;next} /^## /{p=0} p' > release-notes.md
+          test -s release-notes.md
+          current=$(git ls-remote origin refs/tags/v1.4 | cut -f1)
+          if [[ "$current" != "$TARGET" ]]; then
+            test "$current" = "$OLD" || { echo 'Le tag a change depuis la verification'; exit 1; }
+            git push --force-with-lease="refs/tags/v1.4:$OLD" origin "$TARGET:refs/tags/v1.4"
+          fi
+          gh release create v1.4 Audio-ToolZ-1.4-Windows-Portable-x64.zip SHA256SUMS.txt --verify-tag --title 'Audio ToolZ v1.4' --notes-file release-notes.md
