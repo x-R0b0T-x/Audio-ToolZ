@@ -19,7 +19,7 @@ Les traitements et l’encodage audio sont réalisés côté navigateur. L’exp
 ## Aperçu
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/7e1ec358-9beb-4acf-b040-438ef6eb8223" alt="Interface d’Audio-ToolZ : espace d’édition audio et fenêtre de contrôle" width="1000" />
+  <img src="https://github.com/user-attachments/assets/e1e65796-d3d2-409c-bdcf-fe649f2b3a93" alt="Interface d’Audio-ToolZ : espace d’édition audio et fenêtre de contrôle" width="1000" />
 </p>
 
 ## Fonctionnalités
