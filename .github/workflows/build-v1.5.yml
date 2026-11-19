@@ -38,21 +38,20 @@ jobs:
       - name: Compiler Audio ToolZ.exe sans Electron (~8-12 Mo)
         run: npx tauri build --no-bundle
 
-      - name: Empaqueter Audio ToolZ Portable v1.5 ZIP (test)
+      - name: Preparer Audio ToolZ.exe autonome (Direct .exe sans ZIP)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "release-output/Audio ToolZ" | Out-Null
+          New-Item -ItemType Directory -Force -Path "release-output" | Out-Null
           $exe = Get-ChildItem "src-tauri/target/release/*.exe" | Where-Object { $_.Name -match "audio.?toolz" } | Select-Object -First 1
           if (-not $exe) { throw "Executable Tauri introuvable" }
-          Copy-Item $exe.FullName "release-output/Audio ToolZ/Audio ToolZ.exe"
-          Compress-Archive -Path "release-output/Audio ToolZ" -DestinationPath "release-output/Audio-ToolZ-1.5-Windows-Portable-x64.zip" -Force
-          $hash = (Get-FileHash "release-output/Audio-ToolZ-1.5-Windows-Portable-x64.zip" -Algorithm SHA256).Hash.ToLower()
-          "$hash  Audio-ToolZ-1.5-Windows-Portable-x64.zip" | Out-File -Encoding ascii "release-output/SHA256SUMS.txt"
+          Copy-Item $exe.FullName "release-output/Audio ToolZ.exe"
+          $hash = (Get-FileHash "release-output/Audio ToolZ.exe" -Algorithm SHA256).Hash.ToLower()
+          "$hash  Audio ToolZ.exe" | Out-File -Encoding ascii "release-output/SHA256SUMS.txt"
 
       - uses: actions/upload-artifact@v5
         with:
           name: Audio-ToolZ-v1.5-Test-Windows-x64
           path: |
-            release-output/Audio-ToolZ-1.5-Windows-Portable-x64.zip
+            release-output/Audio ToolZ.exe
             release-output/SHA256SUMS.txt
           if-no-files-found: error

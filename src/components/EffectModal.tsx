@@ -233,8 +233,11 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
   useEffect(() => {
     if (!rangeInfo.hasSelection || !document) return;
-    const res = computeProcessed();
-    onStartPreview(res.previewSegment, document.sampleRate);
+    const timer = setTimeout(() => {
+      const res = computeProcessed();
+      onStartPreview(res.previewSegment, document.sampleRate);
+    }, 60);
+    return () => clearTimeout(timer);
   }, [
     volumeGainDb,
     normTargetDb,
@@ -368,9 +371,9 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             </div>
           )}
 
-          {/* Égaliseur 3 bandes avec faders verticaux */}
+          {/* Égaliseur 3 bandes avec Faders Studio Violets & Verts + dB Meter */}
           {effect === 'eq' && (
-            <div className="grid grid-cols-3 gap-6 py-2 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+            <div className="grid grid-cols-3 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               {[
                 { label: 'Graves', freq: '120 Hz', val: eqLowDb, set: setEqLowDb },
                 { label: 'Médiums', freq: '1.2 kHz', val: eqMidDb, set: setEqMidDb },
@@ -379,25 +382,36 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                 <div key={f.label} className="flex flex-col items-center gap-2">
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</span>
                   <span className="text-[10px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>{f.freq}</span>
-                  <div className="h-44 flex items-center justify-center relative py-2">
-                    <input
-                      type="range"
-                      min={-12}
-                      max={12}
-                      step={0.5}
-                      value={f.val}
-                      onChange={(e) => f.set(parseFloat(e.target.value))}
-                      className="cursor-pointer"
-                      style={{
-                        writingMode: 'vertical-lr',
-                        direction: 'rtl',
-                        height: '140px',
-                        width: '28px',
-                        accentColor: 'var(--accent-primary)',
-                      }}
-                    />
+                  
+                  <div className="flex items-center gap-2 h-44 py-1">
+                    <div className="flex flex-col justify-between h-36 text-[9px] font-mono-tabular text-right select-none opacity-60" style={{ color: 'var(--text-muted)' }}>
+                      <span>+12</span>
+                      <span>+6</span>
+                      <span>0</span>
+                      <span>-6</span>
+                      <span>-12</span>
+                    </div>
+                    <div className="relative h-36 w-6 flex items-center justify-center">
+                      <input
+                        type="range"
+                        min={-12}
+                        max={12}
+                        step={0.5}
+                        value={f.val}
+                        onChange={(e) => f.set(parseFloat(e.target.value))}
+                        className="cursor-pointer studio-fader-vertical"
+                        style={{
+                          writingMode: 'vertical-lr',
+                          direction: 'rtl',
+                          height: '144px',
+                          width: '24px',
+                          accentColor: '#45f882',
+                        }}
+                      />
+                    </div>
                   </div>
-                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+
+                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                     {f.val >= 0 ? '+' : ''}{f.val.toFixed(1)} dB
                   </span>
                 </div>
@@ -405,9 +419,9 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             </div>
           )}
 
-          {/* Écho / Delay avec faders verticaux */}
+          {/* Écho / Delay */}
           {effect === 'echo' && (
-            <div className="grid grid-cols-3 gap-6 py-2 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+            <div className="grid grid-cols-3 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               {[
                 { label: 'Délai', unit: 'ms', val: echoDelayMs, set: setEchoDelayMs, min: 20, max: 800, step: 10, display: `${echoDelayMs} ms` },
                 { label: 'Feedback', unit: '%', val: Math.round(echoFeedback * 100), set: (v: number) => setEchoFeedback(v / 100), min: 0, max: 90, step: 1, display: `${Math.round(echoFeedback * 100)} %` },
@@ -416,7 +430,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                 <div key={f.label} className="flex flex-col items-center gap-2">
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</span>
                   <span className="text-[10px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>{f.unit}</span>
-                  <div className="h-44 flex items-center justify-center relative py-2">
+                  <div className="h-44 flex items-center justify-center py-1">
                     <input
                       type="range"
                       min={f.min}
@@ -428,13 +442,13 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                       style={{
                         writingMode: 'vertical-lr',
                         direction: 'rtl',
-                        height: '140px',
-                        width: '28px',
-                        accentColor: 'var(--accent-primary)',
+                        height: '144px',
+                        width: '24px',
+                        accentColor: '#45f882',
                       }}
                     />
                   </div>
-                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                     {f.display}
                   </span>
                 </div>
@@ -444,9 +458,16 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
           {/* Volume */}
           {effect === 'volume' && (
-            <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Gain de sortie</span>
-              <div className="h-48 flex items-center justify-center py-2">
+            <div className="flex flex-col items-center gap-3 py-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Gain Master</span>
+              <div className="flex items-center gap-3 h-44">
+                <div className="flex flex-col justify-between h-36 text-[9px] font-mono-tabular text-right select-none opacity-60" style={{ color: 'var(--text-muted)' }}>
+                  <span>+24</span>
+                  <span>+12</span>
+                  <span>0</span>
+                  <span>-12</span>
+                  <span>-24</span>
+                </div>
                 <input
                   type="range"
                   min={-24}
@@ -458,13 +479,13 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   style={{
                     writingMode: 'vertical-lr',
                     direction: 'rtl',
-                    height: '150px',
-                    width: '32px',
-                    accentColor: 'var(--accent-primary)',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
                   }}
                 />
               </div>
-              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                 {volumeGainDb >= 0 ? '+' : ''}{volumeGainDb.toFixed(1)} dB
               </span>
             </div>
@@ -472,9 +493,16 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
           {/* Normaliser */}
           {effect === 'normalize' && (
-            <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Niveau crête cible</span>
-              <div className="h-48 flex items-center justify-center py-2">
+            <div className="flex flex-col items-center gap-3 py-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Pic Cible</span>
+              <div className="flex items-center gap-3 h-44">
+                <div className="flex flex-col justify-between h-36 text-[9px] font-mono-tabular text-right select-none opacity-60" style={{ color: 'var(--text-muted)' }}>
+                  <span>0</span>
+                  <span>-3</span>
+                  <span>-6</span>
+                  <span>-9</span>
+                  <span>-12</span>
+                </div>
                 <input
                   type="range"
                   min={-12}
@@ -486,13 +514,13 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   style={{
                     writingMode: 'vertical-lr',
                     direction: 'rtl',
-                    height: '150px',
-                    width: '32px',
-                    accentColor: 'var(--accent-primary)',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
                   }}
                 />
               </div>
-              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                 {normTargetDb.toFixed(1)} dBFS
               </span>
               {currentStats && (
@@ -531,7 +559,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                     className="px-2 py-2 rounded-lg border text-xs font-medium cursor-pointer transition-colors"
                     style={{
                       backgroundColor: filterKind === kind ? 'var(--accent-soft)' : 'var(--bg-elevated)',
-                      borderColor: filterKind === kind ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                      borderColor: filterKind === kind ? '#45f882' : 'var(--border-subtle)',
                       color: 'var(--text-primary)',
                     }}
                   >
@@ -539,27 +567,25 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   </button>
                 ))}
               </div>
-              <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <div className="flex flex-col items-center gap-3 py-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Fréquence de coupure</span>
-                <div className="h-44 flex items-center justify-center py-2">
-                  <input
-                    type="range"
-                    min={30}
-                    max={16000}
-                    step={10}
-                    value={filterFreq}
-                    onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
-                    className="cursor-pointer"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '140px',
-                      width: '32px',
-                      accentColor: 'var(--accent-primary)',
-                    }}
-                  />
-                </div>
-                <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                <input
+                  type="range"
+                  min={30}
+                  max={16000}
+                  step={10}
+                  value={filterFreq}
+                  onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
+                  }}
+                />
+                <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {filterFreq} Hz
                 </span>
               </div>
@@ -568,53 +594,49 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
           {/* Compresseur */}
           {effect === 'compressor' && (
-            <div className="grid grid-cols-2 gap-6 py-3 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+            <div className="grid grid-cols-2 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Seuil</span>
-                <div className="h-44 flex items-center justify-center py-2">
-                  <input
-                    type="range"
-                    min={-40}
-                    max={-2}
-                    step={1}
-                    value={compThresholdDb}
-                    onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
-                    className="cursor-pointer"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '130px',
-                      width: '28px',
-                      accentColor: 'var(--accent-primary)',
-                    }}
-                  />
-                </div>
-                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                <input
+                  type="range"
+                  min={-40}
+                  max={-2}
+                  step={1}
+                  value={compThresholdDb}
+                  onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
+                  }}
+                />
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {compThresholdDb} dBFS
                 </span>
               </div>
 
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Ratio</span>
-                <div className="h-44 flex items-center justify-center py-2">
-                  <input
-                    type="range"
-                    min={1.2}
-                    max={10}
-                    step={0.2}
-                    value={compRatio}
-                    onChange={(e) => setCompRatio(parseFloat(e.target.value))}
-                    className="cursor-pointer"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '130px',
-                      width: '28px',
-                      accentColor: 'var(--accent-primary)',
-                    }}
-                  />
-                </div>
-                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                <input
+                  type="range"
+                  min={1.2}
+                  max={10}
+                  step={0.2}
+                  value={compRatio}
+                  onChange={(e) => setCompRatio(parseFloat(e.target.value))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
+                  }}
+                />
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {compRatio.toFixed(1)} : 1
                 </span>
               </div>
@@ -676,53 +698,49 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
           {/* Speed / Pitch */}
           {effect === 'speed-pitch' && (
-            <div className="grid grid-cols-2 gap-6 py-3 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+            <div className="grid grid-cols-2 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Vitesse</span>
-                <div className="h-44 flex items-center justify-center py-2">
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={2.0}
-                    step={0.05}
-                    value={speedRatio}
-                    onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
-                    className="cursor-pointer"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '130px',
-                      width: '28px',
-                      accentColor: 'var(--accent-primary)',
-                    }}
-                  />
-                </div>
-                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                <input
+                  type="range"
+                  min={0.5}
+                  max={2.0}
+                  step={0.05}
+                  value={speedRatio}
+                  onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
+                  }}
+                />
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {speedRatio.toFixed(2)}x
                 </span>
               </div>
 
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Hauteur (Pitch)</span>
-                <div className="h-44 flex items-center justify-center py-2">
-                  <input
-                    type="range"
-                    min={-12}
-                    max={12}
-                    step={1}
-                    value={pitchSemitones}
-                    onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
-                    className="cursor-pointer"
-                    style={{
-                      writingMode: 'vertical-lr',
-                      direction: 'rtl',
-                      height: '130px',
-                      width: '28px',
-                      accentColor: 'var(--accent-primary)',
-                    }}
-                  />
-                </div>
-                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                <input
+                  type="range"
+                  min={-12}
+                  max={12}
+                  step={1}
+                  value={pitchSemitones}
+                  onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '144px',
+                    width: '28px',
+                    accentColor: '#45f882',
+                  }}
+                />
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {pitchSemitones > 0 ? `+${pitchSemitones}` : pitchSemitones} dt
                 </span>
               </div>
