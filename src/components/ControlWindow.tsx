@@ -15,8 +15,6 @@ import { audioEngine } from '../audio/engine';
 import { formatTimecode, linearToDb } from '../audio/dsp';
 import type { VisualAnalyzerMode } from '../audio/types';
 import {
-  clampControlPosition,
-  getDefaultControlPosition,
   loadPersistedUiState,
   savePersistedUiState,
 } from '../utils/uiStateStorage';
@@ -75,9 +73,9 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
   onToggleRecord,
   onClose,
 }) => {
-  // Ancrage relatif depuis le bord droit et le bord inférieur
-  const [offsetFromRight, setOffsetFromRight] = useState<number>(420);
-  const [offsetFromBottom, setOffsetFromBottom] = useState<number>(290);
+  // Ancrage fixe permanent au coin inférieur droit de l'espace de travail
+  const [rightOffset, setRightOffset] = useState<number>(18);
+  const [bottomOffset, setBottomOffset] = useState<number>(28);
 
   const [collapsed, setCollapsed] = useState<boolean>(
     () => loadPersistedUiState().controlCollapsed
@@ -87,7 +85,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
   );
 
   const draggingRef = useRef(false);
-  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const dragAnchorRef = useRef({ mouseX: 0, mouseY: 0, startR: 18, startB: 28 });
 
   const vuCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const visCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -108,25 +106,24 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
   const timeDisplayRef = useRef<HTMLSpanElement | null>(null);
 
-  const curX = Math.max(10, window.innerWidth - offsetFromRight);
-  const curY = Math.max(50, window.innerHeight - offsetFromBottom);
-
   const handleHeaderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('button')) return;
     draggingRef.current = true;
-    dragOffsetRef.current = {
-      x: e.clientX - curX,
-      y: e.clientY - curY,
+    dragAnchorRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      startR: rightOffset,
+      startB: bottomOffset,
     };
   };
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!draggingRef.current) return;
-      const newX = e.clientX - dragOffsetRef.current.x;
-      const newY = e.clientY - dragOffsetRef.current.y;
-      setOffsetFromRight(Math.max(404, window.innerWidth - newX));
-      setOffsetFromBottom(Math.max(80, window.innerHeight - newY));
+      const dx = e.clientX - dragAnchorRef.current.mouseX;
+      const dy = e.clientY - dragAnchorRef.current.mouseY;
+      setRightOffset(Math.max(10, Math.min(window.innerWidth - 420, dragAnchorRef.current.startR - dx)));
+      setBottomOffset(Math.max(20, Math.min(window.innerHeight - 80, dragAnchorRef.current.startB - dy)));
     };
     const onUp = () => {
       draggingRef.current = false;
@@ -137,7 +134,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, []);
+  }, [rightOffset, bottomOffset]);
 
   const drawMetersAndVisuals = useCallback(() => {
     const vuCanvas = vuCanvasRef.current;
@@ -424,7 +421,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             const maxHistoryCols = Math.max(60, Math.floor(leftPane.width));
 
             if (isPlaying || isRecording) {
-              // Vitesse ralentie : 70 colonnes/seconde (très fluide et détaillé)
               const clock = coloredClockRef.current;
               const elapsed = Math.min(100, Math.max(0, now - clock.lastMs));
               clock.lastMs = now;
@@ -470,7 +466,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
               const startX = Math.floor(originX + paneW - count);
               const offset = history.length - count;
 
-              // Tracé des barres verticales à 1px
               ctx.fillStyle = volGrad;
               ctx.globalAlpha = 0.72;
               for (let i = 0; i < count; i++) {
@@ -481,7 +476,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                 ctx.fillRect(startX + i, yTop, 1, barH);
               }
 
-              // Tracé net et précis des crêtes supérieures et inférieures
               ctx.globalAlpha = 1;
               ctx.strokeStyle = volGrad;
               ctx.lineWidth = 1.2;
@@ -555,8 +549,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       aria-label="Fenêtre de contrôle flottante"
       className="fixed z-40 rounded-xl border shadow-2xl overflow-hidden select-none"
       style={{
-        left: `${curX}px`,
-        top: `${curY}px`,
+        right: `${rightOffset}px`,
+        bottom: `${bottomOffset}px`,
         width: '404px',
         backgroundColor: 'var(--bg-surface)',
         borderColor: 'var(--border-strong)',
@@ -606,7 +600,52 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
         </div>
       </div>
 
-      {!collapsed && (
+      {collapsed ? (
+        /* Mini barre de contrôle repliée avec boutons de transport */
+        <div className="px-3 py-1.5 flex items-center justify-between gap-1.5 bg-[var(--bg-elevated)]">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title="Lecture"
+              disabled={!hasDocument || isRecording}
+              onClick={onPlay}
+              className="p-1 rounded hover:bg-[var(--bg-hover)] disabled:opacity-35 cursor-pointer text-white"
+            >
+              <Play className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              title="Boucle"
+              disabled={!hasDocument || isRecording}
+              onClick={onPlayLoop}
+              className="p-1 rounded hover:bg-[var(--bg-hover)] disabled:opacity-35 cursor-pointer text-[var(--accent-primary)]"
+            >
+              <Repeat className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              title="Pause"
+              disabled={!isPlaying}
+              onClick={onPause}
+              className="p-1 rounded hover:bg-[var(--bg-hover)] disabled:opacity-35 cursor-pointer text-white"
+            >
+              <Pause className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              title="Stop"
+              disabled={!isPlaying && !isPaused && !isRecording}
+              onClick={onStop}
+              className="p-1 rounded hover:bg-[var(--bg-hover)] disabled:opacity-35 cursor-pointer text-white"
+            >
+              <Square className="w-3 h-3" />
+            </button>
+          </div>
+          <span className="text-[10px] font-mono-tabular opacity-70" style={{ color: 'var(--text-muted)' }}>
+            Contrôle discret
+          </span>
+        </div>
+      ) : (
         <div className="p-3 space-y-2.5">
           <div className="grid grid-cols-12 gap-3 items-start">
             <div className="col-span-5 space-y-1.5">
