@@ -232,10 +232,144 @@ export const EffectModal: React.FC<EffectModalProps> = ({
     };
   };
 
-  replacePreviewAudio(
-    channels: Float32Array[],
-    sampleRate: number
-  ): boolean {
+  useEffect(() => {
+    if (!effect || !rangeInfo.hasSelection || !document) return;
+
+    const { start, end } = rangeInfo;
+
+    if (effect === 'volume') {
+      onStartPreview(
+        document.channels.map((channel) =>
+          channel.subarray(start, end)
+        ),
+        document.sampleRate,
+        volumeGainDb
+      );
+      return;
+    }
+
+    if (effect === 'eq' || effect === 'filter') {
+      const bands: PreviewBand[] =
+        effect === 'eq'
+          ? [
+              {
+                type: 'lowshelf',
+                frequency: 120,
+                gainDb: eqLowDb,
+                q: 0.7,
+              },
+              {
+                type: 'peaking',
+                frequency: 1200,
+                gainDb: eqMidDb,
+                q: 0.9,
+              },
+              {
+                type: 'highshelf',
+                frequency: 6500,
+                gainDb: eqHighDb,
+                q: 0.7,
+              },
+            ]
+          : [
+              {
+                type: filterKind,
+                frequency: filterFreq,
+                q: filterQ,
+              },
+            ];
+
+      onStartPreview(
+        document.channels.map((channel) =>
+          channel.subarray(start, end)
+        ),
+        document.sampleRate,
+        undefined,
+        bands
+      );
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const res = computeProcessed();
+
+      onStartPreview(
+        res.previewSegment,
+        document.sampleRate
+      );
+    }, 60);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    effect,
+    document,
+    volumeGainDb,
+    normTargetDb,
+    fadeDirection,
+    fadeCurve,
+    speedRatio,
+    pitchSemitones,
+    preservePitch,
+    eqLowDb,
+    eqMidDb,
+    eqHighDb,
+    filterKind,
+    filterFreq,
+    filterQ,
+    compThresholdDb,
+    compRatio,
+    compAutoGain,
+    compTargetDb,
+    nrReductionDb,
+    nrSensitivity,
+    echoDelayMs,
+    echoFeedback,
+    echoMix,
+  ]);
+
+  useEffect(() => {
+    if (!effect || !document || !rangeInfo.hasSelection) return;
+
+    let frame = 0;
+    let lastRead = -Infinity;
+
+    const refresh = (now: number) => {
+      if (now - lastRead >= 33) {
+        lastRead = now;
+
+        const { leftPeak, rightPeak } =
+          audioEngine.readLiveMeters();
+
+        const peak = Math.max(leftPeak, rightPeak);
+
+        const db =
+          peak > 0
+            ? Math.max(-60, 20 * Math.log10(peak))
+            : -60;
+
+        window.document
+          .querySelectorAll<HTMLMeterElement>(
+            'meter.atz-effect-meter'
+          )
+          .forEach((meter) => {
+            meter.value = db;
+            meter.title =
+              peak > 0
+                ? `${db.toFixed(1)} dBFS`
+                : 'Silence';
+          });
+      }
+
+      frame = requestAnimationFrame(refresh);
+    };
+
+    frame = requestAnimationFrame(refresh);
+
+    return () => cancelAnimationFrame(frame);
+  }, [effect, document, rangeInfo.hasSelection]);
+
+  if (!effect || !document) return null;
+
     const ctx = this.ctx;
     const oldSource = this.sourceNode;
     const destination = this.previewNodes[0] ?? this.preSplitGain;
