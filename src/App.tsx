@@ -4,7 +4,16 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { detectSilenceCuePoints, splitChannelsByCues } from './audio/autoCueSplit';
 import { buildCueSheet, parseCueSheet } from './audio/cueSheet';
+import { encodeWav } from './audio/encoders/wav';
+import {
+  invertPhase,
+  mixPasteAt,
+  removeDcOffset,
+  swapStereoChannels,
+  type NoiseProfile,
+} from './audio/studioDsp';
 import {
   cloneChannels,
   cutRange,
@@ -24,6 +33,7 @@ import type {
   CueTrackEntry,
   EffectModalId,
 } from './audio/types';
+import { BatchModal } from './components/BatchModal';
 import { ControlWindow, type TransportPlayMode } from './components/ControlWindow';
 import { EffectModal } from './components/EffectModal';
 import { ExportModal } from './components/ExportModal';
@@ -54,6 +64,8 @@ export default function App() {
     () => loadPersistedUiState().controlOpen
   );
   const [activeEffect, setActiveEffect] = useState<EffectModalId>(null);
+  const [noiseProfile, setNoiseProfile] = useState<NoiseProfile | null>(null);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -324,6 +336,49 @@ export default function App() {
     showToast('Audio collé au curseur');
   }, [activeDoc, clipboard, commitAudioEdit, showToast]);
 
+  const handleMixPaste = useCallback(() => {
+    if (!activeDoc || !clipboard || clipboard.length === 0) return;
+    const res = mixPasteAt(
+      activeDoc.channels,
+      clipboard,
+      activeDoc.sampleRate,
+      activeDoc.selection.startSample
+    );
+    commitAudioEdit(res.channels, 'Mixage au collage', {
+      startSample: activeDoc.selection.startSample,
+      endSample: res.endSample,
+    });
+    showToast('Audio mixé au curseur (crossfade)');
+  }, [activeDoc, clipboard, commitAudioEdit, showToast]);
+
+  const handleInvertPhase = useCallback(() => {
+    if (!activeDoc) return;
+    const total = activeDoc.channels[0]?.length ?? 0;
+    const { start, end } = resolveTargetRange(activeDoc.selection, total);
+    const next = invertPhase(activeDoc.channels, start, end);
+    commitAudioEdit(next, 'Inverser la phase', undefined, true);
+    showToast('Phase inversée');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
+  const handleSwapChannels = useCallback(() => {
+    if (!activeDoc || activeDoc.channels.length < 2) {
+      showToast('Une piste stéréo est requise pour inverser les canaux G/D.', true);
+      return;
+    }
+    const next = swapStereoChannels(activeDoc.channels);
+    commitAudioEdit(next, 'Inverser canaux G/D');
+    showToast('Canaux gauche / droite inversés');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
+  const handleRemoveDcOffset = useCallback(() => {
+    if (!activeDoc) return;
+    const total = activeDoc.channels[0]?.length ?? 0;
+    const { start, end } = resolveTargetRange(activeDoc.selection, total);
+    const next = removeDcOffset(activeDoc.channels, start, end);
+    commitAudioEdit(next, 'Suppression DC', undefined, true);
+    showToast('Décalage DC supprimé');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
   const handleSilence = useCallback(() => {
     if (!activeDoc) return;
     const total = activeDoc.channels[0]?.length ?? 0;
@@ -529,6 +584,51 @@ export default function App() {
     });
     downloadTextFile(`${baseName}.cue`, cueContent);
     showToast(`Fichier .cue extrait : ${baseName}.cue`);
+  }, [activeDoc, showToast]);
+
+  const handleAutoCue = useCallback(() => {
+    if (!activeDoc) return;
+    const cues = detectSilenceCuePoints(activeDoc.channels, activeDoc.sampleRate);
+    if (cues.length === 0) {
+      showToast('Aucun repère détecté sur cette piste.', true);
+      return;
+    }
+    updateActiveDoc((doc) => ({
+      ...doc,
+      cueTracks: cues,
+    }));
+    showToast(`${cues.length} repère(s) Auto-Cue détecté(s)`);
+  }, [activeDoc, showToast, updateActiveDoc]);
+
+  const handleSplitByCue = useCallback(() => {
+    if (!activeDoc || !activeDoc.cueTracks || activeDoc.cueTracks.length === 0) {
+      showToast('Aucun repère .cue disponible pour découper.', true);
+      return;
+    }
+    const baseName = activeDoc.name.replace(/\.[^.]+$/, '') || 'AudioToolZ';
+    const segments = splitChannelsByCues(
+      activeDoc.channels,
+      activeDoc.sampleRate,
+      activeDoc.cueTracks,
+      baseName
+    );
+    if (segments.length === 0) {
+      showToast('Aucun segment valide à exporter.', true);
+      return;
+    }
+    for (const seg of segments) {
+      const wavBytes = encodeWav(seg.channels, activeDoc.sampleRate, 16);
+      const blob = new Blob([wavBytes.buffer as ArrayBuffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${seg.fileName}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+    showToast(`${segments.length} segment(s) WAV découpé(s)`);
   }, [activeDoc, showToast]);
 
   const handleJoinComplete = useCallback(
@@ -901,7 +1001,7 @@ export default function App() {
     [activeDocId]
   );
 
-  // Global keyboard shortcuts (GoldWave style)
+  // Global keyboard shortcuts (studio style)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -920,7 +1020,8 @@ export default function App() {
         !exportOpen &&
         !joinOpen &&
         !settingsOpen &&
-        !infoOpen
+        !infoOpen &&
+        !batchOpen
       ) {
         e.preventDefault();
         if (isPlaying) handlePause();
@@ -944,6 +1045,9 @@ export default function App() {
       } else if (mod && e.key.toLowerCase() === 'v') {
         e.preventDefault();
         handlePaste();
+      } else if (mod && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        handleMixPaste();
       } else if (mod && e.key.toLowerCase() === 't') {
         e.preventDefault();
         handleTrim();
@@ -964,7 +1068,8 @@ export default function App() {
         !activeEffect &&
         !exportOpen &&
         !joinOpen &&
-        !settingsOpen
+        !settingsOpen &&
+        !batchOpen
       ) {
         e.preventDefault();
         handleSilence();
@@ -979,6 +1084,8 @@ export default function App() {
     handleCopy,
     handleCut,
     handleDetectBpm,
+    batchOpen,
+    handleMixPaste,
     handleOpenFile,
     handlePaste,
     handlePause,
@@ -1057,6 +1164,7 @@ export default function App() {
         hasSelection={hasSelection}
         hasClipboard={Boolean(clipboard && clipboard[0]?.length)}
         hasCueTracks={Boolean(activeDoc?.cueTracks && activeDoc.cueTracks.length > 0)}
+        hasStereo={Boolean(activeDoc && activeDoc.channels.length >= 2)}
         canUndo={Boolean(activeDoc && activeDoc.undoStack.length > 0)}
         canRedo={Boolean(activeDoc && activeDoc.redoStack.length > 0)}
         hasBpm={Boolean(activeDoc?.bpmInfo && activeDoc.bpmInfo.bpm > 0)}
@@ -1070,11 +1178,18 @@ export default function App() {
         onOpenJoinFiles={() => setJoinOpen(true)}
         onImportCue={() => cueInputRef.current?.click()}
         onExportCue={handleExportCue}
+        onAutoCue={handleAutoCue}
+        onSplitByCue={handleSplitByCue}
+        onOpenBatch={() => setBatchOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         onCut={handleCut}
         onCopy={handleCopy}
         onPaste={handlePaste}
+        onMixPaste={handleMixPaste}
+        onInvertPhase={handleInvertPhase}
+        onSwapChannels={handleSwapChannels}
+        onRemoveDcOffset={handleRemoveDcOffset}
         onSilence={handleSilence}
         onTrim={handleTrim}
         onSelectAll={handleSelectAll}
@@ -1220,6 +1335,11 @@ export default function App() {
       <EffectModal
         effect={activeEffect}
         document={activeDoc}
+        noiseProfile={noiseProfile}
+        onCaptureNoiseProfile={(profile) => {
+          setNoiseProfile(profile);
+          showToast('Profil de bruit capturé');
+        }}
         isPreviewPlaying={isPreviewPlaying}
         onStartPreview={(previewChannels, sampleRate) => {
           setIsPreviewPlaying(true);
@@ -1274,6 +1394,8 @@ export default function App() {
         onClose={() => setJoinOpen(false)}
         onJoinComplete={handleJoinComplete}
       />
+
+      <BatchModal open={batchOpen} onClose={() => setBatchOpen(false)} />
 
       <SettingsModal
         open={settingsOpen}

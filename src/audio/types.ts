@@ -68,6 +68,11 @@ export type EffectModalId =
   | 'normalize'
   | 'fade'
   | 'speed-pitch'
+  | 'eq'
+  | 'filter'
+  | 'compressor'
+  | 'noise-reduction'
+  | 'echo'
   | null;
 
 export interface AudioStats {

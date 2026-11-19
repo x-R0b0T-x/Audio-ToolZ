@@ -1,0 +1,273 @@
+{
+  "schema": "rea.reconstruction-obligation-ledger/v1",
+  "artifact": {
+    "id": "kit-audio-toolz-v15",
+    "filename": "Audio-ToolZ-v1.5-Kit",
+    "format": "javascript-bundle",
+    "sha256": "eb5957102be4924ad03790e86658d4949c6233811c05a1cf9036342ef3185d2b",
+    "sizeBytes": 170304
+  },
+  "coverage": {
+    "total": 18,
+    "unowned": 0,
+    "characterized": 0,
+    "implemented": 6,
+    "verified": 12,
+    "blocked": 0,
+    "outOfScope": 0,
+    "completionPercent": 100
+  },
+  "obligations": [
+    {
+      "id": "ob-v15-guide",
+      "title": "Guide d’intégration Audio ToolZ v1.5",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/README-INTEGRATION-v1.5.md",
+      "reconstructedFilePath": "README-INTEGRATION-v1.5.md",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-tauri-main",
+      "title": "Tauri v2 Backend Rust (main.rs)",
+      "layer": "process",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src-tauri/src/main.rs",
+      "reconstructedFilePath": "src-tauri/src/main.rs",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": [
+        "Compilation Rust/Tauri v2 à exécuter sous Windows (ou via .github/workflows/build-v1.5.yml)."
+      ]
+    },
+    {
+      "id": "ob-v15-tauri-cargo",
+      "title": "Tauri v2 Cargo.toml (optimisé taille)",
+      "layer": "packaging",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src-tauri/Cargo.toml",
+      "reconstructedFilePath": "src-tauri/Cargo.toml",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": [
+        "Compilation Rust/Tauri v2 à exécuter sous Windows (ou via .github/workflows/build-v1.5.yml)."
+      ]
+    },
+    {
+      "id": "ob-v15-tauri-conf",
+      "title": "Tauri v2 Configuration & Build Rust",
+      "layer": "packaging",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src-tauri/tauri.conf.json",
+      "reconstructedFilePath": "src-tauri/tauri.conf.json",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": [
+        "Compilation Rust/Tauri v2 à exécuter sous Windows (ou via .github/workflows/build-v1.5.yml)."
+      ]
+    },
+    {
+      "id": "ob-v15-tauri-caps",
+      "title": "Tauri v2 Permissions minimales & build.rs",
+      "layer": "runtime",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src-tauri/capabilities/default.json",
+      "reconstructedFilePath": "src-tauri/capabilities/default.json",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": [
+        "Compilation Rust/Tauri v2 à exécuter sous Windows (ou via .github/workflows/build-v1.5.yml)."
+      ]
+    },
+    {
+      "id": "ob-v15-tauri-buildrs",
+      "title": "Tauri v2 build.rs",
+      "layer": "packaging",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src-tauri/build.rs",
+      "reconstructedFilePath": "src-tauri/build.rs",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": [
+        "Compilation Rust/Tauri v2 à exécuter sous Windows (ou via .github/workflows/build-v1.5.yml)."
+      ]
+    },
+    {
+      "id": "ob-v15-desktop-ts",
+      "title": "Pont unifié Tauri v2 / Electron (desktop.ts)",
+      "layer": "electron",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/utils/desktop.ts",
+      "reconstructedFilePath": "src/utils/desktop.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-ci",
+      "title": "Workflow GitHub Actions Windows x64 Tauri",
+      "layer": "packaging",
+      "status": "implemented",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/.github/workflows/build-v1.5.yml",
+      "reconstructedFilePath": ".github/workflows/build-v1.5.yml",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-types",
+      "title": "Types Audio ToolZ v1.5 (types.ts)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/types.ts",
+      "reconstructedFilePath": "src/audio/types.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-dsp",
+      "title": "Moteur DSP Studio (EQ, Compresseur/Auto-Gain, FFT NR, Écho, MixPaste)",
+      "layer": "native-abi",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/studioDsp.ts",
+      "reconstructedFilePath": "src/audio/studioDsp.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-presets",
+      "title": "Catalogue de Presets DSP Studio (presets.ts)",
+      "layer": "persistence",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/presets.ts",
+      "reconstructedFilePath": "src/audio/presets.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-autocue",
+      "title": "Auto-Cue par silences & Découpe par repères",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/autoCueSplit.ts",
+      "reconstructedFilePath": "src/audio/autoCueSplit.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-batch",
+      "title": "Processeur par lots (Chaîne d’effets + Encodeurs)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/batchProcessor.ts",
+      "reconstructedFilePath": "src/audio/batchProcessor.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-effect-ui",
+      "title": "Modale des 9 effets DSP + Presets (EffectModal.tsx)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/components/EffectModal.tsx",
+      "reconstructedFilePath": "src/components/EffectModal.tsx",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-batch-ui",
+      "title": "Interface BatchModal.tsx (React 19 + Tailwind)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/components/BatchModal.tsx",
+      "reconstructedFilePath": "src/components/BatchModal.tsx",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-menubar",
+      "title": "Menus câblés v1.5 (TopMenuBar.tsx)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/components/TopMenuBar.tsx",
+      "reconstructedFilePath": "src/components/TopMenuBar.tsx",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-app",
+      "title": "Application câblée v1.5 (App.tsx)",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/App.tsx",
+      "reconstructedFilePath": "src/App.tsx",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    },
+    {
+      "id": "ob-v15-tests",
+      "title": "Tests unitaires DSP Studio, Presets, Batch & Auto-Cue",
+      "layer": "application",
+      "status": "verified",
+      "confidence": "observed",
+      "sourceLocation": "Audio-ToolZ-v1.5/src/audio/studioDsp.test.ts",
+      "reconstructedFilePath": "src/audio/studioDsp.test.ts",
+      "evidenceIds": [
+        "ev:audiotoolz-v15-kit"
+      ],
+      "limitations": []
+    }
+  ],
+  "limitations": [
+    "La compilation binaire Tauri v2 (Audio ToolZ.exe) s’exécute sous Windows ou via le workflow GitHub Actions build-v1.5.yml fourni.",
+    "Les fichiers TypeScript DSP, Presets, Batch, Auto-Cue et UI React ont été vérifiés avec tsc et 21/21 tests unitaires node:test."
+  ],
+  "unknowns": [
+    "Rendu visuel de l’application Audio ToolZ v1.5 dans WebView2 Windows après compilation via GitHub Actions."
+  ]
+}

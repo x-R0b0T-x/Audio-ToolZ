@@ -32,6 +32,7 @@ interface TopMenuBarProps {
   hasSelection: boolean;
   hasClipboard: boolean;
   hasCueTracks: boolean;
+  hasStereo: boolean;
   canUndo: boolean;
   canRedo: boolean;
   hasBpm: boolean;
@@ -45,11 +46,18 @@ interface TopMenuBarProps {
   onOpenJoinFiles: () => void;
   onImportCue: () => void;
   onExportCue: () => void;
+  onAutoCue: () => void;
+  onSplitByCue: () => void;
+  onOpenBatch: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onCut: () => void;
   onCopy: () => void;
   onPaste: () => void;
+  onMixPaste: () => void;
+  onInvertPhase: () => void;
+  onSwapChannels: () => void;
+  onRemoveDcOffset: () => void;
   onSilence: () => void;
   onTrim: () => void;
   onSelectAll: () => void;
@@ -70,6 +78,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
   hasSelection,
   hasClipboard,
   hasCueTracks,
+  hasStereo,
   canUndo,
   canRedo,
   hasBpm,
@@ -83,11 +92,18 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
   onOpenJoinFiles,
   onImportCue,
   onExportCue,
+  onAutoCue,
+  onSplitByCue,
+  onOpenBatch,
   onUndo,
   onRedo,
   onCut,
   onCopy,
   onPaste,
+  onMixPaste,
+  onInvertPhase,
+  onSwapChannels,
+  onRemoveDcOffset,
   onSilence,
   onTrim,
   onSelectAll,
@@ -215,7 +231,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
             {openMenu === 'edition' && (
               <div
                 role="menu"
-                className="absolute left-0 top-full mt-1 w-60 rounded-lg border p-1.5 shadow-xl z-50"
+                className="absolute left-0 top-full mt-1 w-72 rounded-lg border p-1.5 shadow-xl z-50"
                 style={{
                   backgroundColor: 'var(--bg-elevated)',
                   borderColor: 'var(--border-strong)',
@@ -256,6 +272,12 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                   onClick={() => runAndClose(onPaste)}
                 />
                 <MenuItem
+                  label="Mixage au collage (Crossfade)"
+                  shortcut="Ctrl+M"
+                  disabled={!hasDocument || !hasClipboard}
+                  onClick={() => runAndClose(onMixPaste)}
+                />
+                <MenuItem
                   label="Mettre en silence"
                   shortcut="Suppr"
                   disabled={!hasDocument}
@@ -266,6 +288,25 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                   shortcut="Ctrl+T"
                   disabled={!hasDocument || !hasSelection}
                   onClick={() => runAndClose(onTrim)}
+                />
+                <div
+                  className="my-1 h-px"
+                  style={{ backgroundColor: 'var(--border-subtle)' }}
+                />
+                <MenuItem
+                  label="Inverser la phase"
+                  disabled={!hasDocument}
+                  onClick={() => runAndClose(onInvertPhase)}
+                />
+                <MenuItem
+                  label="Inverser canaux G/D"
+                  disabled={!hasDocument || !hasStereo}
+                  onClick={() => runAndClose(onSwapChannels)}
+                />
+                <MenuItem
+                  label="Supprimer le décalage DC"
+                  disabled={!hasDocument}
+                  onClick={() => runAndClose(onRemoveDcOffset)}
                 />
                 <div
                   className="my-1 h-px"
@@ -301,7 +342,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
             {openMenu === 'effets' && (
               <div
                 role="menu"
-                className="absolute left-0 top-full mt-1 w-64 rounded-lg border p-1.5 shadow-xl z-50"
+                className="absolute left-0 top-full mt-1 w-72 rounded-lg border p-1.5 shadow-xl z-50"
                 style={{
                   backgroundColor: 'var(--bg-elevated)',
                   borderColor: 'var(--border-strong)',
@@ -346,6 +387,60 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                   }
                   disabled={!hasDocument || !hasSelection}
                   onClick={() => runAndClose(() => onOpenEffect('speed-pitch'))}
+                />
+                <div
+                  className="my-1 h-px"
+                  style={{ backgroundColor: 'var(--border-subtle)' }}
+                />
+                <MenuItem
+                  label="Égaliseur 3 bandes (EQ)..."
+                  tooltip={
+                    !hasSelection
+                      ? 'Sélectionnez une zone audio pour appliquer cet effet'
+                      : undefined
+                  }
+                  disabled={!hasDocument || !hasSelection}
+                  onClick={() => runAndClose(() => onOpenEffect('eq'))}
+                />
+                <MenuItem
+                  label="Filtre (Passe-haut / bas / 50 Hz)..."
+                  tooltip={
+                    !hasSelection
+                      ? 'Sélectionnez une zone audio pour appliquer cet effet'
+                      : undefined
+                  }
+                  disabled={!hasDocument || !hasSelection}
+                  onClick={() => runAndClose(() => onOpenEffect('filter'))}
+                />
+                <MenuItem
+                  label="Compresseur & Auto-Gain..."
+                  tooltip={
+                    !hasSelection
+                      ? 'Sélectionnez une zone audio pour appliquer cet effet'
+                      : undefined
+                  }
+                  disabled={!hasDocument || !hasSelection}
+                  onClick={() => runAndClose(() => onOpenEffect('compressor'))}
+                />
+                <MenuItem
+                  label="Réduction de bruit spectrale..."
+                  tooltip={
+                    !hasSelection
+                      ? 'Sélectionnez une zone audio pour appliquer cet effet'
+                      : undefined
+                  }
+                  disabled={!hasDocument || !hasSelection}
+                  onClick={() => runAndClose(() => onOpenEffect('noise-reduction'))}
+                />
+                <MenuItem
+                  label="Écho / Delay..."
+                  tooltip={
+                    !hasSelection
+                      ? 'Sélectionnez une zone audio pour appliquer cet effet'
+                      : undefined
+                  }
+                  disabled={!hasDocument || !hasSelection}
+                  onClick={() => runAndClose(() => onOpenEffect('echo'))}
                 />
               </div>
             )}
@@ -402,6 +497,24 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                   label="Extraire le fichier .cue du mix..."
                   disabled={!hasDocument || !hasCueTracks}
                   onClick={() => runAndClose(onExportCue)}
+                />
+                <MenuItem
+                  label="Auto-Cue (Détecter les silences)"
+                  disabled={!hasDocument}
+                  onClick={() => runAndClose(onAutoCue)}
+                />
+                <MenuItem
+                  label="Découper par repères (.cue → WAV)"
+                  disabled={!hasDocument || !hasCueTracks}
+                  onClick={() => runAndClose(onSplitByCue)}
+                />
+                <div
+                  className="my-1 h-px"
+                  style={{ backgroundColor: 'var(--border-subtle)' }}
+                />
+                <MenuItem
+                  label="Traitement par lots (Batch)..."
+                  onClick={() => runAndClose(onOpenBatch)}
                 />
                 <div
                   className="my-1 h-px"
