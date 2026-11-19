@@ -67,18 +67,18 @@ export const EffectModal: React.FC<EffectModalProps> = ({
   const [eqMidDb, setEqMidDb] = useState(0);
   const [eqHighDb, setEqHighDb] = useState(0);
 
-  // Filtre passe-haut / passe-bas / coupe-bande
+  // Filtre
   const [filterKind, setFilterKind] = useState<'highpass' | 'lowpass' | 'notch'>('highpass');
   const [filterFreq, setFilterFreq] = useState(80);
   const [filterQ, setFilterQ] = useState(0.707);
 
-  // Compresseur / Auto-Gain
+  // Compresseur
   const [compThresholdDb, setCompThresholdDb] = useState(-20);
   const [compRatio, setCompRatio] = useState(3.2);
   const [compAutoGain, setCompAutoGain] = useState(true);
   const [compTargetDb, setCompTargetDb] = useState(-1.0);
 
-  // Réduction de bruit spectrale
+  // Bruit
   const [nrReductionDb, setNrReductionDb] = useState(14);
   const [nrSensitivity, setNrSensitivity] = useState(1.0);
 
@@ -144,7 +144,8 @@ export const EffectModal: React.FC<EffectModalProps> = ({
       };
     }
     if (effect === 'eq') {
-      const next = applyParametricEq(document.channels, document.sampleRate, start, end, [\n        { type: 'lowshelf', frequency: 120, gainDb: eqLowDb, q: 0.7 },
+      const next = applyParametricEq(document.channels, document.sampleRate, start, end, [
+        { type: 'lowshelf', frequency: 120, gainDb: eqLowDb, q: 0.7 },
         { type: 'peaking', frequency: 1200, gainDb: eqMidDb, q: 0.9 },
         { type: 'highshelf', frequency: 6500, gainDb: eqHighDb, q: 0.7 },
       ]);
@@ -230,7 +231,6 @@ export const EffectModal: React.FC<EffectModalProps> = ({
     };
   };
 
-  // Écoute temps réel continue dès qu'un réglage change
   useEffect(() => {
     if (!rangeInfo.hasSelection || !document) return;
     const res = computeProcessed();
@@ -311,7 +311,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             </h2>
             <p className="text-[11px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>
               {rangeInfo.hasSelection
-                ? `Sélection : ${formatTimecode(rangeInfo.start / document.sampleRate)} → ${formatTimecode(rangeInfo.end / document.sampleRate)} (Écoute en direct active)`
+                ? `Sélection : ${formatTimecode(rangeInfo.start / document.sampleRate)} → ${formatTimecode(rangeInfo.end / document.sampleRate)} (Écoute directe active)`
                 : 'Sélectionnez une zone audio pour appliquer cet effet.'}
             </p>
           </div>
