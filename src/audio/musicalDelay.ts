@@ -5,11 +5,12 @@ export const DELAY_DIVISIONS = [32, 16, 8, 4, 2, 1].flatMap((denominator) => [
   { label: `1/${denominator} pointée`, beats: 4 / denominator * 1.5 },
 ]).sort((a, b) => a.beats - b.beats);
 export const DEFAULT_DIVISION = DELAY_DIVISIONS.findIndex((d) => d.label === '1/8 droite');
-
+export const DELAY_REPEAT_DECAY = 0.85;
 export function applyMusicalDelay(channels: Float32Array[], sampleRate: number, bpm: number,
   division: number, mode: DelayMode, repetitions: number, wetPercent = 35,
   startChannel: 0 | 1 = 0): Float32Array[] {
   const out = channels.map((c) => new Float32Array(c));
+  if (!Number.isFinite(repetitions) || !Number.isFinite(wetPercent)) throw new Error('Paramètre de délai invalide.');
   const count = Math.max(0, Math.min(16, Math.round(repetitions)));
   const wet = Math.max(0, Math.min(100, wetPercent)) / 100;
   if (!count || !wet || mode === 'off' || !channels.length) return out;
@@ -21,13 +22,12 @@ export function applyMusicalDelay(channels: Float32Array[], sampleRate: number, 
   const delay = Math.max(1, Math.round(sampleRate * 60 / bpm * step.beats));
   const length = channels[0].length;
   if (channels.some((c) => c.length !== length)) throw new Error('Canaux de longueurs différentes.');
-  // A mono source needs two output channels for a genuine left/right ping-pong.
   if (mode === 'ping-pong' && out.length === 1) out.push(new Float32Array(channels[0]));
   const stereo = channels.length >= 2;
   for (let repeat = 1; repeat <= count; repeat++) {
     const offset = delay * repeat;
     if (offset >= length) break;
-    const gain = wet * Math.pow(0.5, repeat - 1);
+    const gain = wet * Math.pow(DELAY_REPEAT_DECAY, repeat - 1);
     const destination = (startChannel + repeat - 1) % 2;
     for (let c = 0; c < out.length; c++) {
       if (mode === 'ping-pong' && c !== destination) continue;
@@ -40,6 +40,7 @@ export function applyMusicalDelay(channels: Float32Array[], sampleRate: number, 
       }
     }
   }
+  // Keep the existing saturation protection. A high wet level can reach this limit.
   for (const channel of out) for (let i = 0; i < channel.length; i++) channel[i] = Math.max(-1, Math.min(1, channel[i]));
   return out;
 }
