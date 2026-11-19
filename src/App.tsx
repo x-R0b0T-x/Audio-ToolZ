@@ -1341,239 +1341,198 @@ export default function App() {
         onClose={() => setControlOpen(false)}
       />
 
-      <EffectModal
-        effect={activeEffect}
-        document={activeDoc}
-        noiseProfile={noiseProfile}
-        onCaptureNoiseProfile={(profile) => {
-          setNoiseProfile(profile);
-          showToast('Profil de bruit capturé');
-        }}
-        isPreviewPlaying={isPreviewPlaying}
-        onStartPreview={(previewChannels, sampleRate, liveGainDb, bands) => {
-          const totalSamples = previewChannels[0]?.length ?? 0;
-          if (totalSamples === 0) return;
+      {(() => {
+        // Session conservée sur le moteur, indépendamment des rendus React.
+        type PreviewSession = {
+          docId: string;
+          start: number;
+          end: number;
+          originalLoop: boolean;
+          previewLength: number;
+        };
+        const engine = audioEngine as typeof audioEngine & {
+          effectPreviewSession?: PreviewSession;
+        };
 
-          if (isPreviewPlaying && audioEngine.isPlaying) {
-            if (bands && audioEngine.updatePreviewBands(bands)) {
-              setIsPlaying(true);
-              return;
-            }
+        const finishPlayback = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+          setIsLooping(false);
+          setPlayMode('idle');
+        };
 
-            if (liveGainDb !== undefined && !bands) {
-              audioEngine.setVolumeDb(volumeDb + liveGainDb);
-              setIsPlaying(true);
-              return;
-            }
+        const getDocumentPosition = () => {
+          const position = Math.max(0, audioEngine.getCurrentSample());
+          const session = engine.effectPreviewSession;
+          if (!session || session.docId !== activeDoc?.id) return position;
+          const length = Math.max(1, session.previewLength);
+          const fraction = (position % length) / length;
+          return session.start + fraction * (session.end - session.start);
+        };
 
-            if (
-              !bands &&
-              liveGainDb === undefined &&
-              audioEngine.replacePreviewAudio(
-                previewChannels,
-                sampleRate
-              )
-            ) {
-              setIsPlaying(true);
-              return;
-            }
+        const resumeDocument = (
+          channels: Float32Array[],
+          sampleRate: number,
+          position: number,
+          loop: boolean,
+          start: number,
+          end: number
+        ) => {
+          const total = channels[0]?.length ?? 0;
+          if (!total) {
+            audioEngine.stop(true);
+            finishPlayback();
+            return;
           }
-
-          audioEngine.play(
-            previewChannels,
-            sampleRate,
-            0,
-            totalSamples,
-            {
-              loop: true,
-              volumeDb: volumeDb + (liveGainDb ?? 0),
-              previewBands: bands,
-              balance,
-              speedRatio: 1,
-              enabledChannels,
-            }
-          );
-
-          setIsPreviewPlaying(audioEngine.isPlaying);
+          const safeStart = Math.max(0, Math.min(total - 1, Math.floor(start)));
+          const safeEnd = Math.max(safeStart + 1, Math.min(total, Math.floor(end)));
+          const cursor = loop
+            ? safeStart + ((Math.max(0, Math.floor(position) - safeStart)) % (safeEnd - safeStart))
+            : Math.max(0, Math.min(total - 1, Math.floor(position)));
+          audioEngine.play(channels, sampleRate, cursor, loop ? safeEnd : total, {
+            loop,
+            volumeDb,
+            balance,
+            speedRatio,
+            enabledChannels,
+            onEnded: finishPlayback,
+          });
+          if (loop) audioEngine.updateLoopRegion(safeStart, safeEnd, false);
           setIsPlaying(audioEngine.isPlaying);
-        }}
-        onStopPreview={() => {
-          // La sortie de préécoute est gérée dans onApply ou onClose,
-          // afin de conserver la position avant de changer le son.
-        }}
-        onApply={(nextChannels, label, nextSelection) => {
-          if (!activeDoc) return;
+          setIsPaused(false);
+          setIsLooping(loop);
+          setPlayMode(audioEngine.isPlaying ? (loop ? 'loop' : 'play') : 'idle');
+        };
 
-          const wasPlaying = audioEngine.isPlaying;
-          const wasPreviewing = isPreviewPlaying;
-          const shouldLoop = wasPreviewing || isLooping;
+        return (
+          <EffectModal
+            effect={activeEffect}
+            document={activeDoc}
+            noiseProfile={noiseProfile}
+            onCaptureNoiseProfile={(profile) => {
+              setNoiseProfile(profile);
+              showToast('Profil de bruit capturé');
+            }}
+            isPreviewPlaying={isPreviewPlaying}
+            onStartPreview={(previewChannels, sampleRate, liveGainDb, bands) => {
+              if (!activeDoc) return;
+              const totalSamples = previewChannels[0]?.length ?? 0;
+              if (!totalSamples) return;
+              const docTotal = activeDoc.channels[0]?.length ?? 0;
+              const start = Math.max(0, Math.min(docTotal, activeDoc.selection.startSample));
+              const end = Math.max(start, Math.min(docTotal, activeDoc.selection.endSample));
+              if (end <= start) return;
 
-          const oldStart = activeDoc.selection.startSample;
-          const oldEnd = activeDoc.selection.endSample;
-          const oldLength = Math.max(1, oldEnd - oldStart);
+              let session = engine.effectPreviewSession;
+              const existing = session?.docId === activeDoc.id;
+              const documentPosition = getDocumentPosition();
 
-          const currentSample = audioEngine.getCurrentSample();
+              if (existing && audioEngine.isPlaying) {
+                if (bands && audioEngine.updatePreviewBands(bands)) {
+                  setIsPlaying(true);
+                  return;
+                }
+                if (liveGainDb !== undefined && !bands) {
+                  audioEngine.setVolumeDb(volumeDb + liveGainDb);
+                  setIsPlaying(true);
+                  return;
+                }
+                if (!bands && liveGainDb === undefined &&
+                    audioEngine.replacePreviewAudio(previewChannels, sampleRate)) {
+                  session!.previewLength = totalSamples;
+                  setIsPlaying(true);
+                  return;
+                }
+              }
 
-          const playbackChannels =
-            activeDoc.channels.length === 2 &&
-            nextChannels.length === 2 &&
-            activeDoc.channels[0].length === nextChannels[0].length
-              ? [
-                  enabledChannels[0]
-                    ? nextChannels[0]
-                    : activeDoc.channels[0],
-                  enabledChannels[1]
-                    ? nextChannels[1]
-                    : activeDoc.channels[1],
-                ]
-              : nextChannels;
-
-          const total = playbackChannels[0]?.length ?? 0;
-          const selection = nextSelection ?? activeDoc.selection;
-
-          commitAudioEdit(
-            nextChannels,
-            label,
-            nextSelection,
-            true
-          );
-
-          setIsPreviewPlaying(false);
-          setActiveEffect(null);
-
-          if (wasPlaying && total > 0) {
-            const loopStart = Math.max(
-              0,
-              Math.min(total - 1, selection.startSample)
-            );
-
-            const loopEnd = Math.max(
-              loopStart + 1,
-              Math.min(total, selection.endSample)
-            );
-
-            const relativePosition = wasPreviewing
-              ? Math.max(0, Math.min(1, currentSample / oldLength))
-              : Math.max(
-                  0,
-                  Math.min(1, (currentSample - oldStart) / oldLength)
-                );
-
-            const resumeSample = shouldLoop
-              ? Math.min(
-                  loopEnd - 1,
-                  loopStart +
-                    Math.floor(
-                      relativePosition * (loopEnd - loopStart)
-                    )
-                )
-              : Math.max(
-                  0,
-                  Math.min(total - 1, Math.floor(currentSample))
-                );
-
-            audioEngine.play(
-              playbackChannels,
-              activeDoc.sampleRate,
-              resumeSample,
-              shouldLoop ? loopEnd : total,
-              {
-                loop: shouldLoop,
-                volumeDb,
+              if (!existing) {
+                session = {
+                  docId: activeDoc.id,
+                  start,
+                  end,
+                  originalLoop: isLooping,
+                  previewLength: totalSamples,
+                };
+                engine.effectPreviewSession = session;
+              }
+              const relative = documentPosition >= start && documentPosition < end
+                ? (documentPosition - start) / (end - start)
+                : 0;
+              const offset = Math.min(totalSamples - 1, Math.floor(relative * totalSamples));
+              session!.previewLength = totalSamples;
+              audioEngine.play(previewChannels, sampleRate, offset, totalSamples, {
+                loop: true,
+                volumeDb: volumeDb + (liveGainDb ?? 0),
+                previewBands: bands,
                 balance,
                 speedRatio,
                 enabledChannels,
+              });
+              // Le décalage initial ne doit pas devenir le début de la boucle.
+              audioEngine.updateLoopRegion(0, totalSamples, false);
+              setIsPreviewPlaying(audioEngine.isPlaying);
+              setIsPlaying(audioEngine.isPlaying);
+              setIsPaused(false);
+            }}
+            onStopPreview={() => {
+              // Appliquer / Annuler assurent la transition après lecture de la position.
+            }}
+            onApply={(nextChannels, label, nextSelection) => {
+              if (!activeDoc) return;
+              const playing = audioEngine.isPlaying;
+              const position = getDocumentPosition();
+              const session = engine.effectPreviewSession;
+              const loop = session?.docId === activeDoc.id ? session.originalLoop : isLooping;
+              const oldStart = activeDoc.selection.startSample;
+              const oldEnd = activeDoc.selection.endSample;
+              const selection = nextSelection ?? activeDoc.selection;
+              const mappedPosition = nextSelection && oldEnd > oldStart &&
+                position >= oldStart && position < oldEnd
+                ? selection.startSample + ((position - oldStart) / (oldEnd - oldStart)) *
+                  (selection.endSample - selection.startSample)
+                : position;
+              const channels = activeDoc.channels.length === 2 &&
+                nextChannels.length === 2 &&
+                activeDoc.channels[0].length === nextChannels[0].length
+                ? [
+                    enabledChannels[0] ? nextChannels[0] : activeDoc.channels[0],
+                    enabledChannels[1] ? nextChannels[1] : activeDoc.channels[1],
+                  ]
+                : nextChannels;
+
+              delete engine.effectPreviewSession;
+              commitAudioEdit(nextChannels, label, nextSelection, true);
+              setIsPreviewPlaying(false);
+              setActiveEffect(null);
+              if (playing) {
+                resumeDocument(channels, activeDoc.sampleRate, mappedPosition,
+                  loop && selection.endSample > selection.startSample,
+                  selection.startSample, selection.endSample);
+              } else {
+                finishPlayback();
               }
-            );
-
-            if (shouldLoop) {
-              audioEngine.updateLoopRegion(
-                loopStart,
-                loopEnd,
-                false
-              );
-            }
-
-            setIsPlaying(audioEngine.isPlaying);
-            setIsPaused(false);
-            setIsLooping(shouldLoop);
-            setPlayMode(shouldLoop ? 'loop' : 'play');
-          }
-
-          showToast(`Effet appliqué : ${label}`);
-        }}
-        onClose={() => {
-          const wasPreviewing = isPreviewPlaying;
-          const wasPlaying = audioEngine.isPlaying;
-          const previewSample = audioEngine.getCurrentSample();
-
-          setIsPreviewPlaying(false);
-          setActiveEffect(null);
-
-          if (!wasPreviewing || !activeDoc) return;
-
-          const total = activeDoc.channels[0]?.length ?? 0;
-
-          if (!wasPlaying || total === 0) {
-            audioEngine.stop(true);
-            setIsPlaying(false);
-            setIsPaused(false);
-            setIsLooping(false);
-            setPlayMode('idle');
-            return;
-          }
-
-          const loopStart = Math.max(
-            0,
-            Math.min(
-              total - 1,
-              activeDoc.selection.startSample
-            )
-          );
-
-          const loopEnd = Math.max(
-            loopStart + 1,
-            Math.min(
-              total,
-              activeDoc.selection.endSample
-            )
-          );
-
-          const loopLength = loopEnd - loopStart;
-
-          const resumeSample =
-            loopStart +
-            (
-              Math.max(0, Math.floor(previewSample)) %
-              loopLength
-            );
-
-          audioEngine.play(
-            activeDoc.channels,
-            activeDoc.sampleRate,
-            resumeSample,
-            loopEnd,
-            {
-              loop: true,
-              volumeDb,
-              balance,
-              speedRatio,
-              enabledChannels,
-            }
-          );
-
-          audioEngine.updateLoopRegion(
-            loopStart,
-            loopEnd,
-            false
-          );
-
-          setIsPlaying(audioEngine.isPlaying);
-          setIsPaused(false);
-          setIsLooping(true);
-          setPlayMode('loop');
-        }}
-      />
+              showToast(`Effet appliqué : ${label}`);
+            }}
+            onClose={() => {
+              const session = engine.effectPreviewSession;
+              const wasPreviewing = session?.docId === activeDoc?.id && Boolean(session);
+              const playing = audioEngine.isPlaying;
+              const position = getDocumentPosition();
+              delete engine.effectPreviewSession;
+              setIsPreviewPlaying(false);
+              setActiveEffect(null);
+              if (!wasPreviewing || !activeDoc) return;
+              if (playing) {
+                resumeDocument(activeDoc.channels, activeDoc.sampleRate, position,
+                  session!.originalLoop, session!.start, session!.end);
+              } else {
+                audioEngine.stop(true);
+                finishPlayback();
+              }
+            }}
+          />
+        );
+      })()}
 
       <ExportModal
         open={exportOpen}
@@ -1615,7 +1574,6 @@ export default function App() {
 
       <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
 
-      {/* Subtle Toast Feedback */}
       {toast && (
         <div
           role="status"
@@ -1623,9 +1581,7 @@ export default function App() {
           className="fixed bottom-24 left-4 z-50 px-3.5 py-2 rounded-lg border text-xs font-medium shadow-lg"
           style={{
             backgroundColor: 'var(--bg-elevated)',
-            borderColor: toast.isError
-              ? 'var(--record-color)'
-              : 'var(--accent-primary)',
+            borderColor: toast.isError ? 'var(--record-color)' : 'var(--accent-primary)',
             color: 'var(--text-primary)',
           }}
         >
