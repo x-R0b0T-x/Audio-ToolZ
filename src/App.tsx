@@ -1348,13 +1348,18 @@ export default function App() {
         onCaptureNoiseProfile={(profile) => {
           setNoiseProfile(profile);
           showToast('Profil de bruit capturé');
-        }}
+}}
         isPreviewPlaying={isPreviewPlaying}
         onStartPreview={(previewChannels, sampleRate, liveGainDb, bands) => {
-          if (bands && isPreviewPlaying && audioEngine.updatePreviewBands(bands)) return;
-          if (liveGainDb !== undefined && isPreviewPlaying && audioEngine.isPlaying) {
-            audioEngine.setVolumeDb(volumeDb + liveGainDb);
-            return;
+          if (audioEngine.isPlaying) {
+            if (bands && audioEngine.updatePreviewBands(bands)) {
+              return;
+            }
+
+            if (liveGainDb !== undefined && isPreviewPlaying) {
+              audioEngine.setVolumeDb(volumeDb + liveGainDb);
+              return;
+            }
           }
           setIsPreviewPlaying(true);
           setIsPlaying(true);
