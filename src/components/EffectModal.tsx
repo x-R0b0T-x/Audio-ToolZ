@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Play, Square, X } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import {
   analyzeAudioStats,
   applyFade,
@@ -49,7 +49,6 @@ export const EffectModal: React.FC<EffectModalProps> = ({
   document,
   noiseProfile,
   onCaptureNoiseProfile,
-  isPreviewPlaying,
   onStartPreview,
   onStopPreview,
   onApply,
@@ -110,14 +109,15 @@ export const EffectModal: React.FC<EffectModalProps> = ({
     );
   }, [document, rangeInfo]);
 
-  if (!effect || !document) return null;
-
   const computeProcessed = (): {
     fullChannels: Float32Array[];
     previewSegment: Float32Array[];
     label: string;
     nextSelection?: { startSample: number; endSample: number };
   } => {
+    if (!document) {
+      return { fullChannels: [], previewSegment: [], label: '' };
+    }
     const { start, end } = rangeInfo;
     if (effect === 'volume') {
       const next = applyVolume(document.channels, start, end, volumeGainDb);
@@ -144,8 +144,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
       };
     }
     if (effect === 'eq') {
-      const next = applyParametricEq(document.channels, document.sampleRate, start, end, [
-        { type: 'lowshelf', frequency: 120, gainDb: eqLowDb, q: 0.7 },
+      const next = applyParametricEq(document.channels, document.sampleRate, start, end, [\n        { type: 'lowshelf', frequency: 120, gainDb: eqLowDb, q: 0.7 },
         { type: 'peaking', frequency: 1200, gainDb: eqMidDb, q: 0.9 },
         { type: 'highshelf', frequency: 6500, gainDb: eqHighDb, q: 0.7 },
       ]);
@@ -231,15 +230,37 @@ export const EffectModal: React.FC<EffectModalProps> = ({
     };
   };
 
-  const handlePreview = () => {
-    if (!rangeInfo.hasSelection) return;
-    if (isPreviewPlaying) {
-      onStopPreview();
-      return;
-    }
+  // Écoute temps réel continue dès qu'un réglage change
+  useEffect(() => {
+    if (!rangeInfo.hasSelection || !document) return;
     const res = computeProcessed();
     onStartPreview(res.previewSegment, document.sampleRate);
-  };
+  }, [
+    volumeGainDb,
+    normTargetDb,
+    fadeDirection,
+    fadeCurve,
+    speedRatio,
+    pitchSemitones,
+    preservePitch,
+    eqLowDb,
+    eqMidDb,
+    eqHighDb,
+    filterKind,
+    filterFreq,
+    filterQ,
+    compThresholdDb,
+    compRatio,
+    compAutoGain,
+    compTargetDb,
+    nrReductionDb,
+    nrSensitivity,
+    echoDelayMs,
+    echoFeedback,
+    echoMix,
+  ]);
+
+  if (!effect || !document) return null;
 
   const handleConfirm = () => {
     if (!rangeInfo.hasSelection) return;
@@ -262,23 +283,15 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
   const matchingPresets = DEFAULT_STUDIO_PRESETS.filter((p) => p.category === effect);
 
-  const fadePoints = Array.from({ length: 40 }, (_, i) => {
-    const p = i / 39;
-    const g = computeFadeGain(p, fadeDirection, fadeCurve);
-    const x = 8 + p * 264;
-    const y = 68 - g * 56;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
-
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="effect-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 select-none"
     >
       <div
-        className="w-full max-w-md rounded-xl border shadow-2xl overflow-hidden"
+        className="w-full max-w-xl rounded-xl border shadow-2xl overflow-hidden"
         style={{
           backgroundColor: 'var(--bg-surface)',
           borderColor: 'var(--border-strong)',
@@ -298,7 +311,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             </h2>
             <p className="text-[11px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>
               {rangeInfo.hasSelection
-                ? `Sélection : ${formatTimecode(rangeInfo.start / document.sampleRate)} → ${formatTimecode(rangeInfo.end / document.sampleRate)}`
+                ? `Sélection : ${formatTimecode(rangeInfo.start / document.sampleRate)} → ${formatTimecode(rangeInfo.end / document.sampleRate)} (Écoute en direct active)`
                 : 'Sélectionnez une zone audio pour appliquer cet effet.'}
             </p>
           </div>
@@ -316,7 +329,7 @@ export const EffectModal: React.FC<EffectModalProps> = ({
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-4">
           {matchingPresets.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {matchingPresets.map((preset) => (
@@ -355,59 +368,262 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             </div>
           )}
 
-          {effect === 'volume' && (
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <label htmlFor="eff-vol-range" style={{ color: 'var(--text-secondary)' }}>
-                  Gain (dB)
-                </label>
-                <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                  {volumeGainDb >= 0 ? '+' : ''}{volumeGainDb.toFixed(1)} dB
-                </span>
-              </div>
-              <input
-                id="eff-vol-range"
-                type="range"
-                min={-24}
-                max={24}
-                step={0.5}
-                value={volumeGainDb}
-                onChange={(e) => setVolumeGainDb(parseFloat(e.target.value))}
-                className="w-full studio-slider"
-              />
+          {/* Égaliseur 3 bandes avec faders verticaux */}
+          {effect === 'eq' && (
+            <div className="grid grid-cols-3 gap-6 py-2 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              {[
+                { label: 'Graves', freq: '120 Hz', val: eqLowDb, set: setEqLowDb },
+                { label: 'Médiums', freq: '1.2 kHz', val: eqMidDb, set: setEqMidDb },
+                { label: 'Aigus', freq: '6.5 kHz', val: eqHighDb, set: setEqHighDb },
+              ].map((f) => (
+                <div key={f.label} className="flex flex-col items-center gap-2">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</span>
+                  <span className="text-[10px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>{f.freq}</span>
+                  <div className="h-44 flex items-center justify-center relative py-2">
+                    <input
+                      type="range"
+                      min={-12}
+                      max={12}
+                      step={0.5}
+                      value={f.val}
+                      onChange={(e) => f.set(parseFloat(e.target.value))}
+                      className="cursor-pointer"
+                      style={{
+                        writingMode: 'vertical-lr',
+                        direction: 'rtl',
+                        height: '140px',
+                        width: '28px',
+                        accentColor: 'var(--accent-primary)',
+                      }}
+                    />
+                  </div>
+                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                    {f.val >= 0 ? '+' : ''}{f.val.toFixed(1)} dB
+                  </span>
+                </div>
+              ))}
             </div>
           )}
 
-          {effect === 'normalize' && (
-            <div>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <label htmlFor="eff-norm-range" style={{ color: 'var(--text-secondary)' }}>
-                  Niveau cible (dBFS)
-                </label>
-                <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                  {normTargetDb.toFixed(1)} dBFS
-                </span>
+          {/* Écho / Delay avec faders verticaux */}
+          {effect === 'echo' && (
+            <div className="grid grid-cols-3 gap-6 py-2 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              {[
+                { label: 'Délai', unit: 'ms', val: echoDelayMs, set: setEchoDelayMs, min: 20, max: 800, step: 10, display: `${echoDelayMs} ms` },
+                { label: 'Feedback', unit: '%', val: Math.round(echoFeedback * 100), set: (v: number) => setEchoFeedback(v / 100), min: 0, max: 90, step: 1, display: `${Math.round(echoFeedback * 100)} %` },
+                { label: 'Mix', unit: '%', val: Math.round(echoMix * 100), set: (v: number) => setEchoMix(v / 100), min: 0, max: 100, step: 1, display: `${Math.round(echoMix * 100)} %` },
+              ].map((f) => (
+                <div key={f.label} className="flex flex-col items-center gap-2">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</span>
+                  <span className="text-[10px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>{f.unit}</span>
+                  <div className="h-44 flex items-center justify-center relative py-2">
+                    <input
+                      type="range"
+                      min={f.min}
+                      max={f.max}
+                      step={f.step}
+                      value={f.val}
+                      onChange={(e) => f.set(parseFloat(e.target.value))}
+                      className="cursor-pointer"
+                      style={{
+                        writingMode: 'vertical-lr',
+                        direction: 'rtl',
+                        height: '140px',
+                        width: '28px',
+                        accentColor: 'var(--accent-primary)',
+                      }}
+                    />
+                  </div>
+                  <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                    {f.display}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Volume */}
+          {effect === 'volume' && (
+            <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Gain de sortie</span>
+              <div className="h-48 flex items-center justify-center py-2">
+                <input
+                  type="range"
+                  min={-24}
+                  max={24}
+                  step={0.5}
+                  value={volumeGainDb}
+                  onChange={(e) => setVolumeGainDb(parseFloat(e.target.value))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '150px',
+                    width: '32px',
+                    accentColor: 'var(--accent-primary)',
+                  }}
+                />
               </div>
-              <input
-                id="eff-norm-range"
-                type="range"
-                min={-12}
-                max={0}
-                step={0.5}
-                value={normTargetDb}
-                onChange={(e) => setNormTargetDb(parseFloat(e.target.value))}
-                className="w-full studio-slider"
-              />
+              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                {volumeGainDb >= 0 ? '+' : ''}{volumeGainDb.toFixed(1)} dB
+              </span>
+            </div>
+          )}
+
+          {/* Normaliser */}
+          {effect === 'normalize' && (
+            <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Niveau crête cible</span>
+              <div className="h-48 flex items-center justify-center py-2">
+                <input
+                  type="range"
+                  min={-12}
+                  max={0}
+                  step={0.5}
+                  value={normTargetDb}
+                  onChange={(e) => setNormTargetDb(parseFloat(e.target.value))}
+                  className="cursor-pointer"
+                  style={{
+                    writingMode: 'vertical-lr',
+                    direction: 'rtl',
+                    height: '150px',
+                    width: '32px',
+                    accentColor: 'var(--accent-primary)',
+                  }}
+                />
+              </div>
+              <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                {normTargetDb.toFixed(1)} dBFS
+              </span>
               {currentStats && (
-                <p className="text-[11px] mt-1 font-mono-tabular" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[11px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>
                   Pic actuel : {currentStats.peakDb.toFixed(1)} dBFS
                 </p>
               )}
             </div>
           )}
 
+          {/* Filtre */}
+          {effect === 'filter' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ['highpass', 'Passe-haut'],
+                  ['lowpass', 'Passe-bas'],
+                  ['notch', 'Coupe-bande (50 Hz)'],
+                ].map(([kind, lbl]) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => {
+                      setFilterKind(kind as any);
+                      if (kind === 'notch') {
+                        setFilterFreq(50);
+                        setFilterQ(8);
+                      } else if (kind === 'highpass') {
+                        setFilterFreq(80);
+                        setFilterQ(0.707);
+                      } else {
+                        setFilterFreq(8000);
+                        setFilterQ(0.707);
+                      }
+                    }}
+                    className="px-2 py-2 rounded-lg border text-xs font-medium cursor-pointer transition-colors"
+                    style={{
+                      backgroundColor: filterKind === kind ? 'var(--accent-soft)' : 'var(--bg-elevated)',
+                      borderColor: filterKind === kind ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {lbl}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col items-center gap-3 py-3 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Fréquence de coupure</span>
+                <div className="h-44 flex items-center justify-center py-2">
+                  <input
+                    type="range"
+                    min={30}
+                    max={16000}
+                    step={10}
+                    value={filterFreq}
+                    onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '140px',
+                      width: '32px',
+                      accentColor: 'var(--accent-primary)',
+                    }}
+                  />
+                </div>
+                <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  {filterFreq} Hz
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Compresseur */}
+          {effect === 'compressor' && (
+            <div className="grid grid-cols-2 gap-6 py-3 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Seuil</span>
+                <div className="h-44 flex items-center justify-center py-2">
+                  <input
+                    type="range"
+                    min={-40}
+                    max={-2}
+                    step={1}
+                    value={compThresholdDb}
+                    onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '130px',
+                      width: '28px',
+                      accentColor: 'var(--accent-primary)',
+                    }}
+                  />
+                </div>
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  {compThresholdDb} dBFS
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Ratio</span>
+                <div className="h-44 flex items-center justify-center py-2">
+                  <input
+                    type="range"
+                    min={1.2}
+                    max={10}
+                    step={0.2}
+                    value={compRatio}
+                    onChange={(e) => setCompRatio(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '130px',
+                      width: '28px',
+                      accentColor: 'var(--accent-primary)',
+                    }}
+                  />
+                </div>
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  {compRatio.toFixed(1)} : 1
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Fondus */}
           {effect === 'fade' && (
-            <>
+            <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -434,423 +650,116 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   Fondu de sortie (Fade Out)
                 </button>
               </div>
-              <div>
-                <span className="block text-xs mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Profil de courbe
-                </span>
-                <div className="grid grid-cols-3 gap-2">
-                  {(
-                    [
-                      ['linear', 'Linéaire'],
-                      ['exponential', 'Exponentielle'],
-                      ['scurve', 'Courbe en S'],
-                    ] as const
-                  ).map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setFadeCurve(id)}
-                      className="px-2.5 py-1.5 rounded border text-xs font-medium cursor-pointer"
-                      style={{
-                        backgroundColor: fadeCurve === id ? 'var(--accent-soft)' : 'var(--bg-elevated)',
-                        borderColor: fadeCurve === id ? 'var(--accent-primary)' : 'var(--border-subtle)',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  ['linear', 'Linéaire'],
+                  ['exponential', 'Exponentielle'],
+                  ['scurve', 'Courbe en S'],
+                ].map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setFadeCurve(id as any)}
+                    className="px-2 py-1.5 rounded border text-xs font-medium cursor-pointer"
+                    style={{
+                      backgroundColor: fadeCurve === id ? 'var(--accent-soft)' : 'var(--bg-elevated)',
+                      borderColor: fadeCurve === id ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <svg
-                viewBox="0 0 280 76"
-                className="w-full h-20 rounded-lg border"
-                style={{ backgroundColor: 'var(--wave-bg)', borderColor: 'var(--border-subtle)' }}
-              >
-                <polyline
-                  fill="none"
-                  stroke="var(--accent-secondary)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  points={fadePoints}
-                />
-              </svg>
-            </>
+            </div>
           )}
 
+          {/* Speed / Pitch */}
           {effect === 'speed-pitch' && (
-            <>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <label htmlFor="eff-speed-range" style={{ color: 'var(--text-secondary)' }}>
-                    Vitesse de lecture
-                  </label>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {speedRatio.toFixed(2)}x ({Math.round(speedRatio * 100)} %)
-                  </span>
+            <div className="grid grid-cols-2 gap-6 py-3 px-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Vitesse</span>
+                <div className="h-44 flex items-center justify-center py-2">
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={2.0}
+                    step={0.05}
+                    value={speedRatio}
+                    onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '130px',
+                      width: '28px',
+                      accentColor: 'var(--accent-primary)',
+                    }}
+                  />
                 </div>
-                <input
-                  id="eff-speed-range"
-                  type="range"
-                  min={0.5}
-                  max={2.0}
-                  step={0.05}
-                  value={speedRatio}
-                  onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <label htmlFor="eff-pitch-range" style={{ color: 'var(--text-secondary)' }}>
-                    Hauteur (Pitch)
-                  </label>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {pitchSemitones > 0 ? `+${pitchSemitones}` : pitchSemitones} demi-tons
-                  </span>
-                </div>
-                <input
-                  id="eff-pitch-range"
-                  type="range"
-                  min={-12}
-                  max={12}
-                  step={1}
-                  value={pitchSemitones}
-                  onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <label className="flex items-center gap-2 text-xs cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={preservePitch}
-                  onChange={(e) => setPreservePitch(e.target.checked)}
-                />
-                <span style={{ color: 'var(--text-primary)' }}>
-                  Conserver la hauteur lors du changement de vitesse (WSOLA)
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  {speedRatio.toFixed(2)}x
                 </span>
-              </label>
-            </>
-          )}
+              </div>
 
-          {effect === 'eq' && (
-            <div className="space-y-3">
-              {(
-                [
-                  ['Graves (120 Hz)', eqLowDb, setEqLowDb],
-                  ['Médiums (1.2 kHz)', eqMidDb, setEqMidDb],
-                  ['Aigus (6.5 kHz)', eqHighDb, setEqHighDb],
-                ] as const
-              ).map(([lbl, val, setter]) => (
-                <div key={lbl}>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span style={{ color: 'var(--text-secondary)' }}>{lbl}</span>
-                    <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                      {val >= 0 ? '+' : ''}{val.toFixed(1)} dB
-                    </span>
-                  </div>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Hauteur (Pitch)</span>
+                <div className="h-44 flex items-center justify-center py-2">
                   <input
                     type="range"
                     min={-12}
                     max={12}
-                    step={0.5}
-                    value={val}
-                    onChange={(e) => setter(parseFloat(e.target.value))}
-                    className="w-full studio-slider"
+                    step={1}
+                    value={pitchSemitones}
+                    onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '130px',
+                      width: '28px',
+                      accentColor: 'var(--accent-primary)',
+                    }}
                   />
                 </div>
-              ))}
-            </div>
-          )}
-
-          {effect === 'filter' && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-2">
-                {(
-                  [
-                    ['highpass', 'Passe-haut'],
-                    ['lowpass', 'Passe-bas'],
-                    ['notch', 'Coupe-bande'],
-                  ] as const
-                ).map(([kind, lbl]) => (
-                  <button
-                    key={kind}
-                    type="button"
-                    onClick={() => {
-                      setFilterKind(kind);
-                      if (kind === 'notch') {
-                        setFilterFreq(50);
-                        setFilterQ(8);
-                      } else if (kind === 'highpass') {
-                        setFilterFreq(80);
-                        setFilterQ(0.707);
-                      } else {
-                        setFilterFreq(8000);
-                        setFilterQ(0.707);
-                      }
-                    }}
-                    className="px-2 py-1.5 rounded border text-xs font-medium cursor-pointer"
-                    style={{
-                      backgroundColor: filterKind === kind ? 'var(--accent-soft)' : 'var(--bg-elevated)',
-                      borderColor: filterKind === kind ? 'var(--accent-primary)' : 'var(--border-subtle)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {lbl}
-                  </button>
-                ))}
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Fréquence de coupure</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {filterFreq} Hz
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={30}
-                  max={16000}
-                  step={10}
-                  value={filterFreq}
-                  onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
-                  className="w-full studio-slider"
-                />
-              </div>
-            </div>
-          )}
-
-          {effect === 'compressor' && (
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Seuil (Threshold)</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {compThresholdDb} dBFS
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={-40}
-                  max={-2}
-                  step={1}
-                  value={compThresholdDb}
-                  onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Ratio</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {compRatio.toFixed(1)} : 1
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={1.2}
-                  max={10}
-                  step={0.2}
-                  value={compRatio}
-                  onChange={(e) => setCompRatio(parseFloat(e.target.value))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <label className="flex items-center gap-2 text-xs cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={compAutoGain}
-                  onChange={(e) => setCompAutoGain(e.target.checked)}
-                />
-                <span style={{ color: 'var(--text-primary)' }}>
-                  Auto-Gain vers pic cible ({compTargetDb.toFixed(1)} dBFS)
+                <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: 'var(--accent-secondary)' }}>
+                  {pitchSemitones > 0 ? `+${pitchSemitones}` : pitchSemitones} dt
                 </span>
-              </label>
-              {compAutoGain && (
-                <input
-                  type="range"
-                  min={-6}
-                  max={0}
-                  step={0.5}
-                  value={compTargetDb}
-                  onChange={(e) => setCompTargetDb(parseFloat(e.target.value))}
-                  className="w-full studio-slider"
-                />
-              )}
-            </div>
-          )}
-
-          {effect === 'noise-reduction' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                  {noiseProfile
-                    ? `Profil capturé (${noiseProfile.fftSize} pts)`
-                    : 'Aucun profil mémorisé (utilisera la sélection)'}
-                </span>
-                {onCaptureNoiseProfile && (
-                  <button
-                    type="button"
-                    disabled={!rangeInfo.hasSelection}
-                    onClick={() => {
-                      const prof = captureNoiseProfile(
-                        document.channels,
-                        document.sampleRate,
-                        rangeInfo.start,
-                        rangeInfo.end
-                      );
-                      onCaptureNoiseProfile(prof);
-                    }}
-                    className="px-2.5 py-1 rounded border text-[11px] font-medium cursor-pointer disabled:opacity-40"
-                    style={{
-                      backgroundColor: 'var(--bg-elevated)',
-                      borderColor: 'var(--border-subtle)',
-                      color: 'var(--accent-secondary)',
-                    }}
-                  >
-                    Capturer le bruit
-                  </button>
-                )}
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Atténuation</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    -{nrReductionDb} dB
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={4}
-                  max={36}
-                  step={1}
-                  value={nrReductionDb}
-                  onChange={(e) => setNrReductionDb(parseInt(e.target.value, 10))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Sensibilité</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {nrSensitivity.toFixed(2)}x
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0.5}
-                  max={2.0}
-                  step={0.1}
-                  value={nrSensitivity}
-                  onChange={(e) => setNrSensitivity(parseFloat(e.target.value))}
-                  className="w-full studio-slider"
-                />
-              </div>
-            </div>
-          )}
-
-          {effect === 'echo' && (
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Délai</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {echoDelayMs} ms
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={30}
-                  max={800}
-                  step={10}
-                  value={echoDelayMs}
-                  onChange={(e) => setEchoDelayMs(parseInt(e.target.value, 10))}
-                  className="w-full studio-slider"
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--text-secondary)' }}>Feedback / Mix</span>
-                  <span className="font-mono-tabular font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                    {Math.round(echoFeedback * 100)}% / {Math.round(echoMix * 100)}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={0.85}
-                  step={0.05}
-                  value={echoFeedback}
-                  onChange={(e) => setEchoFeedback(parseFloat(e.target.value))}
-                  className="w-full studio-slider"
-                />
-                <input
-                  type="range"
-                  min={0.05}
-                  max={0.85}
-                  step={0.05}
-                  value={echoMix}
-                  onChange={(e) => setEchoMix(parseFloat(e.target.value))}
-                  className="w-full studio-slider mt-2"
-                />
               </div>
             </div>
           )}
         </div>
 
         <div
-          className="flex items-center justify-between gap-3 px-4 py-3 border-t"
-          style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)' }}
+          className="flex items-center justify-end gap-2 px-5 py-3 border-t"
+          style={{
+            backgroundColor: 'var(--bg-elevated)',
+            borderColor: 'var(--border-subtle)',
+          }}
         >
           <button
             type="button"
-            disabled={!rangeInfo.hasSelection}
-            onClick={handlePreview}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={() => {
+              onStopPreview();
+              onClose();
+            }}
+            className="px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer"
             style={{
-              backgroundColor: isPreviewPlaying ? 'var(--accent-soft)' : 'var(--bg-surface)',
-              borderColor: isPreviewPlaying ? 'var(--accent-primary)' : 'var(--border-subtle)',
-              color: 'var(--text-primary)',
+              borderColor: 'var(--border-subtle)',
+              color: 'var(--text-secondary)',
             }}
           >
-            {isPreviewPlaying ? (
-              <>
-                <Square className="w-3.5 h-3.5" />
-                Arrêter l&apos;écoute
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5" />
-                Pré-écouter
-              </>
-            )}
+            Annuler
           </button>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                onStopPreview();
-                onClose();
-              }}
-              className="px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer"
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                borderColor: 'var(--border-subtle)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              Annuler
-            </button>
-            <button
-              type="button"
-              disabled={!rangeInfo.hasSelection}
-              onClick={handleConfirm}
-              className="px-4 py-1.5 rounded-md text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ backgroundColor: 'var(--accent-primary)', color: '#ffffff' }}
-            >
-              Appliquer
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={!rangeInfo.hasSelection}
+            onClick={handleConfirm}
+            className="px-5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer disabled:opacity-40"
+            style={{ backgroundColor: 'var(--accent-primary)' }}
+          >
+            Appliquer
+          </button>
         </div>
       </div>
     </div>
