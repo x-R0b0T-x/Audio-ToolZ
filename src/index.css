@@ -78,7 +78,7 @@
   background: var(--border-strong);
 }
 
-/* Range sliders tuned for studio precision */
+/* Horizontal sliders */
 input[type="range"].studio-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -86,33 +86,56 @@ input[type="range"].studio-slider {
   cursor: pointer;
 }
 input[type="range"].studio-slider::-webkit-slider-runnable-track {
-  height: 5px;
+  height: 6px;
   border-radius: 999px;
-  background: var(--border-subtle);
+  background: #35394b;
 }
 input[type="range"].studio-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: var(--accent-secondary);
-  border: 2px solid var(--bg-canvas);
-  margin-top: -4.5px;
-  transition: transform 0.12s ease;
+  border: 2px solid #161820;
+  margin-top: -5px;
+  transition: transform 0.1s ease;
 }
 input[type="range"].studio-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
 }
-input[type="range"].studio-slider::-moz-range-track {
-  height: 5px;
-  border-radius: 999px;
-  background: var(--border-subtle);
+
+/* Studio Vertical Faders: Neon Purple Track + Bright Emerald Thumb */
+input[type="range"].studio-fader-vertical {
+  -webkit-appearance: none;
+  appearance: none;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  height: 150px;
+  width: 26px;
+  background: transparent;
+  cursor: pointer;
 }
-input[type="range"].studio-slider::-moz-range-thumb {
-  width: 14px;
+input[type="range"].studio-fader-vertical::-webkit-slider-runnable-track {
+  width: 8px;
+  border-radius: 6px;
+  background: #7c4dff;
+  border: 1px solid #bd93f9;
+}
+input[type="range"].studio-fader-vertical::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
   height: 14px;
-  border-radius: 999px;
-  background: var(--accent-secondary);
-  border: 2px solid var(--bg-canvas);
+  border-radius: 4px;
+  background: #45f882;
+  border: 2px solid #13151c;
+  box-shadow: 0 0 8px rgba(69, 248, 130, 0.6);
+  margin-left: -9px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+input[type="range"].studio-fader-vertical::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #50fa7b;
 }
