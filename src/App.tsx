@@ -1,3 +1,4 @@
+import { decodeAudioFallback } from './utils/desktop';
 /**
  * @license
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -671,7 +672,15 @@ export default function App() {
     async (file: File, recentToken?: string) => {
       try {
         const buffer = await file.arrayBuffer();
-        const decoded = await audioEngine.decodeFile(buffer);
+        const decoded = await audioEngine.decodeFile(buffer).catch(async (error) => {
+          if (!window.__TAURI_INTERNALS__) throw error;
+          try {
+            return await decodeAudioFallback(buffer);
+          } catch (fallbackError) {
+            const detail = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+            throw new Error(`Piste audio non importée : ${detail}`);
+          }
+        });
         const total = decoded.channels[0]?.length ?? 0;
         const ext = file.name.split('.').pop()?.toUpperCase() || 'AUDIO';
         const doc: AudioDocument = {
@@ -1341,7 +1350,12 @@ export default function App() {
           showToast('Profil de bruit capturé');
         }}
         isPreviewPlaying={isPreviewPlaying}
-        onStartPreview={(previewChannels, sampleRate) => {
+        onStartPreview={(previewChannels, sampleRate, liveGainDb, bands) => {
+          if (bands && isPreviewPlaying && audioEngine.updatePreviewBands(bands)) return;
+          if (liveGainDb !== undefined && isPreviewPlaying && audioEngine.isPlaying) {
+            audioEngine.setVolumeDb(volumeDb + liveGainDb);
+            return;
+          }
           setIsPreviewPlaying(true);
           setIsPlaying(true);
           audioEngine.play(
@@ -1351,7 +1365,8 @@ export default function App() {
             previewChannels[0]?.length ?? 0,
             {
               loop: true,
-              volumeDb,
+              volumeDb: volumeDb + (liveGainDb ?? 0),
+              previewBands: bands,
               balance,
               speedRatio: 1,
               enabledChannels,

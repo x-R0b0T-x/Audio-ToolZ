@@ -12,8 +12,8 @@ export const APP_VERSION = 'v1.5';
 const CHANGELOG_ADDITIONS = [
   'Tauri v2 + WebView2 ultra-léger (~8 Mo)',
   'Faders verticaux de précision avec rendu et écoute en direct instantanée',
-  'Fenêtre À propos déplaçable, redimensionnable et centrée',
-  'Analyseur temps réel ultra-détaillé style GoldWave à défilement ralenti',
+  'Fenêtre À propos agrandie, centrée et déplaçable',
+  'Waveform Mode 3',
   'Fermeture automatique de tous les menus au clic extérieur',
   'Ancrage permanent de la fenêtre de contrôle lors du redimensionnement',
 ];
@@ -27,7 +27,7 @@ const CHANGELOG_FIXES = [
 export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
   const [activeTab, setActiveTab] = useState<'shortcuts' | 'changelog'>('shortcuts');
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ w: 680, h: 560 });
+  const [size, setSize] = useState({ w: 1000, h: 680 });
   const draggingRef = useRef(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const modalRef = useRef<HTMLDivElement>(null);
@@ -35,8 +35,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
   useEffect(() => {
     if (open) {
       setPos({
-        x: Math.max(20, Math.round((window.innerWidth - size.w) / 2)),
-        y: Math.max(20, Math.round((window.innerHeight - size.h) / 2)),
+        x: Math.max(0, Math.round((window.innerWidth - size.w) / 2)),
+        y: Math.max(0, Math.round((window.innerHeight - size.h) / 2)),
       });
     }
   }, [open, size.w, size.h]);
@@ -45,8 +45,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     const onMove = (e: MouseEvent) => {
       if (!draggingRef.current) return;
       setPos({
-        x: Math.max(10, Math.min(window.innerWidth - 100, e.clientX - dragOffsetRef.current.x)),
-        y: Math.max(10, Math.min(window.innerHeight - 80, e.clientY - dragOffsetRef.current.y)),
+        x: Math.max(0, Math.min(window.innerWidth - size.w, e.clientX - dragOffsetRef.current.x)),
+        y: Math.max(0, Math.min(window.innerHeight - size.h, e.clientY - dragOffsetRef.current.y)),
       });
     };
     const onUp = () => { draggingRef.current = false; };
@@ -56,7 +56,18 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, []);
+  }, [size.w, size.h]);
+
+  useEffect(() => {
+    if (!open) return;
+    const fit = () => setSize({
+      w: Math.min(1000, window.innerWidth - 24),
+      h: Math.min(680, window.innerHeight - 24),
+    });
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [open]);
 
   if (!open) return null;
 
@@ -64,14 +75,12 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed z-50 rounded-xl border shadow-2xl flex flex-col overflow-hidden resize"
+      className="fixed z-50 rounded-xl border shadow-2xl flex flex-col overflow-hidden"
       style={{
         left: `${pos.x}px`,
         top: `${pos.y}px`,
         width: `${size.w}px`,
         height: `${size.h}px`,
-        minWidth: '420px',
-        minHeight: '380px',
         backgroundColor: 'var(--bg-surface)',
         borderColor: 'var(--border-strong)',
       }}
@@ -115,9 +124,9 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
         </button>
       </div>
 
-      <div className="p-5 space-y-4 overflow-y-auto text-xs leading-relaxed flex-1">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-3 text-xs leading-snug">
         <div className="flex flex-col items-center justify-center gap-1.5 pt-1">
-          <BrandLogo size={74} showWordmark wordmarkClassName="text-2xl" />
+          <BrandLogo size={48} showWordmark wordmarkClassName="text-2xl" />
           <span className="font-mono-tabular text-[11px]" style={{ color: 'var(--text-muted)' }}>
             Version {APP_VERSION}
           </span>
@@ -190,7 +199,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
         </div>
 
         {activeTab === 'shortcuts' ? (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 font-mono-tabular">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 font-mono-tabular">
             {[
               ['Clic gauche', 'Départ de lecture / début de sélection'],
               ['Clic droit', 'Définir la fin de sélection'],
@@ -216,7 +225,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid min-h-0 grid-cols-1 gap-3 overflow-y-auto md:grid-cols-2">
             <div
               className="p-3.5 rounded-lg border space-y-2"
               style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}

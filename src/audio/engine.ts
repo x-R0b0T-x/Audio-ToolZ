@@ -5,6 +5,13 @@ import {
   reverseChannelsRange,
 } from './dsp';
 
+export interface PreviewBand {
+  type: BiquadFilterType;
+  frequency: number;
+  gainDb?: number;
+  q?: number;
+}
+
 export interface MeterLevels {
   leftPeak: number;
   rightPeak: number;
@@ -34,6 +41,7 @@ export class AudioEngine {
   private ctx: AudioContext | null = null;
   private sourceNode: AudioBufferSourceNode | null = null;
   private currentBuffer: AudioBuffer | null = null;
+  private previewNodes: BiquadFilterNode[] = [];
   private currentTotalSamples = 0;
   private currentChannelCount = 2;
   private preSplitGain: GainNode | null = null;
@@ -197,6 +205,7 @@ export class AudioEngine {
       speedRatio?: number;
       enabledChannels?: [boolean, boolean];
       onEnded?: () => void;
+      previewBands?: PreviewBand[];
     } = {}
   ): void {
     this.stop(false);
@@ -271,8 +280,17 @@ export class AudioEngine {
       );
     }
 
+    this.currentDocSampleRate = sampleRate;
     if (this.preSplitGain) {
-      src.connect(this.preSplitGain);
+      let tail: AudioNode = src;
+      for (const band of options.previewBands ?? []) {
+        const node = ctx.createBiquadFilter();
+        this.setPreviewBand(ctx, node, band, true);
+        tail.connect(node);
+        this.previewNodes.push(node);
+        tail = node;
+      }
+      tail.connect(this.preSplitGain);
     }
 
     this.sourceNode = src;
@@ -361,7 +379,7 @@ export class AudioEngine {
     src.loopEnd = safeEnd / sr;
     src.playbackRate.value = this.speedRatio;
     if (this.preSplitGain) {
-      src.connect(this.preSplitGain);
+      src.connect(this.previewNodes[0] ?? this.preSplitGain);
     } else {
       src.connect(this.gainNode);
     }
@@ -398,6 +416,8 @@ export class AudioEngine {
         // Ignore already-stopped source
       }
     }
+    for (const node of this.previewNodes) node.disconnect();
+    this.previewNodes = [];
     this.isPlayingState = false;
     if (resetPaused) {
       this.isPausedState = false;
@@ -406,6 +426,29 @@ export class AudioEngine {
       this.currentBuffer = null;
       this.offsetSamplesAtStart = 0;
     }
+  }
+
+  private setPreviewBand(ctx: AudioContext, node: BiquadFilterNode, band: PreviewBand, initial: boolean): void {
+    if (node.type !== band.type) node.type = band.type;
+    const now = ctx.currentTime;
+    const set = (param: AudioParam, value: number) => {
+      if (initial) param.setValueAtTime(value, now);
+      else {
+        param.cancelAndHoldAtTime(now);
+        param.setTargetAtTime(value, now, 0.015);
+      }
+    };
+    const q = Math.max(0.1, Math.min(24, band.q ?? 0.707));
+    set(node.frequency, Math.max(10, Math.min(this.currentDocSampleRate * 0.45, ctx.sampleRate * 0.45, band.frequency)));
+    set(node.Q, band.type === 'lowpass' || band.type === 'highpass' ? 20 * Math.log10(q) : q);
+    set(node.gain, band.gainDb ?? 0);
+  }
+
+  updatePreviewBands(bands: PreviewBand[]): boolean {
+    const ctx = this.ctx;
+    if (!ctx || !this.isPlayingState || !this.sourceNode || bands.length !== this.previewNodes.length) return false;
+    bands.forEach((band, i) => this.setPreviewBand(ctx, this.previewNodes[i], band, false));
+    return true;
   }
 
   setVolumeDb(db: number): void {

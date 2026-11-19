@@ -1,3 +1,4 @@
+import { audioEngine, type PreviewBand } from '../audio/engine';
 import React, { useMemo, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import {
@@ -34,7 +35,7 @@ interface EffectModalProps {
   noiseProfile?: NoiseProfile | null;
   onCaptureNoiseProfile?: (profile: NoiseProfile) => void;
   isPreviewPlaying: boolean;
-  onStartPreview: (previewChannels: Float32Array[], sampleRate: number) => void;
+  onStartPreview: (previewChannels: Float32Array[], sampleRate: number, liveGainDb?: number, bands?: PreviewBand[]) => void;
   onStopPreview: () => void;
   onApply: (
     nextChannels: Float32Array[],
@@ -232,7 +233,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
   };
 
   useEffect(() => {
-    if (!rangeInfo.hasSelection || !document) return;
+    if (!effect || !rangeInfo.hasSelection || !document) return;
+    if (effect === 'volume') {
+      const { start, end } = rangeInfo;
+      onStartPreview(
+        document.channels.map((channel) => channel.subarray(start, end)),
+        document.sampleRate,
+        volumeGainDb
+      );
+      return;
+    }
+    if (effect === 'eq' || effect === 'filter') {
+      const { start, end } = rangeInfo;
+      const bands: PreviewBand[] = effect === 'eq' ? [
+        { type: 'lowshelf', frequency: 120, gainDb: eqLowDb, q: 0.7 },
+        { type: 'peaking', frequency: 1200, gainDb: eqMidDb, q: 0.9 },
+        { type: 'highshelf', frequency: 6500, gainDb: eqHighDb, q: 0.7 },
+      ] : [
+        { type: filterKind, frequency: filterFreq, q: filterQ },
+      ];
+      onStartPreview(document.channels.map((c) => c.subarray(start, end)), document.sampleRate, undefined, bands);
+      return;
+    }
     const timer = setTimeout(() => {
       const res = computeProcessed();
       onStartPreview(res.previewSegment, document.sampleRate);
@@ -262,6 +284,27 @@ export const EffectModal: React.FC<EffectModalProps> = ({
     echoFeedback,
     echoMix,
   ]);
+
+  useEffect(() => {
+    if (!effect || !document || !rangeInfo.hasSelection) return;
+    let frame = 0;
+    let lastRead = -Infinity;
+    const refresh = (now: number) => {
+      if (now - lastRead >= 33) {
+        lastRead = now;
+        const { leftPeak, rightPeak } = audioEngine.readLiveMeters();
+        const peak = Math.max(leftPeak, rightPeak);
+        const db = Math.max(-60, 20 * Math.log10(peak));
+        window.document.querySelectorAll<HTMLMeterElement>('meter.atz-effect-meter').forEach((meter) => {
+          meter.value = db;
+          meter.title = peak > 0 ? `${db.toFixed(1)} dBFS` : 'Silence';
+        });
+      }
+      frame = requestAnimationFrame(refresh);
+    };
+    frame = requestAnimationFrame(refresh);
+    return () => cancelAnimationFrame(frame);
+  }, [effect, document, rangeInfo.hasSelection]);
 
   if (!effect || !document) return null;
 
@@ -392,22 +435,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                       <span>-12</span>
                     </div>
                     <div className="relative h-36 w-6 flex items-center justify-center">
-                      <input
-                        type="range"
-                        min={-12}
-                        max={12}
-                        step={0.5}
-                        value={f.val}
-                        onChange={(e) => f.set(parseFloat(e.target.value))}
-                        className="cursor-pointer studio-fader-vertical"
-                        style={{
-                          writingMode: 'vertical-lr',
-                          direction: 'rtl',
-                          height: '144px',
-                          width: '24px',
-                          accentColor: '#45f882',
-                        }}
-                      />
+                      <div className="atz-effect-fader">
+                        <input
+                          type="range"
+                          min={-12}
+                          max={12}
+                          step={0.5}
+                          value={f.val}
+                          onChange={(e) => f.set(parseFloat(e.target.value))}
+                          className="cursor-pointer studio-fader-vertical"
+                          style={{
+                            writingMode: 'vertical-lr',
+                            direction: 'rtl',
+                            height: '144px',
+                            width: '24px',
+                            accentColor: '#45f882',
+                          }}
+                        />
+                        <div className="atz-effect-meter-column">
+                          <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                          <span aria-hidden="true">dB</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -431,22 +480,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{f.label}</span>
                   <span className="text-[10px] font-mono-tabular" style={{ color: 'var(--text-muted)' }}>{f.unit}</span>
                   <div className="h-44 flex items-center justify-center py-1">
-                    <input
-                      type="range"
-                      min={f.min}
-                      max={f.max}
-                      step={f.step}
-                      value={f.val}
-                      onChange={(e) => f.set(parseFloat(e.target.value))}
-                      className="cursor-pointer"
-                      style={{
-                        writingMode: 'vertical-lr',
-                        direction: 'rtl',
-                        height: '144px',
-                        width: '24px',
-                        accentColor: '#45f882',
-                      }}
-                    />
+                    <div className="atz-effect-fader">
+                      <input
+                        type="range"
+                        min={f.min}
+                        max={f.max}
+                        step={f.step}
+                        value={f.val}
+                        onChange={(e) => f.set(parseFloat(e.target.value))}
+                        className="cursor-pointer"
+                        style={{
+                          writingMode: 'vertical-lr',
+                          direction: 'rtl',
+                          height: '144px',
+                          width: '24px',
+                          accentColor: '#45f882',
+                        }}
+                      />
+                      <div className="atz-effect-meter-column">
+                        <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                        <span aria-hidden="true">dB</span>
+                      </div>
+                    </div>
                   </div>
                   <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                     {f.display}
@@ -468,22 +523,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   <span>-12</span>
                   <span>-24</span>
                 </div>
-                <input
-                  type="range"
-                  min={-24}
-                  max={24}
-                  step={0.5}
-                  value={volumeGainDb}
-                  onChange={(e) => setVolumeGainDb(parseFloat(e.target.value))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={-24}
+                    max={24}
+                    step={0.5}
+                    value={volumeGainDb}
+                    onChange={(e) => setVolumeGainDb(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
               </div>
               <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                 {volumeGainDb >= 0 ? '+' : ''}{volumeGainDb.toFixed(1)} dB
@@ -503,22 +564,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
                   <span>-9</span>
                   <span>-12</span>
                 </div>
-                <input
-                  type="range"
-                  min={-12}
-                  max={0}
-                  step={0.5}
-                  value={normTargetDb}
-                  onChange={(e) => setNormTargetDb(parseFloat(e.target.value))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={-12}
+                    max={0}
+                    step={0.5}
+                    value={normTargetDb}
+                    onChange={(e) => setNormTargetDb(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
               </div>
               <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                 {normTargetDb.toFixed(1)} dBFS
@@ -569,22 +636,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
               </div>
               <div className="flex flex-col items-center gap-3 py-4 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Fréquence de coupure</span>
-                <input
-                  type="range"
-                  min={30}
-                  max={16000}
-                  step={10}
-                  value={filterFreq}
-                  onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={30}
+                    max={16000}
+                    step={10}
+                    value={filterFreq}
+                    onChange={(e) => setFilterFreq(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
                 <span className="font-mono-tabular text-sm font-semibold px-3 py-1 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {filterFreq} Hz
                 </span>
@@ -597,22 +670,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             <div className="grid grid-cols-2 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Seuil</span>
-                <input
-                  type="range"
-                  min={-40}
-                  max={-2}
-                  step={1}
-                  value={compThresholdDb}
-                  onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={-40}
+                    max={-2}
+                    step={1}
+                    value={compThresholdDb}
+                    onChange={(e) => setCompThresholdDb(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
                 <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {compThresholdDb} dBFS
                 </span>
@@ -620,22 +699,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Ratio</span>
-                <input
-                  type="range"
-                  min={1.2}
-                  max={10}
-                  step={0.2}
-                  value={compRatio}
-                  onChange={(e) => setCompRatio(parseFloat(e.target.value))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={1.2}
+                    max={10}
+                    step={0.2}
+                    value={compRatio}
+                    onChange={(e) => setCompRatio(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
                 <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {compRatio.toFixed(1)} : 1
                 </span>
@@ -701,22 +786,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
             <div className="grid grid-cols-2 gap-6 py-4 px-6 rounded-xl border bg-[var(--bg-canvas)] border-[var(--border-subtle)]">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Vitesse</span>
-                <input
-                  type="range"
-                  min={0.5}
-                  max={2.0}
-                  step={0.05}
-                  value={speedRatio}
-                  onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={0.5}
+                    max={2.0}
+                    step={0.05}
+                    value={speedRatio}
+                    onChange={(e) => setSpeedRatio(parseFloat(e.target.value))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
                 <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {speedRatio.toFixed(2)}x
                 </span>
@@ -724,22 +815,28 @@ export const EffectModal: React.FC<EffectModalProps> = ({
 
               <div className="flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Hauteur (Pitch)</span>
-                <input
-                  type="range"
-                  min={-12}
-                  max={12}
-                  step={1}
-                  value={pitchSemitones}
-                  onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
-                  className="cursor-pointer"
-                  style={{
-                    writingMode: 'vertical-lr',
-                    direction: 'rtl',
-                    height: '144px',
-                    width: '28px',
-                    accentColor: '#45f882',
-                  }}
-                />
+                <div className="atz-effect-fader">
+                  <input
+                    type="range"
+                    min={-12}
+                    max={12}
+                    step={1}
+                    value={pitchSemitones}
+                    onChange={(e) => setPitchSemitones(parseInt(e.target.value, 10))}
+                    className="cursor-pointer"
+                    style={{
+                      writingMode: 'vertical-lr',
+                      direction: 'rtl',
+                      height: '144px',
+                      width: '28px',
+                      accentColor: '#45f882',
+                    }}
+                  />
+                  <div className="atz-effect-meter-column">
+                    <meter className="atz-effect-meter" min={-60} max={0} value={-60} aria-label="Crête en sortie de préécoute, en dBFS" />
+                    <span aria-hidden="true">dB</span>
+                  </div>
+                </div>
                 <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ color: '#45f882' }}>
                   {pitchSemitones > 0 ? `+${pitchSemitones}` : pitchSemitones} dt
                 </span>

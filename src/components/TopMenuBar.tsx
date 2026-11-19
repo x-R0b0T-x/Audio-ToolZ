@@ -116,7 +116,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
   onOpenInfo,
 }) => {
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
-  const menuContainerRef = useRef<HTMLDivElement | null>(null);
+  const menuContainerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent | TouchEvent) => {
@@ -130,12 +130,10 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpenMenu(null);
     };
-    window.addEventListener('mousedown', handleOutside);
-    window.addEventListener('pointerdown', handleOutside);
+    window.addEventListener('pointerdown', handleOutside, true);
     window.addEventListener('keydown', handleEsc);
     return () => {
-      window.removeEventListener('mousedown', handleOutside);
-      window.removeEventListener('pointerdown', handleOutside);
+      window.removeEventListener('pointerdown', handleOutside, true);
       window.removeEventListener('keydown', handleEsc);
     };
   }, []);
@@ -146,7 +144,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
   };
 
   return (
-    <div ref={menuContainerRef} className="shrink-0 select-none">
+    <div className="shrink-0 select-none">
       <header
         className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 h-12 border-b"
         style={{
@@ -158,6 +156,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
           <BrandLogo size={28} showWordmark={false} />
 
           <nav
+            ref={menuContainerRef}
             aria-label="Menu principal"
             className="flex items-center gap-1 relative"
           >

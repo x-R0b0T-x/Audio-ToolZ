@@ -174,7 +174,7 @@ async fn pick_audio_files(
     app.dialog()
         .file()
         .set_title("Ouvrir un fichier audio")
-        .add_filter("Audio", &["wav", "mp3", "flac", "ogg", "opus", "m4a"])
+        .add_filter("Audio et video", &["wav", "mp3", "flac", "ogg", "oga", "opus", "m4a", "mp4", "aac", "aif", "aiff", "caf", "mka", "mkv", "webm"])
         .pick_files(move |paths| {
             let _ = tx.send(paths);
         });
@@ -221,8 +221,11 @@ fn main() {
             confirm_opened,
             open_recent,
             pick_audio_files,
+            audio_fallback::decode_audio_fallback,
             open_community_url
         ])
         .run(tauri::generate_context!())
         .expect("Erreur au démarrage d'Audio ToolZ");
 }
+
+mod audio_fallback;
