@@ -75,14 +75,10 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
   onToggleRecord,
   onClose,
 }) => {
-  const [pos, setPos] = useState<{ x: number; y: number }>(() => {
-    if (typeof window === 'undefined') return { x: 1000, y: 430 };
-    const saved = loadPersistedUiState();
-    return (
-      saved.controlPos ??
-      getDefaultControlPosition(window.innerWidth, window.innerHeight)
-    );
-  });
+  // Ancrage relatif depuis le bord droit et le bord inférieur
+  const [offsetFromRight, setOffsetFromRight] = useState<number>(420);
+  const [offsetFromBottom, setOffsetFromBottom] = useState<number>(290);
+
   const [collapsed, setCollapsed] = useState<boolean>(
     () => loadPersistedUiState().controlCollapsed
   );
@@ -90,13 +86,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     () => loadPersistedUiState().visualMode
   );
 
-  const hasCustomPosRef = useRef<boolean>(
-    typeof window !== 'undefined' ? loadPersistedUiState().controlPos !== null : false
-  );
   const draggingRef = useRef(false);
   const dragOffsetRef = useRef({ x: 0, y: 0 });
-  const latestPosRef = useRef(pos);
-  latestPosRef.current = pos;
 
   const vuCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const visCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -110,72 +101,35 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     r: Array<{ min: number; max: number }>;
   }>({ l: [], r: [] });
   const coloredClockRef = useRef({ lastMs: 0, remainder: 0 });
+
   useEffect(() => {
     coloredClockRef.current = { lastMs: performance.now(), remainder: 0 };
   }, [visible, collapsed, visualMode, isPlaying, isRecording]);
+
   const timeDisplayRef = useRef<HTMLSpanElement | null>(null);
 
-  useEffect(() => {
-    savePersistedUiState({
-      controlPos: hasCustomPosRef.current ? pos : null,
-      controlCollapsed: collapsed,
-      visualMode,
-    });
-  }, [pos, collapsed, visualMode]);
-
-  useEffect(() => {
-    const onResize = () => {
-      setPos((prev) =>
-        hasCustomPosRef.current
-          ? clampControlPosition(prev, window.innerWidth, window.innerHeight)
-          : getDefaultControlPosition(window.innerWidth, window.innerHeight)
-      );
-    };
-    const onBeforeUnload = () => {
-      savePersistedUiState({
-        controlPos: hasCustomPosRef.current ? latestPosRef.current : null,
-        controlCollapsed: collapsed,
-        visualMode,
-      });
-    };
-    window.addEventListener('resize', onResize);
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('beforeunload', onBeforeUnload);
-    };
-  }, [collapsed, visualMode]);
+  const curX = Math.max(10, window.innerWidth - offsetFromRight);
+  const curY = Math.max(50, window.innerHeight - offsetFromBottom);
 
   const handleHeaderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('button')) return;
     draggingRef.current = true;
     dragOffsetRef.current = {
-      x: e.clientX - pos.x,
-      y: e.clientY - pos.y,
+      x: e.clientX - curX,
+      y: e.clientY - curY,
     };
   };
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!draggingRef.current) return;
-      hasCustomPosRef.current = true;
-      const clamped = clampControlPosition(
-        {
-          x: e.clientX - dragOffsetRef.current.x,
-          y: e.clientY - dragOffsetRef.current.y,
-        },
-        window.innerWidth,
-        window.innerHeight
-      );
-      setPos(clamped);
+      const newX = e.clientX - dragOffsetRef.current.x;
+      const newY = e.clientY - dragOffsetRef.current.y;
+      setOffsetFromRight(Math.max(404, window.innerWidth - newX));
+      setOffsetFromBottom(Math.max(80, window.innerHeight - newY));
     };
     const onUp = () => {
-      if (draggingRef.current) {
-        draggingRef.current = false;
-        savePersistedUiState({
-          controlPos: hasCustomPosRef.current ? latestPosRef.current : null,
-        });
-      }
+      draggingRef.current = false;
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
@@ -194,14 +148,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     const waveBg = style.getPropertyValue('--wave-bg').trim() || '#080a14';
     const borderSubtle =
       style.getPropertyValue('--border-subtle').trim() || '#272f54';
-    const accent =
-      style.getPropertyValue('--accent-primary').trim() || '#6d7bff';
-    const accent2 =
-      style.getPropertyValue('--accent-secondary').trim() || '#38bdf8';
-    const waveLeft =
-      style.getPropertyValue('--wave-left').trim() || accent2;
-    const waveRight =
-      style.getPropertyValue('--wave-right').trim() || accent;
     const lowCol = style.getPropertyValue('--meter-low').trim() || '#34d399';
     const midCol = style.getPropertyValue('--meter-mid').trim() || '#fbbf24';
     const highCol = style.getPropertyValue('--meter-high').trim() || '#f43f5e';
@@ -233,7 +179,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       peakHoldRef.current.r = Math.max(0, peakHoldRef.current.r - 0.015);
     }
 
-    // GoldWave-style Side-by-Side Horizontal Stereo VU-Meters (G left half | D right half)
     if (vuCanvas) {
       const dpr = window.devicePixelRatio || 1;
       const rect = vuCanvas.getBoundingClientRect();
@@ -306,8 +251,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       }
     }
 
-    // Split Stereo Rainbow dB Real-Time Analyzer (Left channel G | Right channel D)
-    // Shows level progression across a rainbow dB scale up to 0 dB maximum (red/crimson).
     if (visCanvas) {
       const dpr = window.devicePixelRatio || 1;
       const rect = visCanvas.getBoundingClientRect();
@@ -339,39 +282,18 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             const midY = h / 2;
             const maxAmpPx = h * 0.43;
 
-            // Symmetric rainbow gradient centered at 0.0 (-∞ dB) peaking to 0 dB red at both ±1.0 edges
             const oscGrad = ctx.createLinearGradient(0, midY - maxAmpPx, 0, midY + maxAmpPx);
-            oscGrad.addColorStop(0.0, '#ff2a55');  // +0 dB max
-            oscGrad.addColorStop(0.10, '#ff7b00'); // -2 dB orange
-            oscGrad.addColorStop(0.22, '#f1fa8c'); // -6 dB yellow
-            oscGrad.addColorStop(0.35, '#50fa7b'); // -12 dB green
-            oscGrad.addColorStop(0.45, '#00d9ff'); // -24 dB cyan
-            oscGrad.addColorStop(0.50, '#5b6cff'); // silence center blue/indigo
-            oscGrad.addColorStop(0.55, '#00d9ff'); // -24 dB cyan
-            oscGrad.addColorStop(0.65, '#50fa7b'); // -12 dB green
-            oscGrad.addColorStop(0.78, '#f1fa8c'); // -6 dB yellow
-            oscGrad.addColorStop(0.90, '#ff7b00'); // -2 dB orange
-            oscGrad.addColorStop(1.0, '#ff2a55');  // -0 dB max
-
-            // Horizontal 0 dB top/bottom ceiling lines, -6 dB dashed guides, and 0-amplitude baseline
-            ctx.strokeStyle = 'rgba(255, 42, 85, 0.35)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 3]);
-            ctx.beginPath();
-            ctx.moveTo(0, Math.round(midY - maxAmpPx) + 0.5);
-            ctx.lineTo(w, Math.round(midY - maxAmpPx) + 0.5);
-            ctx.moveTo(0, Math.round(midY + maxAmpPx) + 0.5);
-            ctx.lineTo(w, Math.round(midY + maxAmpPx) + 0.5);
-            ctx.stroke();
-
-            ctx.strokeStyle = 'rgba(241, 250, 140, 0.14)';
-            ctx.beginPath();
-            ctx.moveTo(0, Math.round(midY - maxAmpPx * 0.5) + 0.5);
-            ctx.lineTo(w, Math.round(midY - maxAmpPx * 0.5) + 0.5);
-            ctx.moveTo(0, Math.round(midY + maxAmpPx * 0.5) + 0.5);
-            ctx.lineTo(w, Math.round(midY + maxAmpPx * 0.5) + 0.5);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            oscGrad.addColorStop(0.0, '#ff2a55');
+            oscGrad.addColorStop(0.10, '#ff7b00');
+            oscGrad.addColorStop(0.22, '#f1fa8c');
+            oscGrad.addColorStop(0.35, '#50fa7b');
+            oscGrad.addColorStop(0.45, '#00d9ff');
+            oscGrad.addColorStop(0.50, '#5b6cff');
+            oscGrad.addColorStop(0.55, '#00d9ff');
+            oscGrad.addColorStop(0.65, '#50fa7b');
+            oscGrad.addColorStop(0.78, '#f1fa8c');
+            oscGrad.addColorStop(0.90, '#ff7b00');
+            oscGrad.addColorStop(1.0, '#ff2a55');
 
             ctx.strokeStyle = borderSubtle;
             ctx.beginPath();
@@ -382,21 +304,13 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             ctx.stroke();
 
             const { left, right } = audioEngine.readStereoWaveformSnapshots();
-            const drawOscPane = (
-              samples: Float32Array,
-              originX: number,
-              paneW: number
-            ) => {
+            const drawOscPane = (samples: Float32Array, originX: number, paneW: number) => {
               const pxCount = Math.max(1, Math.floor(paneW));
-              // 1. Filled vertical min/max rainbow envelope per pixel column
               ctx.fillStyle = oscGrad;
               ctx.globalAlpha = 0.72;
               for (let i = 0; i < pxCount; i++) {
                 const s0 = Math.floor((i / pxCount) * samples.length);
-                const s1 = Math.max(
-                  s0 + 1,
-                  Math.floor(((i + 1) / pxCount) * samples.length)
-                );
+                const s1 = Math.max(s0 + 1, Math.floor(((i + 1) / pxCount) * samples.length));
                 let lo = samples[s0] ?? 0;
                 let hi = lo;
                 for (let s = s0 + 1; s < s1 && s < samples.length; s++) {
@@ -411,16 +325,12 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                 }
               }
 
-              // 2. Crisp glowing rainbow waveform trace on top
               ctx.globalAlpha = 1;
               ctx.strokeStyle = oscGrad;
               ctx.lineWidth = 1.6;
               ctx.beginPath();
               for (let i = 0; i < pxCount; i++) {
-                const idx = Math.min(
-                  samples.length - 1,
-                  Math.floor((i / pxCount) * samples.length)
-                );
+                const idx = Math.min(samples.length - 1, Math.floor((i / pxCount) * samples.length));
                 const v = samples[idx] ?? 0;
                 const y = Math.max(2, Math.min(h - 2, midY - v * maxAmpPx));
                 const px = originX + i;
@@ -432,42 +342,17 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
             drawOscPane(left, leftPane.x, leftPane.width);
             drawOscPane(right, rightPane.x, rightPane.width);
-
-            // Micro rainbow dB legend on center strip & 0 dB edge badge
-            ctx.font = '8px "JetBrains Mono", monospace';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = '#ff5555';
-            ctx.fillText('0dB', leftPane.x + leftPane.width - 18, 2);
-            ctx.fillText('0dB', rightPane.x + rightPane.width - 18, 2);
           } else if (visualMode === 'spectrum') {
             const topPad = 14;
             const specH = Math.max(8, h - topPad - 2);
             const specGrad = ctx.createLinearGradient(0, topPad, 0, h - 2);
-            specGrad.addColorStop(0.0, '#ff2a55');  // 0 dB max red
-            specGrad.addColorStop(0.15, '#ff7b00'); // -3 dB orange
-            specGrad.addColorStop(0.32, '#f1fa8c'); // -6 dB yellow
-            specGrad.addColorStop(0.52, '#50fa7b'); // -12 dB green
-            specGrad.addColorStop(0.75, '#00d9ff'); // -24 dB cyan
-            specGrad.addColorStop(0.92, '#5b6cff'); // -36 dB blue
-            specGrad.addColorStop(1.0, '#4c1d95');  // -48 dB deep violet
-
-            // 0 dB, -12 dB, -24 dB horizontal grid lines
-            ctx.strokeStyle = 'rgba(255, 42, 85, 0.32)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 3]);
-            ctx.beginPath();
-            ctx.moveTo(0, topPad + 0.5);
-            ctx.lineTo(w, topPad + 0.5);
-            ctx.stroke();
-
-            ctx.strokeStyle = 'rgba(139, 233, 253, 0.14)';
-            ctx.beginPath();
-            ctx.moveTo(0, Math.round(topPad + specH * 0.5) + 0.5);
-            ctx.lineTo(w, Math.round(topPad + specH * 0.5) + 0.5);
-            ctx.moveTo(0, Math.round(topPad + specH * 0.75) + 0.5);
-            ctx.lineTo(w, Math.round(topPad + specH * 0.75) + 0.5);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            specGrad.addColorStop(0.0, '#ff2a55');
+            specGrad.addColorStop(0.15, '#ff7b00');
+            specGrad.addColorStop(0.32, '#f1fa8c');
+            specGrad.addColorStop(0.52, '#50fa7b');
+            specGrad.addColorStop(0.75, '#00d9ff');
+            specGrad.addColorStop(0.92, '#5b6cff');
+            specGrad.addColorStop(1.0, '#4c1d95');
 
             ctx.strokeStyle = borderSubtle;
             ctx.beginPath();
@@ -478,30 +363,18 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             const { left, right } = audioEngine.readStereoSpectrumSnapshots();
             const bars = 28;
 
-            const drawSpectrumPane = (
-              spectrum: Uint8Array,
-              peaks: Float32Array,
-              originX: number,
-              paneW: number
-            ) => {
+            const drawSpectrumPane = (spectrum: Uint8Array, peaks: Float32Array, originX: number, paneW: number) => {
               const gap = 1.5;
               const bw = Math.max(1.5, (paneW - (bars - 1) * gap) / bars);
               ctx.fillStyle = specGrad;
 
-              // Musical log-frequency bands from bin 1 (~43 Hz) to ~75% Nyquist (~16 kHz)
               const minBin = 1;
               const maxBin = Math.max(bars + 1, Math.floor(spectrum.length * 0.72));
               const logRatio = maxBin / minBin;
 
               for (let i = 0; i < bars; i++) {
-                const b0 = Math.max(
-                  1,
-                  Math.floor(minBin * Math.pow(logRatio, i / bars))
-                );
-                const b1 = Math.max(
-                  b0 + 1,
-                  Math.floor(minBin * Math.pow(logRatio, (i + 1) / bars))
-                );
+                const b0 = Math.max(1, Math.floor(minBin * Math.pow(logRatio, i / bars)));
+                const b1 = Math.max(b0 + 1, Math.floor(minBin * Math.pow(logRatio, (i + 1) / bars)));
                 let peakBinVal = 0;
                 for (let b = b0; b < b1 && b < spectrum.length; b++) {
                   if (spectrum[b] > peakBinVal) peakBinVal = spectrum[b];
@@ -531,68 +404,35 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
             drawSpectrumPane(left, specPeaksRef.current.l, leftPane.x, leftPane.width);
             drawSpectrumPane(right, specPeaksRef.current.r, rightPane.x, rightPane.width);
-
-            ctx.font = '8px "JetBrains Mono", monospace';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = '#ff5555';
-            ctx.fillText('0dB', leftPane.x + leftPane.width - 18, 3);
-            ctx.fillText('0dB', rightPane.x + rightPane.width - 18, 3);
           } else {
-            // Mode 3: Volume-Mapped Stereo Colored Waveform (Green = low, Yellow = medium, Red = loud) with detailed 1px crests
+            // Mode 3 : Waveforme temps réel GoldWave ralentie et détaillée
             const midY = h / 2;
             const maxAmpPx = h * 0.44;
 
-            // Subtle reference guide lines (±50% & 0.0 center line)
-            ctx.strokeStyle = 'rgba(250, 204, 21, 0.14)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 3]);
-            ctx.beginPath();
-            ctx.moveTo(0, Math.round(midY - maxAmpPx * 0.58) + 0.5);
-            ctx.lineTo(w, Math.round(midY - maxAmpPx * 0.58) + 0.5);
-            ctx.moveTo(0, Math.round(midY + maxAmpPx * 0.58) + 0.5);
-            ctx.lineTo(w, Math.round(midY + maxAmpPx * 0.58) + 0.5);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            const volGrad = ctx.createLinearGradient(0, midY - maxAmpPx, 0, midY + maxAmpPx);
+            volGrad.addColorStop(0.0, '#ff2a55');
+            volGrad.addColorStop(0.14, '#ff5533');
+            volGrad.addColorStop(0.28, '#facc15');
+            volGrad.addColorStop(0.40, '#45f882');
+            volGrad.addColorStop(0.50, '#16a34a');
+            volGrad.addColorStop(0.60, '#45f882');
+            volGrad.addColorStop(0.72, '#facc15');
+            volGrad.addColorStop(0.86, '#ff5533');
+            volGrad.addColorStop(1.0, '#ff2a55');
 
-            ctx.strokeStyle = borderSubtle;
-            ctx.beginPath();
-            ctx.moveTo(0, midY);
-            ctx.lineTo(w, midY);
-            ctx.stroke();
-
-            // Vertical symmetric volume gradient: Green (low) -> Yellow (mid-loud) -> Red (high peak)
-            const volGrad = ctx.createLinearGradient(
-              0,
-              midY - maxAmpPx,
-              0,
-              midY + maxAmpPx
-            );
-            volGrad.addColorStop(0.0, '#ff2a55');  // Peak loud (+0 dB) Rouge
-            volGrad.addColorStop(0.14, '#ff5533'); // Rouge-Orange
-            volGrad.addColorStop(0.28, '#facc15'); // Moyen-Fort Jaune
-            volGrad.addColorStop(0.40, '#45f882'); // Faible Vert vif
-            volGrad.addColorStop(0.50, '#16a34a'); // Centre silence / très faible Vert
-            volGrad.addColorStop(0.60, '#45f882'); // Faible Vert vif
-            volGrad.addColorStop(0.72, '#facc15'); // Moyen-Fort Jaune
-            volGrad.addColorStop(0.86, '#ff5533'); // Rouge-Orange
-            volGrad.addColorStop(1.0, '#ff2a55');  // Peak loud (-0 dB) Rouge
-
-            const { left: waveLData, right: waveRData } =
-              audioEngine.readStereoWaveformSnapshots();
-
+            const { left: waveLData, right: waveRData } = audioEngine.readStereoWaveformSnapshots();
             const maxHistoryCols = Math.max(60, Math.floor(leftPane.width));
+
             if (isPlaying || isRecording) {
-              // 240 colonnes/s : moitie du defilement precedent sur un ecran 60 Hz.
+              // Vitesse ralentie : 70 colonnes/seconde (très fluide et détaillé)
               const clock = coloredClockRef.current;
               const elapsed = Math.min(100, Math.max(0, now - clock.lastMs));
               clock.lastMs = now;
-              const budget = clock.remainder + elapsed * 240 / 1000;
+              const budget = clock.remainder + (elapsed * 70) / 1000;
               const slicesPerFrame = Math.min(maxHistoryCols, Math.floor(budget));
               clock.remainder = budget - Math.floor(budget);
-              const chunk = Math.max(
-                1,
-                Math.floor(waveLData.length / Math.max(1, slicesPerFrame))
-              );
+
+              const chunk = Math.max(1, Math.floor(waveLData.length / Math.max(1, slicesPerFrame)));
               for (let p = 0; p < slicesPerFrame; p++) {
                 const s0 = Math.min(waveLData.length - 1, p * chunk);
                 const s1 = Math.min(waveLData.length, s0 + chunk);
@@ -608,27 +448,15 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   if (vr < minR) minR = vr;
                   if (vr > maxR) maxR = vr;
                 }
-                coloredHistoryRef.current.l.push({
-                  min: Math.max(-1, minL),
-                  max: Math.min(1, maxL),
-                });
-                coloredHistoryRef.current.r.push({
-                  min: Math.max(-1, minR),
-                  max: Math.min(1, maxR),
-                });
+                coloredHistoryRef.current.l.push({ min: Math.max(-1, minL), max: Math.min(1, maxL) });
+                coloredHistoryRef.current.r.push({ min: Math.max(-1, minR), max: Math.min(1, maxR) });
               }
 
               if (coloredHistoryRef.current.l.length > maxHistoryCols) {
-                coloredHistoryRef.current.l.splice(
-                  0,
-                  coloredHistoryRef.current.l.length - maxHistoryCols
-                );
+                coloredHistoryRef.current.l.splice(0, coloredHistoryRef.current.l.length - maxHistoryCols);
               }
               if (coloredHistoryRef.current.r.length > maxHistoryCols) {
-                coloredHistoryRef.current.r.splice(
-                  0,
-                  coloredHistoryRef.current.r.length - maxHistoryCols
-                );
+                coloredHistoryRef.current.r.splice(0, coloredHistoryRef.current.r.length - maxHistoryCols);
               }
             }
 
@@ -642,7 +470,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
               const startX = Math.floor(originX + paneW - count);
               const offset = history.length - count;
 
-              // 1. Crisp 1px vertical min..max bars shaded by volume (Green -> Yellow -> Red)
+              // Tracé des barres verticales à 1px
               ctx.fillStyle = volGrad;
               ctx.globalAlpha = 0.72;
               for (let i = 0; i < count; i++) {
@@ -653,10 +481,10 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                 ctx.fillRect(startX + i, yTop, 1, barH);
               }
 
-              // 2. High-definition upper & lower crest outline for razor-sharp peak detail
+              // Tracé net et précis des crêtes supérieures et inférieures
               ctx.globalAlpha = 1;
               ctx.strokeStyle = volGrad;
-              ctx.lineWidth = 1.15;
+              ctx.lineWidth = 1.2;
               ctx.beginPath();
               for (let i = 0; i < count; i++) {
                 const col = history[offset + i];
@@ -678,33 +506,15 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
               ctx.stroke();
             };
 
-            drawVolumeDetailedPane(
-              coloredHistoryRef.current.l,
-              leftPane.x,
-              leftPane.width
-            );
-            drawVolumeDetailedPane(
-              coloredHistoryRef.current.r,
-              rightPane.x,
-              rightPane.width
-            );
+            drawVolumeDetailedPane(coloredHistoryRef.current.l, leftPane.x, leftPane.width);
+            drawVolumeDetailedPane(coloredHistoryRef.current.r, rightPane.x, rightPane.width);
           }
 
-          // Subtle 1px vertical center separator + micro rainbow dB legend bar on far right
           ctx.strokeStyle = borderSubtle;
-          ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(midX + 0.5, 2);
           ctx.lineTo(midX + 0.5, h - 2);
           ctx.stroke();
-
-          // Channel badges (G | D) in top-left of each half
-          ctx.font = 'bold 10px "JetBrains Mono", monospace';
-          ctx.textBaseline = 'top';
-          ctx.fillStyle = waveLeft;
-          ctx.fillText('G', leftPane.x + 4, 4);
-          ctx.fillStyle = waveRight;
-          ctx.fillText('D', rightPane.x + 4, 4);
 
           ctx.restore();
         }
@@ -740,27 +550,18 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
   if (!visible) return null;
 
-  const balanceLabel =
-    Math.abs(balance) < 0.02
-      ? '0 %'
-      : balance < 0
-      ? `G ${Math.round(Math.abs(balance) * 100)} %`
-      : `D ${Math.round(balance * 100)} %`;
-
   return (
     <aside
       aria-label="Fenêtre de contrôle flottante"
-      data-testid="control-window"
       className="fixed z-40 rounded-xl border shadow-2xl overflow-hidden select-none"
       style={{
-        left: `${pos.x}px`,
-        top: `${pos.y}px`,
+        left: `${curX}px`,
+        top: `${curY}px`,
         width: '404px',
         backgroundColor: 'var(--bg-surface)',
         borderColor: 'var(--border-strong)',
       }}
     >
-      {/* Draggable Title Bar */}
       <div
         onMouseDown={handleHeaderMouseDown}
         className="flex items-center justify-between px-3 py-1.5 border-b cursor-grab active:cursor-grabbing"
@@ -771,14 +572,10 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       >
         <div className="flex items-center gap-2">
           <BrandLogo size={16} showWordmark={false} />
-          <span
-            className="text-xs font-display font-semibold tracking-tight"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <span className="text-xs font-display font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Contrôle
           </span>
         </div>
-
         <div className="flex items-center gap-1.5">
           <span
             ref={timeDisplayRef}
@@ -792,20 +589,14 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
           </span>
           <button
             type="button"
-            aria-label={collapsed ? 'Déplier Contrôle' : 'Réduire Contrôle'}
             onClick={() => setCollapsed((c) => !c)}
             className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"
             style={{ color: 'var(--text-secondary)' }}
           >
-            {collapsed ? (
-              <Maximize2 className="w-3.5 h-3.5" />
-            ) : (
-              <Minimize2 className="w-3.5 h-3.5" />
-            )}
+            {collapsed ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
           </button>
           <button
             type="button"
-            aria-label="Fermer la fenêtre de contrôle"
             onClick={onClose}
             className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"
             style={{ color: 'var(--text-secondary)' }}
@@ -815,80 +606,43 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
         </div>
       </div>
 
-      {collapsed ? (
-        <div
-          data-testid="control-mini-bar"
-          className="px-3 py-2 grid grid-cols-4 gap-1.5"
-        >
-          <TransportButton
-            label="Lire depuis le début"
-            active={isPlaying && playMode === 'play'}
-            disabled={!hasDocument || isRecording}
-            onClick={onPlay}
-            icon={<Play className="w-3.5 h-3.5" />}
-          />
-          <TransportButton
-            label="Pause"
-            active={isPaused}
-            disabled={!isPlaying}
-            onClick={onPause}
-            icon={<Pause className="w-3.5 h-3.5" />}
-          />
-          <TransportButton
-            label="Lire la boucle sélectionnée"
-            active={isPlaying && (isLooping || playMode === 'loop')}
-            disabled={!hasDocument || isRecording}
-            onClick={onPlayLoop}
-            icon={<Repeat className="w-3.5 h-3.5" />}
-          />
-          <TransportButton
-            label="Stop"
-            disabled={!isPlaying && !isPaused && !isRecording}
-            onClick={onStop}
-            icon={<Square className="w-3 h-3" />}
-          />
-        </div>
-      ) : (
+      {!collapsed && (
         <div className="p-3 space-y-2.5">
-          {/* GoldWave 2-column top section: Transport on left | Volume, Balance, Speed on right */}
           <div className="grid grid-cols-12 gap-3 items-start">
             <div className="col-span-5 space-y-1.5">
-              {/* Row 1: Play from start, Loop selection, Rec */}
               <div className="grid grid-cols-3 gap-1">
                 <TransportButton
-                  label="Lire depuis le début"
+                  label="Lecture"
                   active={isPlaying && playMode === 'play'}
                   disabled={!hasDocument || isRecording}
                   onClick={onPlay}
                   icon={<Play className="w-4 h-4" />}
                 />
                 <TransportButton
-                  label="Lire la boucle sélectionnée"
-                  active={isPlaying && (isLooping || playMode === 'loop')}
+                  label="Boucle"
+                  active={isPlaying && isLooping}
                   disabled={!hasDocument || isRecording}
                   onClick={onPlayLoop}
                   icon={<Repeat className="w-4 h-4" />}
                 />
                 <TransportButton
-                  label={isRecording ? 'Arrêter enregistrement' : 'Enregistrer'}
+                  label="Enregistrer"
                   active={isRecording}
                   isRecord
                   onClick={onToggleRecord}
                   icon={<Mic className="w-4 h-4" />}
                 />
               </div>
-
-              {/* Row 2: Reverse (<<), Accelerated Forward (>>), Pause, Stop */}
               <div className="grid grid-cols-4 gap-1">
                 <TransportButton
-                  label="Lire à l'envers"
+                  label="<< Envers"
                   active={isPlaying && playMode === 'reverse'}
                   disabled={!hasDocument || isRecording}
                   onClick={onPlayReverse}
                   icon={<Rewind className="w-3.5 h-3.5" />}
                 />
                 <TransportButton
-                  label="Lire en accéléré (2x)"
+                  label=">> 2x"
                   active={isPlaying && playMode === 'fast'}
                   disabled={!hasDocument || isRecording}
                   onClick={onPlayFastForward}
@@ -910,152 +664,83 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
               </div>
             </div>
 
-            {/* Right Column: Volume, Balance, Speed */}
             <div className="col-span-7 space-y-2">
               <div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <label
-                    htmlFor="atz-ctrl-volume"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Volume
-                  </label>
-                  <span
-                    className="font-mono-tabular font-medium"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    {volumeDb > 0 ? `+${volumeDb.toFixed(1)}` : volumeDb.toFixed(1)} dB
+                  <span style={{ color: 'var(--text-secondary)' }}>Volume</span>
+                  <span className="font-mono-tabular font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {volumeDb >= 0 ? `+${volumeDb.toFixed(1)}` : volumeDb.toFixed(1)} dB
                   </span>
                 </div>
                 <input
-                  id="atz-ctrl-volume"
                   type="range"
                   min={-40}
                   max={12}
                   step={0.5}
                   value={volumeDb}
                   onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-                  onDoubleClick={() => onVolumeChange(0)}
                   className="w-full studio-slider"
                 />
               </div>
-
               <div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <label
-                    htmlFor="atz-ctrl-balance"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Balance
-                  </label>
-                  <span
-                    className="font-mono-tabular font-medium"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    {balanceLabel}
+                  <span style={{ color: 'var(--text-secondary)' }}>Balance</span>
+                  <span className="font-mono-tabular font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {balance === 0 ? '0 %' : balance < 0 ? `G ${Math.round(Math.abs(balance) * 100)} %` : `D ${Math.round(balance * 100)} %`}
                   </span>
                 </div>
                 <input
-                  id="atz-ctrl-balance"
                   type="range"
                   min={-1}
                   max={1}
                   step={0.05}
                   value={balance}
                   onChange={(e) => onBalanceChange(parseFloat(e.target.value))}
-                  onDoubleClick={() => onBalanceChange(0)}
                   className="w-full studio-slider"
                 />
               </div>
-
               <div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <label
-                    htmlFor="atz-ctrl-speed"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Vitesse
-                  </label>
-                  <span
-                    className="font-mono-tabular font-medium"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
+                  <span style={{ color: 'var(--text-secondary)' }}>Vitesse</span>
+                  <span className="font-mono-tabular font-medium" style={{ color: 'var(--text-primary)' }}>
                     {speedRatio.toFixed(2)}x
                   </span>
                 </div>
                 <input
-                  id="atz-ctrl-speed"
                   type="range"
                   min={0.5}
                   max={2.0}
                   step={0.05}
                   value={speedRatio}
                   onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-                  onDoubleClick={() => onSpeedChange(1)}
                   className="w-full studio-slider"
                 />
               </div>
             </div>
           </div>
 
-          {/* Side-by-Side Stereo VU-Meters */}
-          <canvas
-            ref={vuCanvasRef}
-            data-testid="vu-meter-canvas"
-            className="w-full h-7 rounded-md border block"
-            style={{ borderColor: 'var(--border-subtle)' }}
-          />
+          <canvas ref={vuCanvasRef} className="w-full h-7 rounded-md border block" style={{ borderColor: 'var(--border-subtle)' }} />
 
-          {/* Visualizer (1 bouton -> 3 modes : Oscillo / Spectre / Waveforme colorée) */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span
-                className="text-[11px]"
-                style={{ color: 'var(--text-secondary)' }}
-              >
+              <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                 Analyseur temps réel
               </span>
               <button
                 type="button"
-                data-testid="analyzer-mode-btn"
-                title="Changer de vue : 1. Oscillo · 2. Spectre · 3. Waveforme colorée"
                 onClick={() =>
                   setVisualMode((prev) =>
-                    prev === 'oscilloscope'
-                      ? 'spectrum'
-                      : prev === 'spectrum'
-                      ? 'colored-waveform'
-                      : 'oscilloscope'
+                    prev === 'oscilloscope' ? 'spectrum' : prev === 'spectrum' ? 'colored-waveform' : 'oscilloscope'
                   )
                 }
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-opacity hover:opacity-95"
-                style={{
-                  backgroundColor: 'var(--accent-primary)',
-                  color: '#ffffff',
-                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer"
+                style={{ backgroundColor: 'var(--accent-primary)', color: '#ffffff' }}
               >
-                <span className="font-mono-tabular opacity-90 text-[9px]">
-                  {visualMode === 'oscilloscope'
-                    ? '1/3'
-                    : visualMode === 'spectrum'
-                    ? '2/3'
-                    : '3/3'}
-                </span>
-                <span>
-                  {visualMode === 'oscilloscope'
-                    ? 'Oscillo'
-                    : visualMode === 'spectrum'
-                    ? 'Spectre'
-                    : 'Waveforme colorée'}
-                </span>
+                <span>{visualMode === 'oscilloscope' ? '1/3' : visualMode === 'spectrum' ? '2/3' : '3/3'}</span>
+                <span>{visualMode === 'oscilloscope' ? 'Oscillo' : visualMode === 'spectrum' ? 'Spectre' : 'Waveforme colorée'}</span>
               </button>
             </div>
-            <canvas
-              ref={visCanvasRef}
-              data-testid="visualizer-canvas"
-              className="w-full h-24 rounded-md border block"
-              style={{ borderColor: 'var(--border-subtle)' }}
-            />
+            <canvas ref={visCanvasRef} className="w-full h-24 rounded-md border block" style={{ borderColor: 'var(--border-subtle)' }} />
           </div>
         </div>
       )}
@@ -1083,19 +768,13 @@ function TransportButton({
     <button
       type="button"
       title={label}
-      aria-label={label}
-      aria-pressed={Boolean(active)}
       disabled={disabled}
       onClick={onClick}
-      className="h-8 rounded-md border flex items-center justify-center transition-colors cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed hover:bg-[var(--bg-hover)]"
+      className="h-8 rounded-md border flex items-center justify-center cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed hover:bg-[var(--bg-hover)]"
       style={{
         backgroundColor: active ? activeBg : 'var(--bg-elevated)',
         borderColor: active ? activeBg : 'var(--border-subtle)',
-        color: active
-          ? '#ffffff'
-          : isRecord
-          ? 'var(--record-color)'
-          : 'var(--text-primary)',
+        color: active ? '#ffffff' : isRecord ? 'var(--record-color)' : 'var(--text-primary)',
       }}
     >
       {icon}
