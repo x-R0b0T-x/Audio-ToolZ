@@ -980,7 +980,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectDocument(doc.id)}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                className="atz-doc-tab-btn inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
               >
                 <FileAudio
                   className="w-3.5 h-3.5 shrink-0"

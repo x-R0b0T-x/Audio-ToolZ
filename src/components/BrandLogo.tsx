@@ -3,7 +3,7 @@ interface BrandLogoProps { size?: number; showWordmark?: boolean; wordmarkClassN
 export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 28, showWordmark = true, wordmarkClassName = 'text-base' }) => (
   <span className="inline-flex items-center gap-2 shrink-0 select-none">
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="shrink-0 atz-brand-logo">
-      <rect x="2" y="2" width="60" height="60" rx="14" fill="#191320" stroke="#9d40ff" strokeWidth="2" />
+      <rect x="2" y="2" width="60" height="60" rx="14" fill="#191320" />
       <circle cx="32" cy="32" r="24" stroke="rgba(200,130,255,.35)" strokeWidth="1.4" />
       <circle cx="32" cy="8" r="2.6" fill="#ffffff" />
       <circle cx="32" cy="56" r="2.6" fill="#ffffff" />

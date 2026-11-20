@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import type { PreviewBand } from '../audio/engine';
-import { analyzeAudioStats, applyFade, applySpeedAndPitch, applyVolume, clampSelection, formatTimecode, normalizeChannels } from '../audio/dsp';
+import { analyzeAudioStats, applyFade, applySpeedAndPitch, applyVolume, clampSelection, computeFadeGain, formatTimecode, normalizeChannels } from '../audio/dsp';
 import { applyCompressorAutoGain, applyFrequencyFilter, applyParametricEq, applySpectralNoiseReduction, captureNoiseProfile, type NoiseProfile, type EqBandConfig, type CompressorAutoGainParams, type SpectralNoiseReductionParams } from '../audio/studioDsp';
 import { applyMusicalDelay, DELAY_DIVISIONS, DEFAULT_DIVISION, type DelayMode } from '../audio/musicalDelay';
 import type { AudioDocument, EffectModalId, FadeCurve, FadeDirection } from '../audio/types';
@@ -136,10 +136,47 @@ const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noisePro
           {fader('Vitesse', c.speed, 1, 0.5, 2, 0.05, `${c.speed.toFixed(2)}x`, (v) => change({ speed: v }))}
           {fader('Hauteur', c.pitch, 0, -12, 12, 1, `${c.pitch} demi-tons`, (v) => change({ pitch: v }))}
         </div>}
-        {effect === 'fade' && <div className="space-y-3">
-          <div className="flex gap-2" onDoubleClick={() => change({ direction: 'in' })}>{(['in', 'out'] as const).map((v) => <button type="button" className={button} key={v} aria-pressed={c.direction === v} onClick={() => change({ direction: v })}>{v === 'in' ? 'Entrée' : 'Sortie'}</button>)}</div>
-          <div className="flex gap-2" onDoubleClick={() => change({ curve: 'scurve' })}>{(['linear', 'exponential', 'scurve'] as const).map((v, i) => <button type="button" className={button} key={v} aria-pressed={c.curve === v} onClick={() => change({ curve: v })}>{['Linéaire', 'Exponentielle', 'Courbe en S'][i]}</button>)}</div>
-        </div>}
+        {effect === 'fade' && (() => {
+          const steps = 80;
+          const x0 = 12;
+          const y0 = 12;
+          const w = 256;
+          const h = 116;
+          const pts = Array.from({ length: steps + 1 }, (_, i) => {
+            const t = i / steps;
+            const g = computeFadeGain(t, c.direction, c.curve);
+            return { x: x0 + t * w, y: y0 + (1 - g) * h };
+          });
+          const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+          const areaPath = `${linePath} L${(x0 + w).toFixed(1)} ${(y0 + h).toFixed(1)} L${x0.toFixed(1)} ${(y0 + h).toFixed(1)} Z`;
+          const curveLabels: Record<FadeCurve, string> = { linear: 'Linéaire', exponential: 'Exponentielle', scurve: 'Courbe en S' };
+          return <div className={`flex flex-col sm:flex-row gap-4 items-stretch ${panel}`}>
+            <div className="w-full sm:w-44 shrink-0 flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5" onDoubleClick={() => change({ direction: 'in' })}>
+                {(['in', 'out'] as const).map((v) => <button type="button" className={`${button} w-full text-left`} key={v} aria-pressed={c.direction === v} onClick={() => change({ direction: v })}>{v === 'in' ? 'Entrée' : 'Sortie'}</button>)}
+              </div>
+              <div className="h-px my-0.5 bg-[var(--border-subtle)]" />
+              <div className="flex flex-col gap-1.5" onDoubleClick={() => change({ curve: 'scurve' })}>
+                {(['linear', 'exponential', 'scurve'] as const).map((v) => <button type="button" className={`${button} w-full text-left`} key={v} aria-pressed={c.curve === v} onClick={() => change({ curve: v })}>{curveLabels[v]}</button>)}
+              </div>
+            </div>
+            <div className="flex-1 min-h-[196px] rounded-lg border border-[var(--border-subtle)] bg-[var(--wave-bg)] p-3 flex flex-col justify-between gap-2">
+              <div className="flex items-center justify-between text-[11px] font-medium">
+                <span style={{ color: 'var(--text-secondary)' }}>{c.direction === 'in' ? 'Entrée' : 'Sortie'} · {curveLabels[c.curve]}</span>
+                <span className="font-mono-tabular" style={{ color: 'var(--accent-secondary)' }}>{c.direction === 'in' ? '0 % → 100 %' : '100 % → 0 %'}</span>
+              </div>
+              <svg viewBox="0 0 280 140" className="w-full flex-1 rounded border border-[var(--border-subtle)]/50 bg-[#070912]" role="img" aria-label={`Courbe de fondu ${c.direction === 'in' ? 'entrée' : 'sortie'} ${curveLabels[c.curve]}`}>
+                {[0.25, 0.5, 0.75].map((f) => <line key={`h${f}`} x1={x0} y1={y0 + h * f} x2={x0 + w} y2={y0 + h * f} stroke="rgba(189, 147, 249, 0.14)" strokeWidth="1" strokeDasharray={f === 0.5 ? '3 3' : undefined} />)}
+                {[0.25, 0.5, 0.75].map((f) => <line key={`v${f}`} x1={x0 + w * f} y1={y0} x2={x0 + w * f} y2={y0 + h} stroke="rgba(189, 147, 249, 0.12)" strokeWidth="1" />)}
+                <rect x={x0} y={y0} width={w} height={h} fill="none" stroke="rgba(189, 147, 249, 0.22)" strokeWidth="1" />
+                <path d={areaPath} fill="rgba(57, 255, 20, 0.13)" />
+                <path d={linePath} fill="none" stroke="#39ff14" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 5px rgba(57, 255, 20, 0.65))' }} />
+                <circle cx={pts[0].x} cy={pts[0].y} r="3.5" fill="#39ff14" />
+                <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3.5" fill="#39ff14" />
+              </svg>
+            </div>
+          </div>;
+        })()}
       </div>
       <div className="flex justify-end gap-2 px-5 py-3 border-t border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
         <button type="button" className={button} onClick={onClose}>Annuler</button>
