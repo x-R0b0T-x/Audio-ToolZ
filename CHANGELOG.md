@@ -14,6 +14,8 @@
 - Fenêtre de contrôle ancrée au-dessus de la règle temporelle et waveform colorée détaillée ralentie.
 - Lecture et boucle préservées après Appliquer ou Annuler.
 - Fenêtre À propos v1.5 centrée, déplaçable et redimensionnable.
+- Halo vert sur l’onglet au survol, bouton `?` déplacé dans la barre de fenêtre, chronomètre centré, indicateurs « Stéréo » / « Durée » en vert.
+- Lecture arrière en boucle infinie sur la sélection, détection BPM affinée sans doublement ×2, et délai synchronisé avec panoramique continu L/C/R et fader vert.
 
 ## 1.4
 
