@@ -68,9 +68,7 @@ export default function App() {
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const [clipboard, setClipboard] = useState<Float32Array[] | null>(null);
 
-  const [controlOpen, setControlOpen] = useState<boolean>(
-    () => loadPersistedUiState().controlOpen
-  );
+  const controlOpen = true;
   const [activeEffect, setActiveEffect] = useState<EffectModalId>(null);
   const [noiseProfile, setNoiseProfile] = useState<NoiseProfile | null>(null);
   const [batchOpen, setBatchOpen] = useState(false);
@@ -843,24 +841,30 @@ export default function App() {
     if (!activeDoc || isRecording) return;
     const total = activeDoc.channels[0]?.length ?? 0;
     if (total === 0) return;
-
     const { startSample, endSample } = activeDoc.selection;
-    const reverseFrom =
-      isPaused && playMode === 'reverse'
-        ? Math.max(1, Math.min(total, Math.round(audioEngine.getCurrentSample())))
-        : endSample > startSample
-        ? endSample
-        : startSample > 0
-        ? startSample
-        : total;
-
+    const hasSelection = endSample > startSample;
+    const reverseLoop = hasSelection;
+    const playStart = hasSelection ? startSample : 0;
+    const playEnd = hasSelection
+      ? endSample
+      : isPaused && playMode === 'reverse'
+      ? Math.max(1, Math.min(total, Math.round(audioEngine.getCurrentSample())))
+      : startSample > 0
+      ? startSample
+      : total;
+    const pausedSample = Math.round(audioEngine.getCurrentSample());
+    const offsetSamples =
+      reverseLoop && isPaused && playMode === 'reverse' && pausedSample > playStart && pausedSample <= playEnd
+        ? Math.max(0, playEnd - pausedSample)
+        : 0;
     setPlayMode('reverse');
-    setIsLooping(false);
+    setIsLooping(reverseLoop);
     setIsPlaying(true);
     setIsPaused(false);
-    audioEngine.play(activeDoc.channels, activeDoc.sampleRate, 0, reverseFrom, {
-      loop: false,
+    audioEngine.play(activeDoc.channels, activeDoc.sampleRate, playStart, playEnd, {
+      loop: reverseLoop,
       reverse: true,
+      offsetSamples,
       volumeDb,
       balance,
       speedRatio,
@@ -979,7 +983,6 @@ export default function App() {
         setPlayMode('idle');
         await audioEngine.startRecording(chosenDeviceId, recordingSettings);
         setIsRecording(true);
-        setControlOpen(true);
         showToast('Enregistrement microphone en cours...');
       } catch (err) {
         showToast(
@@ -1185,8 +1188,6 @@ export default function App() {
         canRedo={Boolean(activeDoc && activeDoc.redoStack.length > 0)}
         hasBpm={Boolean(activeDoc?.bpmInfo && activeDoc.bpmInfo.bpm > 0)}
         showBeatGrid={Boolean(activeDoc?.showBeatGrid)}
-        controlOpen={controlOpen}
-        onToggleControlWindow={() => setControlOpen((o) => !o)}
         onDetectBpm={handleDetectBpm}
         onNewEmpty={handleNewEmpty}
         onOpenFile={() => void handleOpenFile()}
@@ -1345,7 +1346,6 @@ export default function App() {
         onPlayReverse={handlePlayReverse}
         onPlayFastForward={handlePlayFastForward}
         onToggleRecord={() => void handleToggleRecord()}
-        onClose={() => setControlOpen(false)}
       />
 
       {(() => {
@@ -1534,6 +1534,7 @@ export default function App() {
                   session!.originalLoop, session!.start, session!.end);
               } else {
                 audioEngine.stop(true);
+                audioEngine.setVolumeDb(volumeDb);
                 finishPlayback();
               }
             }}
