@@ -19,6 +19,7 @@ import {
   savePersistedUiState,
 } from '../utils/uiStateStorage';
 import { BrandLogo } from './BrandLogo';
+import { anchoredControlPosition } from '../utils/uiPolish';
 
 export type TransportPlayMode = 'idle' | 'play' | 'loop' | 'reverse' | 'fast';
 
@@ -84,9 +85,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     () => loadPersistedUiState().visualMode
   );
 
-  const draggingRef = useRef(false);
-  const dragAnchorRef = useRef({ mouseX: 0, mouseY: 0, startR: 18, startB: 28 });
-
   const vuCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const visCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const peakHoldRef = useRef({ l: 0, r: 0, lTime: 0, rTime: 0 });
@@ -106,35 +104,20 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
   const timeDisplayRef = useRef<HTMLSpanElement | null>(null);
 
-  const handleHeaderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLElement).closest('button')) return;
-    draggingRef.current = true;
-    dragAnchorRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      startR: rightOffset,
-      startB: bottomOffset,
-    };
-  };
-
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!draggingRef.current) return;
-      const dx = e.clientX - dragAnchorRef.current.mouseX;
-      const dy = e.clientY - dragAnchorRef.current.mouseY;
-      setRightOffset(Math.max(10, Math.min(window.innerWidth - 420, dragAnchorRef.current.startR - dx)));
-      setBottomOffset(Math.max(20, Math.min(window.innerHeight - 80, dragAnchorRef.current.startB - dy)));
+    if (!visible) return;
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-testid="waveform-canvas"]');
+    const position = () => {
+      const rect = canvas?.getBoundingClientRect();
+      const next = anchoredControlPosition(window.innerWidth, window.innerHeight, rect ?? null);
+      setRightOffset(next.right); setBottomOffset(next.bottom);
     };
-    const onUp = () => {
-      draggingRef.current = false;
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, [rightOffset, bottomOffset]);
+    position();
+    const observer = new ResizeObserver(position);
+    if (canvas) observer.observe(canvas);
+    window.addEventListener('resize', position);
+    return () => { observer.disconnect(); window.removeEventListener('resize', position); };
+  }, [visible, collapsed, hasDocument]);
 
   const drawMetersAndVisuals = useCallback(() => {
     const vuCanvas = vuCanvasRef.current;
@@ -557,8 +540,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       }}
     >
       <div
-        onMouseDown={handleHeaderMouseDown}
-        className="flex items-center justify-between px-3 py-1.5 border-b cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between px-3 py-1.5 border-b "
         style={{
           backgroundColor: 'var(--bg-elevated)',
           borderColor: 'var(--border-subtle)',
@@ -717,6 +699,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={12}
                   step={0.5}
                   value={volumeDb}
+                  data-atz-default="0"
+                  onDoubleClick={() => onVolumeChange(0)}
                   onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"
                 />
@@ -734,6 +718,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={1}
                   step={0.05}
                   value={balance}
+                  data-atz-default="0"
+                  onDoubleClick={() => onBalanceChange(0)}
                   onChange={(e) => onBalanceChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"
                 />
@@ -751,6 +737,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={2.0}
                   step={0.05}
                   value={speedRatio}
+                  data-atz-default="1"
+                  onDoubleClick={() => onSpeedChange(1)}
                   onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"
                 />
@@ -767,6 +755,8 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
               </span>
               <button
                 type="button"
+                data-atz-control="visual-mode"
+                onDoubleClick={(e) => { e.preventDefault(); setVisualMode('oscilloscope'); }}
                 onClick={() =>
                   setVisualMode((prev) =>
                     prev === 'oscilloscope' ? 'spectrum' : prev === 'spectrum' ? 'colored-waveform' : 'oscilloscope'
