@@ -1,0 +1,25 @@
+name: Actualiser les notes de publication v1.5
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/update-release-notes-v1.5.yml', 'RELEASE_NOTES_1.5.md']
+permissions:
+  contents: write
+concurrency: audio-toolz-release-notes-v1.5
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Remplacer uniquement la description de la publication v1.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/453098385" > release.json
+          jq -e '.tag_name == "v1.5" and .draft == false' release.json
+          jq -n --rawfile body RELEASE_NOTES_1.5.md '{body: $body}' > payload.json
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/453098385" --input payload.json
