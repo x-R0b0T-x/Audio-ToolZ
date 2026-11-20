@@ -15,17 +15,20 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - name: Vérifier et promouvoir la version validée
+      - name: Restaurer les icônes, vérifier et promouvoir
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main v1.5-test archive/main-avant-v1.5
           test "$(git rev-parse origin/main)" = "$GITHUB_SHA"
-          test "$(git rev-parse HEAD^)" = 7f9df0f141c2474cd83752d0c6fea0ec81a643fb
+          test "$(git rev-parse HEAD^)" = 92f9e49a4b4dbe7390a76a6a986724437b86d379
           test "$(git rev-parse origin/archive/main-avant-v1.5)" = 7f9df0f141c2474cd83752d0c6fea0ec81a643fb
           SOURCE=59d37c766387227833ef84321a6e4ed684ff092a
           test "$(git rev-parse origin/v1.5-test)" = "$SOURCE"
           git read-tree --reset -u "$SOURCE"
+          git restore --source=6af5c11 --staged --worktree -- public/icon.ico public/icon.png
+          test -s public/icon.ico
+          test -s public/icon.png
           python3 - <<'PY'
           from pathlib import Path
           p = Path('.github/workflows/build-v1.5.yml')
@@ -41,5 +44,5 @@ jobs:
           TREE=$(git write-tree)
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          COMMIT=$(printf '%s\n' 'Audio ToolZ v1.5 officielle — migration Tauri et remplacement de la 1.4' | git commit-tree "$TREE" -p "$GITHUB_SHA" -p "$SOURCE")
+          COMMIT=$(printf '%s\n' 'Audio ToolZ v1.5 officielle — Tauri et icônes intégrées' | git commit-tree "$TREE" -p "$GITHUB_SHA" -p "$SOURCE")
           git push origin "$COMMIT:refs/heads/main"
