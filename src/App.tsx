@@ -1,10 +1,22 @@
+import { installMenuHover } from './utils/uiPolish';
+import './polish.css';
+import { decodeAudioFallback } from './utils/desktop';
 /**
  * @license
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { detectSilenceCuePoints, splitChannelsByCues } from './audio/autoCueSplit';
 import { buildCueSheet, parseCueSheet } from './audio/cueSheet';
+import { encodeWav } from './audio/encoders/wav';
+import {
+  invertPhase,
+  mixPasteAt,
+  removeDcOffset,
+  swapStereoChannels,
+  type NoiseProfile,
+} from './audio/studioDsp';
 import {
   cloneChannels,
   cutRange,
@@ -24,6 +36,7 @@ import type {
   CueTrackEntry,
   EffectModalId,
 } from './audio/types';
+import { BatchModal } from './components/BatchModal';
 import { ControlWindow, type TransportPlayMode } from './components/ControlWindow';
 import { EffectModal } from './components/EffectModal';
 import { ExportModal } from './components/ExportModal';
@@ -46,6 +59,11 @@ function makeDocId(): string {
 }
 
 export default function App() {
+  useEffect(() => {
+    const root = document.getElementById('root');
+    document.title = 'Audio ToolZ v1.5';
+    return root ? installMenuHover(root) : undefined;
+  }, []);
   const [documents, setDocuments] = useState<AudioDocument[]>([]);
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const [clipboard, setClipboard] = useState<Float32Array[] | null>(null);
@@ -54,6 +72,8 @@ export default function App() {
     () => loadPersistedUiState().controlOpen
   );
   const [activeEffect, setActiveEffect] = useState<EffectModalId>(null);
+  const [noiseProfile, setNoiseProfile] = useState<NoiseProfile | null>(null);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -324,6 +344,49 @@ export default function App() {
     showToast('Audio collé au curseur');
   }, [activeDoc, clipboard, commitAudioEdit, showToast]);
 
+  const handleMixPaste = useCallback(() => {
+    if (!activeDoc || !clipboard || clipboard.length === 0) return;
+    const res = mixPasteAt(
+      activeDoc.channels,
+      clipboard,
+      activeDoc.sampleRate,
+      activeDoc.selection.startSample
+    );
+    commitAudioEdit(res.channels, 'Mixage au collage', {
+      startSample: activeDoc.selection.startSample,
+      endSample: res.endSample,
+    });
+    showToast('Audio mixé au curseur (crossfade)');
+  }, [activeDoc, clipboard, commitAudioEdit, showToast]);
+
+  const handleInvertPhase = useCallback(() => {
+    if (!activeDoc) return;
+    const total = activeDoc.channels[0]?.length ?? 0;
+    const { start, end } = resolveTargetRange(activeDoc.selection, total);
+    const next = invertPhase(activeDoc.channels, start, end);
+    commitAudioEdit(next, 'Inverser la phase', undefined, true);
+    showToast('Phase inversée');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
+  const handleSwapChannels = useCallback(() => {
+    if (!activeDoc || activeDoc.channels.length < 2) {
+      showToast('Une piste stéréo est requise pour inverser les canaux G/D.', true);
+      return;
+    }
+    const next = swapStereoChannels(activeDoc.channels);
+    commitAudioEdit(next, 'Inverser canaux G/D');
+    showToast('Canaux gauche / droite inversés');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
+  const handleRemoveDcOffset = useCallback(() => {
+    if (!activeDoc) return;
+    const total = activeDoc.channels[0]?.length ?? 0;
+    const { start, end } = resolveTargetRange(activeDoc.selection, total);
+    const next = removeDcOffset(activeDoc.channels, start, end);
+    commitAudioEdit(next, 'Suppression DC', undefined, true);
+    showToast('Décalage DC supprimé');
+  }, [activeDoc, commitAudioEdit, showToast]);
+
   const handleSilence = useCallback(() => {
     if (!activeDoc) return;
     const total = activeDoc.channels[0]?.length ?? 0;
@@ -531,6 +594,51 @@ export default function App() {
     showToast(`Fichier .cue extrait : ${baseName}.cue`);
   }, [activeDoc, showToast]);
 
+  const handleAutoCue = useCallback(() => {
+    if (!activeDoc) return;
+    const cues = detectSilenceCuePoints(activeDoc.channels, activeDoc.sampleRate);
+    if (cues.length === 0) {
+      showToast('Aucun repère détecté sur cette piste.', true);
+      return;
+    }
+    updateActiveDoc((doc) => ({
+      ...doc,
+      cueTracks: cues,
+    }));
+    showToast(`${cues.length} repère(s) Auto-Cue détecté(s)`);
+  }, [activeDoc, showToast, updateActiveDoc]);
+
+  const handleSplitByCue = useCallback(() => {
+    if (!activeDoc || !activeDoc.cueTracks || activeDoc.cueTracks.length === 0) {
+      showToast('Aucun repère .cue disponible pour découper.', true);
+      return;
+    }
+    const baseName = activeDoc.name.replace(/\.[^.]+$/, '') || 'AudioToolZ';
+    const segments = splitChannelsByCues(
+      activeDoc.channels,
+      activeDoc.sampleRate,
+      activeDoc.cueTracks,
+      baseName
+    );
+    if (segments.length === 0) {
+      showToast('Aucun segment valide à exporter.', true);
+      return;
+    }
+    for (const seg of segments) {
+      const wavBytes = encodeWav(seg.channels, activeDoc.sampleRate, 16);
+      const blob = new Blob([wavBytes.buffer as ArrayBuffer], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${seg.fileName}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+    showToast(`${segments.length} segment(s) WAV découpé(s)`);
+  }, [activeDoc, showToast]);
+
   const handleJoinComplete = useCallback(
     (result: {
       mixTitle: string;
@@ -571,7 +679,15 @@ export default function App() {
     async (file: File, recentToken?: string) => {
       try {
         const buffer = await file.arrayBuffer();
-        const decoded = await audioEngine.decodeFile(buffer);
+        const decoded = await audioEngine.decodeFile(buffer).catch(async (error) => {
+          if (!window.__TAURI_INTERNALS__) throw error;
+          try {
+            return await decodeAudioFallback(buffer);
+          } catch (fallbackError) {
+            const detail = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+            throw new Error(`Piste audio non importée : ${detail}`);
+          }
+        });
         const total = decoded.channels[0]?.length ?? 0;
         const ext = file.name.split('.').pop()?.toUpperCase() || 'AUDIO';
         const doc: AudioDocument = {
@@ -901,7 +1017,7 @@ export default function App() {
     [activeDocId]
   );
 
-  // Global keyboard shortcuts (GoldWave style)
+  // Global keyboard shortcuts (studio style)
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -920,7 +1036,8 @@ export default function App() {
         !exportOpen &&
         !joinOpen &&
         !settingsOpen &&
-        !infoOpen
+        !infoOpen &&
+        !batchOpen
       ) {
         e.preventDefault();
         if (isPlaying) handlePause();
@@ -944,6 +1061,9 @@ export default function App() {
       } else if (mod && e.key.toLowerCase() === 'v') {
         e.preventDefault();
         handlePaste();
+      } else if (mod && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        handleMixPaste();
       } else if (mod && e.key.toLowerCase() === 't') {
         e.preventDefault();
         handleTrim();
@@ -964,7 +1084,8 @@ export default function App() {
         !activeEffect &&
         !exportOpen &&
         !joinOpen &&
-        !settingsOpen
+        !settingsOpen &&
+        !batchOpen
       ) {
         e.preventDefault();
         handleSilence();
@@ -979,6 +1100,8 @@ export default function App() {
     handleCopy,
     handleCut,
     handleDetectBpm,
+    batchOpen,
+    handleMixPaste,
     handleOpenFile,
     handlePaste,
     handlePause,
@@ -1057,6 +1180,7 @@ export default function App() {
         hasSelection={hasSelection}
         hasClipboard={Boolean(clipboard && clipboard[0]?.length)}
         hasCueTracks={Boolean(activeDoc?.cueTracks && activeDoc.cueTracks.length > 0)}
+        hasStereo={Boolean(activeDoc && activeDoc.channels.length >= 2)}
         canUndo={Boolean(activeDoc && activeDoc.undoStack.length > 0)}
         canRedo={Boolean(activeDoc && activeDoc.redoStack.length > 0)}
         hasBpm={Boolean(activeDoc?.bpmInfo && activeDoc.bpmInfo.bpm > 0)}
@@ -1070,11 +1194,18 @@ export default function App() {
         onOpenJoinFiles={() => setJoinOpen(true)}
         onImportCue={() => cueInputRef.current?.click()}
         onExportCue={handleExportCue}
+        onAutoCue={handleAutoCue}
+        onSplitByCue={handleSplitByCue}
+        onOpenBatch={() => setBatchOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         onCut={handleCut}
         onCopy={handleCopy}
         onPaste={handlePaste}
+        onMixPaste={handleMixPaste}
+        onInvertPhase={handleInvertPhase}
+        onSwapChannels={handleSwapChannels}
+        onRemoveDcOffset={handleRemoveDcOffset}
         onSilence={handleSilence}
         onTrim={handleTrim}
         onSelectAll={handleSelectAll}
@@ -1217,46 +1348,198 @@ export default function App() {
         onClose={() => setControlOpen(false)}
       />
 
-      <EffectModal
-        effect={activeEffect}
-        document={activeDoc}
-        isPreviewPlaying={isPreviewPlaying}
-        onStartPreview={(previewChannels, sampleRate) => {
-          setIsPreviewPlaying(true);
-          setIsPlaying(true);
-          audioEngine.play(
-            previewChannels,
-            sampleRate,
-            0,
-            previewChannels[0]?.length ?? 0,
-            {
-              loop: true,
-              volumeDb,
-              balance,
-              speedRatio: 1,
-              enabledChannels,
-            }
-          );
-        }}
-        onStopPreview={() => {
-          audioEngine.stop(true);
-          setIsPreviewPlaying(false);
+      {(() => {
+        // Session conservée sur le moteur, indépendamment des rendus React.
+        type PreviewSession = {
+          docId: string;
+          start: number;
+          end: number;
+          originalLoop: boolean;
+          previewLength: number;
+        };
+        const engine = audioEngine as typeof audioEngine & {
+          effectPreviewSession?: PreviewSession;
+        };
+
+        const finishPlayback = () => {
           setIsPlaying(false);
-        }}
-        onApply={(nextChannels, label, nextSelection) => {
-          commitAudioEdit(nextChannels, label, nextSelection, true);
-          setActiveEffect(null);
-          showToast(`Effet appliqué : ${label}`);
-        }}
-        onClose={() => {
-          if (isPreviewPlaying) {
+          setIsPaused(false);
+          setIsLooping(false);
+          setPlayMode('idle');
+        };
+
+        const getDocumentPosition = () => {
+          const position = Math.max(0, audioEngine.getCurrentSample());
+          const session = engine.effectPreviewSession;
+          if (!session || session.docId !== activeDoc?.id) return position;
+          const length = Math.max(1, session.previewLength);
+          const fraction = (position % length) / length;
+          return session.start + fraction * (session.end - session.start);
+        };
+
+        const resumeDocument = (
+          channels: Float32Array[],
+          sampleRate: number,
+          position: number,
+          loop: boolean,
+          start: number,
+          end: number
+        ) => {
+          const total = channels[0]?.length ?? 0;
+          if (!total) {
             audioEngine.stop(true);
-            setIsPreviewPlaying(false);
-            setIsPlaying(false);
+            finishPlayback();
+            return;
           }
-          setActiveEffect(null);
-        }}
-      />
+          const safeStart = Math.max(0, Math.min(total - 1, Math.floor(start)));
+          const safeEnd = Math.max(safeStart + 1, Math.min(total, Math.floor(end)));
+          const cursor = loop
+            ? safeStart + ((Math.max(0, Math.floor(position) - safeStart)) % (safeEnd - safeStart))
+            : Math.max(0, Math.min(total - 1, Math.floor(position)));
+          audioEngine.play(channels, sampleRate, cursor, loop ? safeEnd : total, {
+            loop,
+            volumeDb,
+            balance,
+            speedRatio,
+            enabledChannels,
+            onEnded: finishPlayback,
+          });
+          if (loop) audioEngine.updateLoopRegion(safeStart, safeEnd, false);
+          setIsPlaying(audioEngine.isPlaying);
+          setIsPaused(false);
+          setIsLooping(loop);
+          setPlayMode(audioEngine.isPlaying ? (loop ? 'loop' : 'play') : 'idle');
+        };
+
+        return (
+          <EffectModal
+            effect={activeEffect}
+            document={activeDoc}
+            noiseProfile={noiseProfile}
+            onCaptureNoiseProfile={(profile) => {
+              setNoiseProfile(profile);
+              showToast('Profil de bruit capturé');
+            }}
+            isPreviewPlaying={isPreviewPlaying}
+            onStartPreview={(previewChannels, sampleRate, liveGainDb, bands) => {
+              if (!activeDoc) return;
+              const totalSamples = previewChannels[0]?.length ?? 0;
+              if (!totalSamples) return;
+              const docTotal = activeDoc.channels[0]?.length ?? 0;
+              const start = Math.max(0, Math.min(docTotal, activeDoc.selection.startSample));
+              const end = Math.max(start, Math.min(docTotal, activeDoc.selection.endSample));
+              if (end <= start) return;
+
+              let session = engine.effectPreviewSession;
+              const existing = session?.docId === activeDoc.id;
+              const documentPosition = getDocumentPosition();
+
+              if (existing && audioEngine.isPlaying) {
+                if (bands && audioEngine.updatePreviewBands(bands)) {
+                  setIsPlaying(true);
+                  return;
+                }
+                if (liveGainDb !== undefined && !bands) {
+                  audioEngine.setVolumeDb(volumeDb + liveGainDb);
+                  setIsPlaying(true);
+                  return;
+                }
+                if (!bands && liveGainDb === undefined &&
+                    audioEngine.replacePreviewAudio(previewChannels, sampleRate)) {
+                  session!.previewLength = totalSamples;
+                  setIsPlaying(true);
+                  return;
+                }
+              }
+
+              if (!existing) {
+                session = {
+                  docId: activeDoc.id,
+                  start,
+                  end,
+                  originalLoop: isLooping,
+                  previewLength: totalSamples,
+                };
+                engine.effectPreviewSession = session;
+              }
+              const relative = documentPosition >= start && documentPosition < end
+                ? (documentPosition - start) / (end - start)
+                : 0;
+              const offset = Math.min(totalSamples - 1, Math.floor(relative * totalSamples));
+              session!.previewLength = totalSamples;
+              audioEngine.play(previewChannels, sampleRate, offset, totalSamples, {
+                loop: true,
+                volumeDb: volumeDb + (liveGainDb ?? 0),
+                previewBands: bands,
+                balance,
+                speedRatio,
+                enabledChannels,
+              });
+              // Le décalage initial ne doit pas devenir le début de la boucle.
+              audioEngine.updateLoopRegion(0, totalSamples, false);
+              setIsPreviewPlaying(audioEngine.isPlaying);
+              setIsPlaying(audioEngine.isPlaying);
+              setIsPaused(false);
+            }}
+            onStopPreview={() => {
+              // Appliquer / Annuler assurent la transition après lecture de la position.
+            }}
+            onApply={(nextChannels, label, nextSelection) => {
+              if (!activeDoc) return;
+              const playing = audioEngine.isPlaying;
+              const position = getDocumentPosition();
+              const session = engine.effectPreviewSession;
+              const loop = session?.docId === activeDoc.id ? session.originalLoop : isLooping;
+              const oldStart = activeDoc.selection.startSample;
+              const oldEnd = activeDoc.selection.endSample;
+              const selection = nextSelection ?? activeDoc.selection;
+              const mappedPosition = nextSelection && oldEnd > oldStart &&
+                position >= oldStart && position < oldEnd
+                ? selection.startSample + ((position - oldStart) / (oldEnd - oldStart)) *
+                  (selection.endSample - selection.startSample)
+                : position;
+              const channels = activeDoc.channels.length === 2 &&
+                nextChannels.length === 2 &&
+                activeDoc.channels[0].length === nextChannels[0].length
+                ? [
+                    enabledChannels[0] ? nextChannels[0] : activeDoc.channels[0],
+                    enabledChannels[1] ? nextChannels[1] : activeDoc.channels[1],
+                  ]
+                : nextChannels;
+
+              delete engine.effectPreviewSession;
+              commitAudioEdit(nextChannels, label, nextSelection, true);
+              setIsPreviewPlaying(false);
+              setActiveEffect(null);
+              if (playing) {
+                resumeDocument(channels, activeDoc.sampleRate, mappedPosition,
+                  loop && selection.endSample > selection.startSample,
+                  selection.startSample, selection.endSample);
+              } else {
+                finishPlayback();
+              }
+              showToast(`Effet appliqué : ${label}`);
+            }}
+            onClose={() => {
+              const session = engine.effectPreviewSession;
+              const wasPreviewing = session?.docId === activeDoc?.id && Boolean(session);
+              const playing = audioEngine.isPlaying;
+              const position = getDocumentPosition();
+              delete engine.effectPreviewSession;
+              setIsPreviewPlaying(false);
+              setActiveEffect(null);
+              if (!wasPreviewing || !activeDoc) return;
+              if (playing) {
+                resumeDocument(activeDoc.channels, activeDoc.sampleRate, position,
+                  session!.originalLoop, session!.start, session!.end);
+              } else {
+                audioEngine.stop(true);
+                finishPlayback();
+              }
+            }}
+          />
+        );
+      })()}
 
       <ExportModal
         open={exportOpen}
@@ -1274,6 +1557,8 @@ export default function App() {
         onClose={() => setJoinOpen(false)}
         onJoinComplete={handleJoinComplete}
       />
+
+      <BatchModal open={batchOpen} onClose={() => setBatchOpen(false)} />
 
       <SettingsModal
         open={settingsOpen}
@@ -1296,7 +1581,6 @@ export default function App() {
 
       <InfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
 
-      {/* Subtle Toast Feedback */}
       {toast && (
         <div
           role="status"
@@ -1304,9 +1588,7 @@ export default function App() {
           className="fixed bottom-24 left-4 z-50 px-3.5 py-2 rounded-lg border text-xs font-medium shadow-lg"
           style={{
             backgroundColor: 'var(--bg-elevated)',
-            borderColor: toast.isError
-              ? 'var(--record-color)'
-              : 'var(--accent-primary)',
+            borderColor: toast.isError ? 'var(--record-color)' : 'var(--accent-primary)',
             color: 'var(--text-primary)',
           }}
         >
