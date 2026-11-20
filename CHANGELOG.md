@@ -4,7 +4,10 @@
 
 ### Nouveautés et allègement
 - Distribution Windows portable allégée sous **Tauri v2** (WebView2 natif, sans Electron).
-- Décodeur de secours **Symphonia** : AAC, ALAC, FLAC, MP3, PCM et Vorbis dans WAV, AIFF, CAF, MP4, Matroska et Ogg.
+- **Formats audio pris en charge** :
+  - **Import / Ouverture** (moteur Web Audio + décodeur **Symphonia**) : **WAV**, **MP3**, **FLAC**, **OGG** (`.ogg`, `.oga`), **Opus** (`.opus`), **AAC**, **ALAC**, **M4A / MP4** (`.m4a`, `.mp4`), **AIFF** (`.aif`, `.aiff`), **CAF** (`.caf`), **Matroska** (`.mka`, `.mkv`), **WebM** (`.webm`) et **PCM**.
+  - **Export** : **WAV** (16-bit PCM, 24-bit PCM, 32-bit Float), **MP3** (128, 192, 256, 320 kbps), **FLAC** (compression Rapide 0, Standard 2, Maximale 5) et **OGG Vorbis** (qualité 1 à 10).
+  - **Repères & mix** : import, extraction et découpe automatique via fichiers **`.cue`**.
 - Nouveaux effets studio en écoute directe : égaliseur 3 bandes, filtre fréquentiel, compresseur + Auto-Gain, réduction de bruit spectrale avec capture de profil, et délai musical synchronisé au BPM (mono, stéréo, ping-pong G/D).
 - Traitement par lots, Auto-Cue et découpe WAV automatique par repères.
 - Faders verticaux, potards gradués, molette et double-clic de réinitialisation.
