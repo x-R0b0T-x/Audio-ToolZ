@@ -553,74 +553,59 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
       }
     }
 
-    // 2. Overview Canvas (bottom bar like GoldWave, showing L & R overlaid)
+    // Overview: keep the existing thin strip, with independent stereo lanes.
     if (overviewCanvas) {
-      const oRect = overviewCanvas.getBoundingClientRect();
-      if (oRect.width > 0 && oRect.height > 0) {
-        if (
-          overviewCanvas.width !== Math.round(oRect.width * dpr) ||
-          overviewCanvas.height !== Math.round(oRect.height * dpr)
-        ) {
-          overviewCanvas.width = Math.round(oRect.width * dpr);
-          overviewCanvas.height = Math.round(oRect.height * dpr);
+      const r = overviewCanvas.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        if (overviewCanvas.width !== Math.round(r.width * dpr) || overviewCanvas.height !== Math.round(r.height * dpr)) {
+          overviewCanvas.width = Math.round(r.width * dpr); overviewCanvas.height = Math.round(r.height * dpr);
         }
-        const octx = overviewCanvas.getContext('2d');
-        if (octx) {
-          octx.save();
-          octx.scale(dpr, dpr);
-          const ow = oRect.width;
-          const oh = oRect.height;
-
-          octx.fillStyle = bg;
-          octx.fillRect(0, 0, ow, oh);
-
+        const ctx = overviewCanvas.getContext('2d');
+        if (ctx) {
+          ctx.save(); ctx.scale(dpr, dpr);
+          const w = r.width, h = r.height;
+          ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
           if (total > 0) {
-            const buckets = Math.min(700, Math.floor(ow));
-            const peaksL = computeWaveformPeaks(activeDoc.channels[0], 0, total, buckets);
-            const peaksR =
-              activeDoc.channels.length > 1
-                ? computeWaveformPeaks(activeDoc.channels[1], 0, total, buckets)
-                : null;
-            const mid = oh / 2;
-            const barW = ow / Math.max(1, peaksL.length);
-
-            octx.globalAlpha = 0.72;
-            octx.fillStyle = waveL;
-            for (let i = 0; i < peaksL.length; i++) {
-              const yTop = mid - peaksL[i].max * (oh * 0.44);
-              const yBot = mid - peaksL[i].min * (oh * 0.44);
-              octx.fillRect(i * barW, yTop, Math.max(1, barW), Math.max(1, yBot - yTop));
-            }
-            if (peaksR) {
-              octx.globalAlpha = 0.55;
-              octx.fillStyle = waveR;
-              for (let i = 0; i < peaksR.length; i++) {
-                const yTop = mid - peaksR[i].max * (oh * 0.44);
-                const yBot = mid - peaksR[i].min * (oh * 0.44);
-                octx.fillRect(i * barW, yTop, Math.max(1, barW), Math.max(1, yBot - yTop));
+            const lanes = Math.min(2, activeDoc.channels.length), laneH = h / Math.max(1, lanes);
+            const buckets = Math.max(1, Math.min(700, Math.floor(w)));
+            for (let ch = 0; ch < lanes; ch++) {
+              const top = ch * laneH, middle = top + laneH / 2;
+              const peaks = computeWaveformPeaks(activeDoc.channels[ch], 0, total, buckets);
+              const barW = w / Math.max(1, peaks.length);
+              ctx.save(); ctx.beginPath(); ctx.rect(0, top, w, laneH); ctx.clip();
+              ctx.strokeStyle = grid; ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.moveTo(0, middle + 0.5); ctx.lineTo(w, middle + 0.5); ctx.stroke();
+              ctx.fillStyle = ch === 0 ? waveL : waveR;
+              for (let i = 0; i < peaks.length; i++) {
+                const y0 = middle - peaks[i].max * laneH * 0.40;
+                const y1 = middle - peaks[i].min * laneH * 0.40;
+                ctx.fillRect(i * barW, y0, Math.max(1, barW), Math.max(1, y1 - y0));
               }
+              ctx.restore();
             }
-            octx.globalAlpha = 1;
-
-            // Darken unselected regions in the overview bar when a selection is active
+            if (lanes === 2) {
+              ctx.strokeStyle = borderSubtle;
+              ctx.beginPath(); ctx.moveTo(0, Math.floor(laneH) + 0.5); ctx.lineTo(w, Math.floor(laneH) + 0.5); ctx.stroke();
+            }
             if (activeDoc.selection.endSample > activeDoc.selection.startSample) {
-              const sx0 = (activeDoc.selection.startSample / total) * ow;
-              const sx1 = (activeDoc.selection.endSample / total) * ow;
-              octx.fillStyle = 'rgba(6, 8, 13, 0.58)';
-              if (sx0 > 0) octx.fillRect(0, 0, sx0, oh);
-              if (sx1 < ow) octx.fillRect(sx1, 0, ow - sx1, oh);
+              const x0 = activeDoc.selection.startSample / total * w, x1 = activeDoc.selection.endSample / total * w;
+              ctx.fillStyle = 'rgba(6,8,13,.45)';
+              if (x0 > 0) ctx.fillRect(0, 0, x0, h);
+              if (x1 < w) ctx.fillRect(x1, 0, w - x1, h);
             }
-
-            // Active viewport indicator
-            const vx0 = (activeDoc.viewStartSample / total) * ow;
-            const vx1 = (activeDoc.viewEndSample / total) * ow;
-            octx.fillStyle = selBg;
-            octx.fillRect(vx0, 0, Math.max(3, vx1 - vx0), oh);
-            octx.strokeStyle = selBorder;
-            octx.lineWidth = 1.5;
-            octx.strokeRect(vx0 + 0.5, 0.5, Math.max(3, vx1 - vx0) - 1, oh - 1);
+            const vx0 = activeDoc.viewStartSample / total * w, vx1 = activeDoc.viewEndSample / total * w;
+            ctx.fillStyle = selBg; ctx.fillRect(vx0, 0, Math.max(3, vx1 - vx0), h);
+            ctx.strokeStyle = selBorder; ctx.lineWidth = 1.5;
+            ctx.strokeRect(vx0 + 0.5, 0.5, Math.max(3, vx1 - vx0) - 1, h - 1);
+            ctx.font = 'bold 9px monospace'; ctx.textBaseline = 'top';
+            for (let ch = 0; ch < lanes; ch++) {
+              const top = ch * laneH;
+              ctx.fillStyle = 'rgba(19,21,28,.9)'; ctx.fillRect(2, top + 1, lanes === 1 ? 31 : 13, Math.min(12, laneH - 1));
+              ctx.fillStyle = ch === 0 ? waveL : waveR;
+              ctx.fillText(lanes === 1 ? 'Mono' : ch === 0 ? 'G' : 'D', 4, top + 1);
+            }
           }
-          octx.restore();
+          ctx.restore();
         }
       }
     }
