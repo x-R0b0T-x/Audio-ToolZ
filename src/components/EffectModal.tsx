@@ -24,7 +24,7 @@ const defaults = () => ({
   filter: 'highpass' as 'highpass' | 'lowpass' | 'notch', frequency: 80, q: 0.707,
   compressor: { thresholdDb: -20, ratio: 3.2, attackMs: 10, releaseMs: 120, autoGain: true, targetPeakDb: -1 } as CompressorAutoGainParams,
   noise: { reductionDb: 14, sensitivity: 1, smoothing: 0.35 } as SpectralNoiseReductionParams,
-  division: DEFAULT_DIVISION, mode: 'stereo' as DelayMode, repetitions: 3, wet: 35, startChannel: 0 as 0 | 1,
+  division: DEFAULT_DIVISION, mode: 'off' as DelayMode, repetitions: 0, wet: 0, pan: 0,
 });
 const titles: Record<Exclude<EffectModalId, null>, string> = {
   volume: 'Volume', normalize: 'Normaliser le niveau', fade: 'Fondus', 'speed-pitch': 'Vitesse et hauteur',
@@ -36,7 +36,7 @@ const panel = 'p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-
 export const EffectModal: React.FC<EffectModalProps> = (props) => !props.effect || !props.document ? null :
   <EffectSession key={`${props.document.id}:${props.effect}`} {...props} effect={props.effect} document={props.document} />;
 type SessionProps = EffectModalProps & { effect: Exclude<EffectModalId, null>; document: AudioDocument };
-const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noiseProfile, onStartPreview, onApply, onClose }) => {
+const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noiseProfile, onCaptureNoiseProfile, onStartPreview, onApply, onClose }) => {
   const [c, set] = useState(defaults);
   const change = (patch: Partial<ReturnType<typeof defaults>>) => set((old) => ({ ...old, ...patch }));
   const callback = useRef(onStartPreview); callback.current = onStartPreview;
@@ -47,7 +47,7 @@ const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noisePro
   const blocked = effect === 'echo' && c.mode !== 'off' && c.repetitions > 0 && c.wet > 0 && !tempoAvailable;
   const source = useMemo(() => doc.channels.map((ch) => ch.subarray(start, end)), [doc, start, end]);
   const stats = useMemo(() => selected && effect === 'normalize' ? analyzeAudioStats(doc.channels, doc.sampleRate, start, end) : null, [doc, start, end, selected, effect]);
-  const label = effect === 'echo' ? `Délai ${DELAY_DIVISIONS[c.division].label}, ${c.mode}, ${c.repetitions} répétition(s), effet ${c.wet} %, départ ${c.startChannel === 0 ? 'G' : 'D'}` : titles[effect];
+  const label = effect === 'echo' ? `Délai ${DELAY_DIVISIONS[c.division].label}, ${c.mode}, ${c.repetitions} répétition(s), effet ${c.wet} %, pan ${c.pan === 0 ? 'Centre' : c.pan < 0 ? 'G ' + Math.abs(c.pan) + '%' : 'D ' + c.pan + '%'}` : titles[effect];
   const processSegment = () => {
     const n = source[0]?.length ?? 0;
     switch (effect) {
@@ -58,7 +58,7 @@ const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noisePro
       case 'filter': return applyFrequencyFilter(source, doc.sampleRate, 0, n, c.filter, c.frequency, c.q);
       case 'compressor': return applyCompressorAutoGain(source, doc.sampleRate, 0, n, c.compressor);
       case 'noise-reduction': return applySpectralNoiseReduction(source, 0, n, noiseProfile ?? captureNoiseProfile(source, doc.sampleRate, 0, n), c.noise);
-      case 'echo': return blocked ? source : applyMusicalDelay(source, doc.sampleRate, bpm, c.division, c.mode, c.repetitions, c.wet, c.startChannel);
+      case 'echo': return blocked ? source : applyMusicalDelay(source, doc.sampleRate, bpm, c.division, c.mode, c.repetitions, c.wet, c.pan);
       default: return source;
     }
   };
@@ -104,10 +104,10 @@ const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noisePro
           <p className="text-xs text-center mb-4">{tempoAvailable ? `${bpm.toFixed(1)} BPM détectés` : 'BPM non détecté : fermez puis utilisez Ctrl+B.'}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 items-start">
             <Knob label="Division" value={c.division} max={DELAY_DIVISIONS.length - 1} defaultValue={DEFAULT_DIVISION} display={DELAY_DIVISIONS[c.division].label} onChange={(v) => change({ division: v })} />
-            <Knob label="Répétitions" value={c.repetitions} max={16} defaultValue={3} display={c.repetitions === 0 ? '0 — aucun écho' : String(c.repetitions)} onChange={(v) => change({ repetitions: v })} />
-            <Knob label="Niveau de l’effet" value={c.wet} max={100} defaultValue={35} display={`${c.wet} %`} onChange={(v) => change({ wet: v })} />
+            <Knob label="Répétitions" value={c.repetitions} max={16} defaultValue={0} display={c.repetitions === 0 ? '0 — aucun écho' : String(c.repetitions)} onChange={(v) => change({ repetitions: v })} />
+            <Knob label="Niveau de l’effet" value={c.wet} max={100} defaultValue={0} display={`${c.wet} %`} onChange={(v) => change({ wet: v })} />
             <div className="space-y-4"><DelayModeSwitch value={c.mode} onChange={(mode) => change({ mode })} />
-              <Knob small label="Départ ping-pong" value={c.startChannel} max={1} defaultValue={0} display={c.startChannel === 0 ? 'Gauche' : 'Droite'} onChange={(v) => change({ startChannel: v as 0 | 1 })} />
+              <Knob small label="Panoramique" value={c.pan} min={-100} max={100} step={5} ticks={3} defaultValue={0} display={c.pan === 0 ? 'Centre' : c.pan < 0 ? `Gauche ${Math.abs(c.pan)} %` : `Droite ${c.pan} %`} onChange={(v) => change({ pan: v })} />
             </div>
           </div>
           <p className="text-[10px] text-[var(--text-muted)] mt-4">Son original conservé. Off, 0 répétition ou effet à 0 % : aucun écho. Les répétitions restent dans la sélection. Double-clic : valeur par défaut.</p>
@@ -125,7 +125,13 @@ const EffectSession: React.FC<SessionProps> = ({ effect, document: doc, noisePro
           {fader('Seuil', c.compressor.thresholdDb, -20, -40, -2, 1, `${c.compressor.thresholdDb} dBFS`, (v) => change({ compressor: { ...c.compressor, thresholdDb: v } }))}
           {fader('Ratio', c.compressor.ratio, 3.2, 1.2, 10, 0.1, `${c.compressor.ratio.toFixed(1)} : 1`, (v) => change({ compressor: { ...c.compressor, ratio: v } }))}
         </div>}
-        {effect === 'noise-reduction' && <div className={panel}>{fader('Atténuation', c.noise.reductionDb, 14, 0, 36, 1, `${c.noise.reductionDb} dB`, (v) => change({ noise: { ...c.noise, reductionDb: v } }))}</div>}
+        {effect === 'noise-reduction' && <div className={panel}>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="text-[11px] text-[var(--text-muted)]">{noiseProfile ? 'Profil de bruit mémorisé actif' : 'Profil automatique sur la sélection'}</span>
+            {onCaptureNoiseProfile && <button type="button" className={button} disabled={!selected} onClick={() => onCaptureNoiseProfile(captureNoiseProfile(source, doc.sampleRate, 0, source[0]?.length ?? 0))}>Capturer le profil</button>}
+          </div>
+          {fader('Atténuation', c.noise.reductionDb, 14, 0, 36, 1, `${c.noise.reductionDb} dB`, (v) => change({ noise: { ...c.noise, reductionDb: v } }))}
+        </div>}
         {effect === 'speed-pitch' && <div className={`grid grid-cols-2 gap-4 ${panel}`}>
           {fader('Vitesse', c.speed, 1, 0.5, 2, 0.05, `${c.speed.toFixed(2)}x`, (v) => change({ speed: v }))}
           {fader('Hauteur', c.pitch, 0, -12, 12, 1, `${c.pitch} demi-tons`, (v) => change({ pitch: v }))}

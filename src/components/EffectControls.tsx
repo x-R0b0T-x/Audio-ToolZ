@@ -61,29 +61,42 @@ export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col 
     <EffectMeter />
   </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{p.display}</output>
 </div>;
-interface KnobProps { label: string; value: number; max: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
+interface KnobProps { label: string; value: number; min?: number; max: number; step?: number; ticks?: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
 export const Knob: React.FC<KnobProps> = (p) => {
   const drag = useRef<{ x: number; y: number; value: number } | null>(null);
-  const set = (v: number) => { if (!p.disabled) p.onChange(Math.max(0, Math.min(p.max, Math.round(v)))); };
-  const angle = -135 + p.value / Math.max(1, p.max) * 270;
+  const min = p.min ?? 0;
+  const range = Math.max(1, p.max - min);
+  const set = (v: number) => { if (!p.disabled) p.onChange(Math.round(Math.max(min, Math.min(p.max, v)))); };
+  const fraction = (p.value - min) / range;
+  const angle = -135 + fraction * 270;
+  const tickCount = p.ticks ?? (Math.min(20, range) + 1);
+  const bipolar = min < 0 && p.max > 0;
+  const keyStep = p.step ?? 1;
+  const pixelsPerUnit = Math.max(0.65, 110 / range);
   return <div className="atz-knob flex flex-col items-center gap-2 min-w-0" style={{ opacity: p.disabled ? 0.4 : 1 }}
     onDoubleClick={() => set(p.defaultValue)}>
     <span className="text-xs font-semibold">{p.label}</span>
-    <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={0} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
-      title="Glisser pour régler ; double-clic : valeur par défaut" style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
+    <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
+      title="Glisser ou molette pour régler ; double-clic : valeur par défaut" style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
       onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; }}
-      onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / Math.max(1.2, 100 / Math.max(1, p.max))); }}
+      onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / pixelsPerUnit); }}
       onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}
       onKeyDown={(e) => {
         if (['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Home', 'End'].includes(e.key)) {
-          e.preventDefault(); set(e.key === 'Home' ? 0 : e.key === 'End' ? p.max : p.value + (e.key === 'ArrowUp' || e.key === 'ArrowRight' ? 1 : -1));
+          e.preventDefault();
+          set(e.key === 'Home' ? min : e.key === 'End' ? p.max : p.value + (e.key === 'ArrowUp' || e.key === 'ArrowRight' ? keyStep : -keyStep));
         }
       }}>
       <svg width={p.small ? 72 : 100} height={p.small ? 72 : 100} viewBox="0 0 100 100" aria-hidden="true">
-        {Array.from({ length: Math.min(20, p.max) + 1 }, (_, i) => {
-          const fraction = i / Math.max(1, Math.min(20, p.max));
-          const a = (-135 + fraction * 270) * Math.PI / 180;
-          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke={fraction <= p.value / Math.max(1, p.max) ? '#45f882' : '#a987df'} strokeWidth="2" />;
+        {Array.from({ length: tickCount }, (_, i) => {
+          const tickFraction = i / Math.max(1, tickCount - 1);
+          const a = (-135 + tickFraction * 270) * Math.PI / 180;
+          const active = bipolar
+            ? (tickCount === 3
+              ? (i === 1 && p.value === 0) || (i === 0 && p.value < 0) || (i === 2 && p.value > 0)
+              : fraction <= 0.5 ? (tickFraction >= fraction - 0.02 && tickFraction <= 0.51) : (tickFraction >= 0.49 && tickFraction <= fraction + 0.02))
+            : tickFraction <= fraction + 1e-6;
+          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke={active ? '#45f882' : '#a987df'} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
         })}
         <circle cx="50" cy="50" r="31" fill="#3d2466" stroke="#bd93f9" strokeWidth="2" />
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />
@@ -99,14 +112,14 @@ export const DelayModeSwitch: React.FC<{ value: DelayMode; onChange: (mode: Dela
     const box = element.getBoundingClientRect();
     onChange(modes[Math.max(0, Math.min(3, Math.round(((y - box.top - 14) / Math.max(1, box.height - 28)) * 3)))]);
   };
-  return <div className="flex justify-center items-center gap-3" onDoubleClick={() => onChange('stereo')}>
+  return <div className="flex justify-center items-center gap-3" onDoubleClick={() => onChange('off')}>
     <div role="slider" tabIndex={0} aria-label="Mode du délai" aria-orientation="vertical" aria-valuemin={0} aria-valuemax={3} aria-valuenow={index} aria-valuetext={value}
       className="atz-delay-switch" style={{ position: 'relative', width: 28, height: 124, borderRadius: 12, background: '#191322', border: '1px solid #9368c8', touchAction: 'none', cursor: 'ns-resize' }}
       onPointerDown={(e) => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); updateAt(e.currentTarget, e.clientY); }}
       onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) updateAt(e.currentTarget, e.clientY); }}
       onKeyDown={(e) => { if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) { e.preventDefault(); onChange(modes[e.key === 'Home' ? 0 : e.key === 'End' ? 3 : Math.max(0, Math.min(3, index + (e.key === 'ArrowDown' ? 1 : -1)))]); } }}>
-      <span aria-hidden="true" style={{ position: 'absolute', left: 3, right: 3, height: 22, top: 3 + index * 32, borderRadius: 7, background: '#7043aa', border: '1px solid #bd93f9', boxShadow: 'inset 0 1px 3px #c9a8f1', pointerEvents: 'none' }}>
-        <span style={{ position: 'absolute', left: 4, right: 4, top: 9, height: 2, background: '#45f882' }} />
+      <span aria-hidden="true" style={{ position: 'absolute', left: 3, right: 3, height: 22, top: 3 + index * 32, borderRadius: 7, background: '#39ff14', border: '1px solid #9eff8a', boxShadow: '0 0 8px rgba(57, 255, 20, 0.55)', pointerEvents: 'none' }}>
+        <span style={{ position: 'absolute', left: 4, right: 4, top: 9, height: 2, background: '#13151c' }} />
       </span>
     </div>
     <div role="group" aria-label="Positions du sélecteur" className="flex flex-col justify-between" style={{ height: 124 }}>

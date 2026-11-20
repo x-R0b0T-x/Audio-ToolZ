@@ -118,7 +118,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
     const dpr = window.devicePixelRatio || 1;
     const leftMargin = 52;
 
-    // 1. Main Waveform Canvas (with Time Ruler at the BOTTOM like GoldWave)
+    // 1. Main Waveform Canvas (with Time Ruler at the BOTTOM)
     const rect = mainCanvas.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
       if (
@@ -512,7 +512,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // GoldWave-style triangle marker on channel divider
+                // Studio triangle marker on channel divider
                 if (numChannels === 2) {
                   ctx.fillStyle = selBorder;
                   ctx.beginPath();
@@ -964,7 +964,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
           return (
             <div
               key={doc.id}
-              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-t-md border-t border-x text-xs font-medium shrink-0"
+              className="atz-doc-tab group flex items-center gap-1.5 px-3 py-1.5 rounded-t-md border-t border-x text-xs font-medium shrink-0"
               style={{
                 backgroundColor: isActive
                   ? 'var(--bg-canvas)'
@@ -1019,7 +1019,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
         </button>
       </div>
 
-      {/* Main High-DPI Waveform Canvas + GoldWave-style Left Channel Checkboxes */}
+      {/* Main High-DPI Waveform Canvas + Left Channel Checkboxes */}
       <div className="flex-1 min-h-0 relative">
         <canvas
           ref={mainCanvasRef}
@@ -1036,7 +1036,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
           }`}
         />
 
-        {/* Channel enable checkboxes on far left like GoldWave */}
+        {/* Channel enable checkboxes on far left */}
         {!isRecording && (
           <div className="absolute left-1 top-0 bottom-6 flex flex-col justify-around pointer-events-none">
             <label
@@ -1082,7 +1082,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
         )}
       </div>
 
-      {/* GoldWave-style Overview Strip at the BOTTOM (right above the status bar) */}
+      {/* Overview Strip at the BOTTOM (right above the status bar) */}
       <div
         className="h-11 px-2 py-1 border-t shrink-0 flex items-center gap-2"
         style={{
@@ -1105,7 +1105,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
         />
       </div>
 
-      {/* Document Status Bar (tabular figures, GoldWave-style layout) */}
+      {/* Document Status Bar (tabular figures) */}
       <div
         className="flex flex-wrap items-center justify-between gap-4 px-4 py-1.5 border-t text-xs shrink-0"
         style={{
@@ -1116,11 +1116,16 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
       >
         <div className="flex flex-wrap items-center gap-3 font-mono-tabular">
           <span>
-            {activeDoc.channels.length === 1 ? 'Mono' : 'Stéréo'} ·{' '}
-            {activeDoc.sampleRate.toLocaleString('fr-FR')} Hz · 32-bit float
+            <span className="font-semibold" style={{ color: 'var(--accent-secondary)' }}>
+              {activeDoc.channels.length === 1 ? 'Mono' : 'Stéréo'}
+            </span>{' '}
+            · {activeDoc.sampleRate.toLocaleString('fr-FR')} Hz · 32-bit float
           </span>
           <span aria-hidden="true">·</span>
-          <span>Durée {formatTimecode(totalSec)}</span>
+          <span>
+            <span className="font-semibold" style={{ color: 'var(--accent-secondary)' }}>Durée</span>{' '}
+            {formatTimecode(totalSec)}
+          </span>
           {activeDoc.bpmInfo && activeDoc.bpmInfo.bpm > 0 && (
             <>
               <span aria-hidden="true">·</span>

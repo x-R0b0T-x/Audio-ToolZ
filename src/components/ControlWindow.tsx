@@ -9,7 +9,6 @@ import {
   Repeat,
   Rewind,
   Square,
-  X,
 } from 'lucide-react';
 import { audioEngine } from '../audio/engine';
 import { formatTimecode, linearToDb } from '../audio/dsp';
@@ -46,7 +45,6 @@ interface ControlWindowProps {
   onPlayReverse: () => void;
   onPlayFastForward: () => void;
   onToggleRecord: () => void;
-  onClose: () => void;
 }
 
 export const ControlWindow: React.FC<ControlWindowProps> = ({
@@ -72,7 +70,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
   onPlayReverse,
   onPlayFastForward,
   onToggleRecord,
-  onClose,
 }) => {
   // Ancrage fixe permanent au coin inférieur droit de l'espace de travail
   const [rightOffset, setRightOffset] = useState<number>(18);
@@ -385,7 +382,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             drawSpectrumPane(left, specPeaksRef.current.l, leftPane.x, leftPane.width);
             drawSpectrumPane(right, specPeaksRef.current.r, rightPane.x, rightPane.width);
           } else {
-            // Mode 3 : Waveforme temps réel GoldWave ralentie et détaillée
+            // Mode 3 : Waveforme temps réel colorée ralentie et détaillée
             const midY = h / 2;
             const maxAmpPx = h * 0.44;
 
@@ -540,44 +537,38 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
       }}
     >
       <div
-        className="flex items-center justify-between px-3 py-1.5 border-b "
+        className="grid grid-cols-[1fr_auto_1fr] items-center px-3 py-1.5 border-b"
         style={{
           backgroundColor: 'var(--bg-elevated)',
           borderColor: 'var(--border-subtle)',
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-self-start">
           <BrandLogo size={16} showWordmark={false} />
           <span className="text-xs font-display font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Contrôle
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span
-            ref={timeDisplayRef}
-            className="font-mono-tabular text-xs px-1.5 py-0.5 rounded"
-            style={{
-              backgroundColor: 'var(--wave-bg)',
-              color: 'var(--accent-secondary)',
-            }}
-          >
-            {formatTimecode(playheadSeconds)}
-          </span>
+        <span
+          ref={timeDisplayRef}
+          className="font-mono-tabular text-xs px-1.5 py-0.5 rounded justify-self-center"
+          style={{
+            backgroundColor: 'var(--wave-bg)',
+            color: 'var(--accent-secondary)',
+          }}
+        >
+          {formatTimecode(playheadSeconds)}
+        </span>
+        <div className="flex items-center gap-1.5 justify-self-end">
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? 'Déplier la fenêtre de contrôle' : 'Réduire la fenêtre de contrôle'}
+            title={collapsed ? 'Déplier' : 'Réduire'}
             className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"
             style={{ color: 'var(--text-secondary)' }}
           >
             {collapsed ? <Maximize2 className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

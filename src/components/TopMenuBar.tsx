@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Download } from 'lucide-react';
+
 import { RecentFilesMenu } from './RecentFilesMenu';
 import {
   IconBpm,
-  IconControlPanel,
   IconCopy,
   IconCut,
   IconFade,
@@ -37,8 +36,6 @@ interface TopMenuBarProps {
   canRedo: boolean;
   hasBpm: boolean;
   showBeatGrid: boolean;
-  controlOpen: boolean;
-  onToggleControlWindow: () => void;
   onDetectBpm: () => void;
   onNewEmpty: () => void;
   onOpenFile: () => void;
@@ -83,8 +80,6 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
   canRedo,
   hasBpm,
   showBeatGrid,
-  controlOpen,
-  onToggleControlWindow,
   onDetectBpm,
   onNewEmpty,
   onOpenFile,
@@ -521,18 +516,6 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
                     style={{ backgroundColor: 'var(--border-subtle)' }}
                   />
                   <MenuItem
-                    label={
-                      controlOpen
-                        ? 'Masquer la fenêtre de contrôle'
-                        : 'Afficher la fenêtre de contrôle'
-                    }
-                    onClick={() => runAndClose(onToggleControlWindow)}
-                  />
-                  <div
-                    className="my-1 h-px"
-                    style={{ backgroundColor: 'var(--border-subtle)' }}
-                  />
-                  <MenuItem
                     label="Paramètres..."
                     onClick={() => runAndClose(onOpenSettings)}
                   />
@@ -558,20 +541,11 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
         </div>
 
         <div className="flex items-center justify-end shrink-0">
-          <button
-            type="button"
-            disabled={!hasDocument}
-            onClick={onOpenExport}
-            aria-label="Exporter (WAV, MP3, FLAC, OGG)"
-            title="Exporter le fichier audio (Ctrl+E)"
-            className="w-9 h-8 inline-flex items-center justify-center rounded-md transition-opacity disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-            style={{
-              backgroundColor: 'var(--accent-primary)',
-              color: '#ffffff',
-            }}
-          >
-            <Download className="w-4 h-4" />
-          </button>
+          <ToolButton
+            icon={<IconHelp />}
+            label="Licence GPL v3 et raccourcis"
+            onClick={onOpenInfo}
+          />
         </div>
       </header>
 
@@ -729,25 +703,6 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
             pressed={hasDocument && showBeatGrid}
             disabled={!hasDocument}
             onClick={onDetectBpm}
-          />
-        </div>
-
-        <div className="flex items-center gap-1 shrink-0">
-          <ToolButton
-            icon={<IconControlPanel />}
-            label={
-              controlOpen
-                ? 'Masquer la fenêtre de contrôle'
-                : 'Afficher la fenêtre de contrôle'
-            }
-            highlight={controlOpen}
-            pressed={controlOpen}
-            onClick={onToggleControlWindow}
-          />
-          <ToolButton
-            icon={<IconHelp />}
-            label="Licence GPL v3 et raccourcis"
-            onClick={onOpenInfo}
           />
         </div>
       </div>
