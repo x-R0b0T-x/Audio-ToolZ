@@ -1,0 +1,90 @@
+name: Android ARM64 - Prototype lecture
+on:
+  push:
+    branches: [android-dev]
+    paths: ['android/**', 'vite.android.config.ts', '.github/workflows/android-prototype.yml']
+permissions:
+  contents: read
+concurrency:
+  group: android-prototype
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+      - name: Installer les outils de compilation sur le serveur GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libssl-dev librsvg2-dev patchelf build-essential
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.2.12479018'
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          npm install
+          npm install --no-save @tauri-apps/cli@2
+      - name: Préparer la cible mobile dans cet environnement de compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git restore --source=6af5c11 -- public/icon.ico public/icon.png
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('src-tauri/Cargo.toml')
+          s = p.read_text()
+          assert '[lib]' not in s, 'Configuration bibliothèque déjà présente : vérifier avant adaptation'
+          p.write_text(s + '\n[lib]\nname = "audio_toolz_mobile"\ncrate-type = ["staticlib", "cdylib", "rlib"]\n')
+          Path('src-tauri/src/lib.rs').write_text('''#[cfg_attr(mobile, tauri::mobile_entry_point)]
+          pub fn run() {
+              tauri::Builder::default()
+                  .plugin(tauri_plugin_dialog::init())
+                  .plugin(tauri_plugin_opener::init())
+                  .run(tauri::generate_context!())
+                  .expect("Erreur de démarrage Android");
+          }
+          ''')
+          p = Path('src-tauri/tauri.conf.json')
+          c = json.loads(p.read_text())
+          c['productName'] = 'Audio ToolZ Android Test'
+          c['identifier'] = 'com.audiotoolz.android.dev'
+          c['build']['beforeBuildCommand'] = 'npx vite build --config vite.android.config.ts'
+          c['app']['windows'] = [{'label': 'main', 'title': 'Audio ToolZ Android - Prototype'}]
+          c['bundle']['targets'] = 'all'
+          c['bundle']['android'] = {'minSdkVersion': 29}
+          p.write_text(json.dumps(c, indent=2))
+          PY
+          npx tauri android init --ci
+      - name: Compiler un APK de débogage ARM64
+        run: npx tauri android build --apk --debug --target aarch64
+      - name: Rassembler les APK et leurs empreintes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir apk-output
+          find src-tauri/gen/android/app/build/outputs/apk -type f -name '*.apk' -exec cp {} apk-output/ \;
+          cd apk-output
+          test -n "$(find . -maxdepth 1 -name '*.apk' -print -quit)"
+          sha256sum *.apk > SHA256SUMS.txt
+          printf '%s\n' 'Prototype expérimental : Android 10+, ARM64.' 'Essayer un fichier audio court, inférieur à 32 Mio.' 'Ouverture, lecture, pause, arrêt, boucle et volume uniquement.' 'Pas encore deffets, dexport, de microphone ou de lecture arrière-plan garantis.' 'Signature de test : une nouvelle compilation peut nécessiter de désinstaller la précédente.' > LIRE-MOI.txt
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-Android-ARM64-Prototype
+          path: apk-output/
+          if-no-files-found: error
+          retention-days: 14

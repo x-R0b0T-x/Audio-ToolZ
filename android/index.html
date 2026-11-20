@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Audio ToolZ Android — Prototype</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#13151c;color:#f8f8f2}
+    *{box-sizing:border-box}body{margin:0;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+    main{max-width:1000px;margin:auto}h1{font-size:26px;margin:8px 0}h1 span{color:#39ff14}h1 b{color:#b34dff}p{line-height:1.5}.muted{color:#bbc0cf;font-size:13px}
+    section{background:#1f222d;border:1px solid #554566;border-radius:14px;padding:16px;margin:16px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}button,.open{font:inherit;background:#332044;color:white;border:1px solid #b34dff;border-radius:10px;min-height:48px;padding:12px 18px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+    button:disabled{opacity:.4;cursor:default}button[aria-pressed=true]{border-color:#39ff14;background:#255323}.open{background:#6830a0}input[type=file]{position:absolute;width:1px;height:1px;opacity:0}input[type=range]{accent-color:#39ff14;width:min(100%,360px);min-height:44px}
+    canvas{display:block;width:100%;height:240px;background:#0c0d12;border-radius:8px}output{font-variant-numeric:tabular-nums}#status{overflow-wrap:anywhere}label:focus-within,button:focus-visible{outline:2px solid #39ff14;outline-offset:3px}
+    @media(max-width:480px){canvas{height:200px}.row button{flex:1 1 40%}h1{font-size:23px}}
+  </style>
+</head>
+<body><main>
+  <h1>Audio <span>Tool</span><b>Z</b> Android</h1>
+  <p class="muted">Prototype expérimental ARM64 · Android 10 minimum · Pas une version officielle</p>
+  <section>
+    <label class="open">Ouvrir un fichier audio<input id="file" type="file" accept="audio/*,.wav,.mp3,.flac,.ogg,.m4a"></label>
+    <p id="status" role="status" aria-live="polite">Pour ce premier essai : choisissez un morceau court, inférieur à 32 Mio.</p>
+    <canvas id="wave" aria-label="Aperçu stéréo : gauche violet, droite vert"></canvas>
+    <p><output id="clock">0:00 / 0:00</output></p>
+    <div class="row">
+      <button id="play" disabled>Lecture</button><button id="pause" disabled>Pause</button><button id="stop" disabled>Arrêt</button><button id="loop" disabled aria-pressed="false">Boucle</button>
+    </div>
+    <p><label for="volume">Volume : <output id="gain">0 dB</output></label><br><input id="volume" type="range" min="-40" max="0" step="1" value="0"></p>
+  </section>
+  <p class="muted">Ce prototype réutilise le moteur de lecture du projet. Effets, export, enregistrement et gestes de sélection ne sont pas encore intégrés. La lecture en arrière-plan n’est pas garantie.</p>
+</main>
+<script type="module">
+  import { audioEngine } from '../src/audio/engine';
+  const el = id => document.getElementById(id);
+  let audio = null, cursor = 0, looping = false, loading = false;
+  const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+  function controls(){
+    el('play').disabled = loading || !audio || audioEngine.isPlaying;
+    el('pause').disabled = !audioEngine.isPlaying;
+    el('stop').disabled = !audio || loading;
+    el('loop').disabled = !audio || loading;
+    el('loop').setAttribute('aria-pressed', String(looping));
+  }
+  function draw(){
+    const canvas=el('wave'), dpr=window.devicePixelRatio||1;
+    const w=Math.max(1,Math.round(canvas.clientWidth)), h=Math.max(1,Math.round(canvas.clientHeight));
+    canvas.width=w*dpr;canvas.height=h*dpr;
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.fillStyle='#0c0d12';ctx.fillRect(0,0,w,h);
+    if(!audio)return;
+    const count=Math.min(2,audio.channels.length), lane=h/count, n=audio.channels[0].length;
+    for(let c=0;c<count;c++){
+      const data=audio.channels[c], mid=lane*(c+.5);
+      ctx.fillStyle=c===0?'#b34dff':'#39ff14';
+      for(let x=0;x<w;x++){
+        const start=Math.floor(x*n/w),end=Math.min(n,Math.max(start+1,Math.floor((x+1)*n/w)));
+        let lo=0,hi=0;
+        for(let i=start;i<end;i++){lo=Math.min(lo,data[i]);hi=Math.max(hi,data[i]);}
+        ctx.fillRect(x,mid-hi*lane*.43,1,Math.max(1,(hi-lo)*lane*.43));
+      }
+    }
+  }
+  function start(){
+    if(!audio||loading)return;
+    try{
+      const n=audio.channels[0].length;
+      if(cursor>=n-1)cursor=0;
+      audioEngine.play(audio.channels,audio.sampleRate,0,n,{
+        offsetSamples:cursor,loop:looping,volumeDb:Number(el('volume').value),
+        onEnded:()=>{cursor=0;controls();}
+      });
+      controls();
+    }catch(e){el('status').textContent='Lecture impossible : '+String(e);}
+  }
+  el('file').addEventListener('change',async event=>{
+    const f=event.target.files?.[0];if(!f)return;
+    audioEngine.stop(true);audio=null;cursor=0;loading=true;controls();draw();
+    el('status').textContent='Ouverture de '+f.name+'…';
+    try{
+      if(f.size>32*1024*1024)throw new Error('Fichier trop volumineux pour ce premier prototype (32 Mio maximum).');
+      const decoded=await audioEngine.decodeFile(await f.arrayBuffer());
+      if(!decoded.channels[0]?.length)throw new Error('Aucun échantillon audio.');
+      audio=decoded;
+      el('status').textContent=f.name+' — '+decoded.sampleRate+' Hz — '+decoded.channels.length+' canal/canaux';
+      draw();
+    }catch(e){el('status').textContent='Ouverture impossible : '+String(e);}
+    finally{loading=false;event.target.value='';controls();}
+  });
+  el('play').addEventListener('click',start);
+  el('pause').addEventListener('click',()=>{cursor=audioEngine.pause();controls();});
+  el('stop').addEventListener('click',()=>{audioEngine.stop(true);cursor=0;controls();});
+  el('loop').addEventListener('click',()=>{
+    const playing=audioEngine.isPlaying;
+    if(playing)cursor=audioEngine.getCurrentSample();
+    looping=!looping;if(playing)start();controls();
+  });
+  el('volume').addEventListener('input',event=>{
+    const gain=Number(event.target.value);audioEngine.setVolumeDb(gain);el('gain').textContent=gain+' dB';
+  });
+  setInterval(()=>{
+    if(audio){const pos=audioEngine.isPlaying?audioEngine.getCurrentSample():cursor;el('clock').textContent=fmt(pos/audio.sampleRate)+' / '+fmt(audio.channels[0].length/audio.sampleRate);}
+    else el('clock').textContent='0:00 / 0:00';
+    controls();
+  },200);
+  window.addEventListener('resize',draw);
+  draw();controls();
+</script></body></html>
