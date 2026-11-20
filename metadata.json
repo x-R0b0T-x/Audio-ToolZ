@@ -1,6 +1,6 @@
 {
   "name": "Audio Toolz",
-  "description": "Éditeur audio de précision gratuit et open source (GPL v3) inspiré de GoldWave, avec traitement local sans envoi en ligne.",
+  "description": "Éditeur audio de précision gratuit et open source (GPL v3) avec traitement local sans envoi en ligne.",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": []
 }

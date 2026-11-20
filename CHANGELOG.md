@@ -1,5 +1,20 @@
 # Journal des modifications
 
+## 1.5
+
+### Nouveautés et allègement
+- Distribution Windows portable allégée sous **Tauri v2** (WebView2 natif, sans Electron).
+- Décodeur de secours **Symphonia** : AAC, ALAC, FLAC, MP3, PCM et Vorbis dans WAV, AIFF, CAF, MP4, Matroska et Ogg.
+- Nouveaux effets studio en écoute directe : égaliseur 3 bandes, filtre fréquentiel, compresseur + Auto-Gain, réduction de bruit spectrale avec capture de profil, et délai musical synchronisé au BPM (mono, stéréo, ping-pong G/D).
+- Traitement par lots, Auto-Cue et découpe WAV automatique par repères.
+- Faders verticaux, potards gradués, molette et double-clic de réinitialisation.
+
+### Ergonomie et correctifs
+- Menus déroulants fermés sur tout clic extérieur avec navigation au survol.
+- Fenêtre de contrôle ancrée au-dessus de la règle temporelle et waveform colorée détaillée ralentie.
+- Lecture et boucle préservées après Appliquer ou Annuler.
+- Fenêtre À propos v1.5 centrée, déplaçable et redimensionnable.
+
 ## 1.4
 
 ### Navigation et lecture
