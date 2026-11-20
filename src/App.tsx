@@ -1,3 +1,5 @@
+import { installMenuHover } from './utils/uiPolish';
+import './polish.css';
 import { decodeAudioFallback } from './utils/desktop';
 /**
  * @license
@@ -57,6 +59,11 @@ function makeDocId(): string {
 }
 
 export default function App() {
+  useEffect(() => {
+    const root = document.getElementById('root');
+    document.title = 'Audio ToolZ v1.5';
+    return root ? installMenuHover(root) : undefined;
+  }, []);
   const [documents, setDocuments] = useState<AudioDocument[]>([]);
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const [clipboard, setClipboard] = useState<Float32Array[] | null>(null);
