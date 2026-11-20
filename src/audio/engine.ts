@@ -98,23 +98,26 @@ export class AudioEngine {
     }
   }
   play(channels: Float32Array[], sampleRate: number, startSample: number, endSample: number,
-    options: { loop?: boolean; reverse?: boolean; volumeDb?: number; balance?: number; speedRatio?: number;
-      enabledChannels?: [boolean, boolean]; onEnded?: () => void; previewBands?: PreviewBand[] } = {}): void {
+    options: { loop?: boolean; reverse?: boolean; offsetSamples?: number; volumeDb?: number; balance?: number; speedRatio?: number; enabledChannels?: [boolean, boolean]; onEnded?: () => void; previewBands?: PreviewBand[] } = {}): void {
     this.stop(false);
     const total = channels[0]?.length ?? 0; if (total === 0) return;
-    const ctx = this.ensureContext(), reverse = Boolean(options.reverse), loop = Boolean(options.loop) && !reverse;
+    const ctx = this.ensureContext(), reverse = Boolean(options.reverse), loop = Boolean(options.loop);
     const safeStart = Math.max(0, Math.min(total - 1, Math.floor(startSample)));
     const safeEnd = endSample > safeStart ? Math.min(total, Math.floor(endSample)) : total;
     const segLen = safeEnd - safeStart; if (segLen <= 0) return;
+    const initialOffset = Math.max(0, Math.min(segLen - 1, Math.floor(options.offsetSamples ?? 0)));
     const buffer = ctx.createBuffer(channels.length, loop ? total : segLen, sampleRate);
     if (reverse) {
-      const reversed = reverseChannelsRange(channels, safeStart, safeEnd);
+      const reversed = loop ? reverseChannelsRange(channels, 0, total) : reverseChannelsRange(channels, safeStart, safeEnd);
       for (let c = 0; c < channels.length; c++) buffer.getChannelData(c).set(reversed[c]);
     } else {
       for (let c = 0; c < channels.length; c++) buffer.getChannelData(c).set(loop ? channels[c] : channels[c].subarray(safeStart, safeEnd));
     }
     const src = ctx.createBufferSource(); src.buffer = buffer; src.loop = loop;
-    if (loop) { src.loopStart = safeStart / sampleRate; src.loopEnd = safeEnd / sampleRate; }
+    if (loop) {
+      src.loopStart = (reverse ? total - safeEnd : safeStart) / sampleRate;
+      src.loopEnd = (reverse ? total - safeStart : safeEnd) / sampleRate;
+    }
     this.speedRatio = Math.max(0.25, Math.min(4, options.speedRatio ?? 1));
     this.volumeDb = options.volumeDb ?? 0; this.balance = Math.max(-1, Math.min(1, options.balance ?? 0));
     this.currentChannelCount = channels.length;
@@ -138,14 +141,15 @@ export class AudioEngine {
     this.sourceNode = src; this.currentBuffer = loop ? buffer : null; this.currentTotalSamples = total;
     this.isPlayingState = true; this.isPausedState = false; this.isLooping = loop; this.isReverse = reverse;
     this.playbackStartSample = safeStart; this.playbackEndSample = safeEnd;
-    this.startedAtCtxTime = ctx.currentTime; this.offsetSamplesAtStart = 0; this.onEndedCallback = options.onEnded ?? null;
+    this.startedAtCtxTime = ctx.currentTime; this.offsetSamplesAtStart = initialOffset; this.onEndedCallback = options.onEnded ?? null;
     src.onended = () => {
       if (this.sourceNode === src && this.isPlayingState && !this.isLooping) {
         this.isPlayingState = false; this.isPausedState = false; this.isReverse = false;
         this.sourceNode = null; this.currentBuffer = null; this.onEndedCallback?.();
       }
     };
-    src.start(0, loop ? safeStart / sampleRate : 0);
+    const bufferStartSample = loop ? (reverse ? total - safeEnd + initialOffset : safeStart + initialOffset) : initialOffset;
+    src.start(0, bufferStartSample / sampleRate);
   }
   replacePreviewAudio(channels: Float32Array[], sampleRate: number): boolean {
     const ctx = this.ctx, oldSource = this.sourceNode, destination = this.previewNodes[0] ?? this.preSplitGain;
@@ -188,13 +192,14 @@ export class AudioEngine {
     const safeStart = Math.max(0, Math.min(total - 1, Math.floor(startSample)));
     const safeEnd = endSample > safeStart ? Math.min(total, Math.floor(endSample)) : total;
     const current = this.getCurrentSample();
-    // A new start AFTER the playhead must not restart the current pass.
-    // Only a passed end boundary (or an explicit restart) requests a jump.
-    if (!restartFromStart && current < safeEnd && this.sourceNode) {
-      this.sourceNode.loopStart = safeStart / this.currentDocSampleRate;
-      this.sourceNode.loopEnd = safeEnd / this.currentDocSampleRate;
+    const sr = this.currentDocSampleRate;
+    const withinForward = !this.isReverse && current < safeEnd;
+    const withinReverse = this.isReverse && current > safeStart && current <= safeEnd;
+    if (!restartFromStart && (withinForward || withinReverse) && this.sourceNode) {
+      this.sourceNode.loopStart = (this.isReverse ? total - safeEnd : safeStart) / sr;
+      this.sourceNode.loopEnd = (this.isReverse ? total - safeStart : safeEnd) / sr;
       this.playbackStartSample = safeStart; this.playbackEndSample = safeEnd;
-      this.offsetSamplesAtStart = current - safeStart;
+      this.offsetSamplesAtStart = this.isReverse ? safeEnd - current : current - safeStart;
       this.startedAtCtxTime = this.ctx.currentTime;
       return;
     }
@@ -202,13 +207,15 @@ export class AudioEngine {
       const old = this.sourceNode; this.sourceNode = null; old.onended = null;
       try { old.stop(); old.disconnect(); } catch { /* Already stopped. */ }
     }
-    const sr = this.currentDocSampleRate, src = this.ctx.createBufferSource();
-    src.buffer = this.currentBuffer; src.loop = true; src.loopStart = safeStart / sr; src.loopEnd = safeEnd / sr;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.currentBuffer; src.loop = true;
+    src.loopStart = (this.isReverse ? total - safeEnd : safeStart) / sr;
+    src.loopEnd = (this.isReverse ? total - safeStart : safeEnd) / sr;
     src.playbackRate.value = this.speedRatio;
     src.connect(this.previewNodes[0] ?? this.preSplitGain ?? this.gainNode);
     this.sourceNode = src; this.playbackStartSample = safeStart; this.playbackEndSample = safeEnd;
     this.offsetSamplesAtStart = 0; this.startedAtCtxTime = this.ctx.currentTime;
-    src.start(0, safeStart / sr);
+    src.start(0, (this.isReverse ? total - safeEnd : safeStart) / sr);
   }
   pause(): number {
     if (!this.isPlayingState || !this.ctx) return this.playbackStartSample;

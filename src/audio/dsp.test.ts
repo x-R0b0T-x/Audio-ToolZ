@@ -414,3 +414,79 @@ test('reverseChannelsRange and computePlaybackSamplePosition handle reverse and 
     150
   );
 });
+
+test('BPM detector locks onto 128.0 BPM without doubling to 256 despite loud offbeat bass, open hi-hats, and 2/4 claps', () => {
+  const sr = 44100;
+  const durationSec = 28;
+  const total = sr * durationSec;
+  const chL = new Float32Array(total);
+  const chR = new Float32Array(total);
+  const bpm = 128;
+  const period = 60 / bpm;
+  for (let i = 0; i < total; i++) {
+    const t = i / sr;
+    const pad = Math.sin(2 * Math.PI * 110 * t) * 0.08;
+    chL[i] = pad;
+    chR[i] = pad;
+  }
+  let beat = 0;
+  for (let tKick = 0.22; tKick < durationSec - 0.5; tKick += period, beat++) {
+    const kStart = Math.round(tKick * sr);
+    const kLen = Math.round(sr * 0.16);
+    for (let j = 0; j < kLen && kStart + j < total; j++) {
+      const kt = j / sr;
+      const f = 48 + 150 * Math.exp(-kt * 44);
+      const env = Math.min(1, kt / 0.001) * Math.exp(-kt * 11);
+      const s = Math.sin(2 * Math.PI * f * kt) * env * 0.85;
+      chL[kStart + j] += s;
+      chR[kStart + j] += s;
+    }
+    // 2/4 layered clap (beats 1, 3, 5...)
+    if (beat % 2 === 1) {
+      for (let j = 0; j < Math.round(sr * 0.09) && kStart + j < total; j++) {
+        const ct = j / sr;
+        const clap = Math.sin(2 * Math.PI * 950 * ct) * Math.sin(ct * 1730) * Math.exp(-ct * 35) * 0.45;
+        chL[kStart + j] += clap;
+        chR[kStart + j] += clap;
+      }
+    }
+    // Loud offbeat rolling bass + open hi-hat halfway between every kick (at 256 events/min!)
+    const offStart = Math.round((tKick + period * 0.5) * sr);
+    const offLen = Math.round(sr * 0.14);
+    for (let j = 0; j < offLen && offStart + j < total; j++) {
+      const ot = j / sr;
+      const offBass = Math.sin(2 * Math.PI * 82 * ot) * Math.min(1, ot / 0.015) * Math.exp(-ot * 16) * 0.58;
+      const offHat = Math.sin(2 * Math.PI * 7200 * ot) * Math.exp(-ot * 28) * 0.38;
+      chL[offStart + j] += offBass + offHat;
+      chR[offStart + j] += offBass - offHat * 0.7;
+    }
+  }
+  const res = detectBpmAndBeats([chL, chR], sr);
+  assert.ok(
+    Math.abs(res.bpm - 128) <= 0.25,
+    `Expected ~128.0 BPM without x2 doubling, got ${res.bpm}`
+  );
+});
+
+test('BPM detector resolves fractional 128.4 BPM accurately', () => {
+  const sr = 44100;
+  const track = makeSyntheticKickTrack(128.4, sr, 0.08);
+  const res = detectBpmAndBeats(track, sr);
+  assert.ok(
+    Math.abs(res.bpm - 128.4) <= 0.2,
+    `Expected ~128.4 BPM, got ${res.bpm}`
+  );
+});
+
+test('computePlaybackSamplePosition wraps infinitely inside selection when reverse looping', () => {
+  assert.equal(
+    computePlaybackSamplePosition({
+      isReverse: true,
+      isLooping: true,
+      startSample: 1000,
+      endSample: 1500,
+      playedSamples: 620,
+    }),
+    1380
+  );
+});

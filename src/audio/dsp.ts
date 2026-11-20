@@ -812,7 +812,7 @@ export function detectBpmAndBeats(
   }
 
   // Pick up to 3 active 16-second drop windows with genuine kick energy & rhythmic contrast
-  const winFrames = Math.min(totalFrames, Math.round(envRate * 16));
+  const winFrames = Math.min(totalFrames, Math.round(envRate * 20));
   const selectTopWindows = (): number[] => {
     if (totalFrames <= winFrames * 1.2) return [0];
     const step = Math.max(1, Math.round(envRate * 2.5));
@@ -844,18 +844,17 @@ export function detectBpmAndBeats(
     }
     return picked.length > 0 ? picked : [0];
   };
-
   const activeStarts = selectTopWindows();
   const primaryStart = activeStarts[0];
-
   // Build smoothed curves & discrete peak-picked kick events per window
   const refracFrames = Math.max(24, Math.round(envRate * 0.145)); // >300 BPM bursts merged cleanly
-
   const buildWindowData = (startFrame: number) => {
     const len = Math.min(winFrames, totalFrames - startFrame);
     const raw = onsetFull.subarray(startFrame, startFrame + len);
     const subRaw = subOnsetFull.subarray(startFrame, startFrame + len);
+    const subLevelRaw = subRmsFull.subarray(startFrame, startFrame + len);
     const punchRaw = punchOnsetFull.subarray(startFrame, startFrame + len);
+    const highRaw = highRmsFull.subarray(startFrame, startFrame + len);
     const smooth = new Float32Array(len);
     let energy = 0;
     let avg = 0;
@@ -877,7 +876,6 @@ export function detectBpmAndBeats(
     avg /= Math.max(1, len);
     subAvg /= Math.max(1, len);
     punchAvg /= Math.max(1, len);
-
     // Local adaptive threshold peak-picking of genuine kick attack events
     const halfWin = Math.round(envRate * 0.35);
     const peaks: Array<{ frame: number; amp: number; subAmp: number; punchAmp: number }> = [];
@@ -919,13 +917,14 @@ export function detectBpmAndBeats(
         }
       }
     }
-
     return {
       startFrame,
       len,
       raw,
       subRaw,
+      subLevelRaw,
       punchRaw,
+      highRaw,
       smooth,
       energy,
       avg,
@@ -934,10 +933,8 @@ export function detectBpmAndBeats(
       peaks,
     };
   };
-
   const windows = activeStarts.map(buildWindowData);
   const primaryWin = windows[0];
-
   if (primaryWin.energy < 1e-10 || primaryWin.avg < 1e-7) {
     return {
       bpm: 0,
@@ -947,7 +944,6 @@ export function detectBpmAndBeats(
       kickSamples: [],
     };
   }
-
   const minBpm = 65;
   const maxBpm = 300;
   // Compute ACF on 2 ms downsampled stride (fast + noise-immune) for candidate retrieval
@@ -964,11 +960,9 @@ export function detectBpmAndBeats(
     }
     return { arr, len: dsLen, energy: e };
   });
-
   const minLagDs = Math.max(8, Math.floor((dsRate * 60) / (maxBpm * 1.1)));
   const maxLagDs = Math.min(dsWindows[0].len - 4, Math.ceil(((dsRate * 60) / minBpm) * 3.05));
   const acf = new Float32Array(maxLagDs + 1);
-
   for (let lag = minLagDs; lag <= maxLagDs; lag++) {
     let totalCorr = 0;
     for (const dw of dsWindows) {
@@ -983,7 +977,6 @@ export function detectBpmAndBeats(
     }
     acf[lag] = totalCorr / dsWindows.length;
   }
-
   const sampleAcf = (lagFrames1ms: number): number => {
     const lagFloat = lagFrames1ms / ds;
     const i0 = Math.floor(lagFloat);
@@ -991,7 +984,6 @@ export function detectBpmAndBeats(
     if (i0 < 0 || i0 + 1 >= acf.length) return 0;
     return acf[i0] * (1 - frac) + acf[i0 + 1] * frac;
   };
-
   // Build Discrete Kick Inter-Onset Interval (IOI) histogram across 65..300 BPM (0.5 BPM bins)
   const ioiBins = Math.round((maxBpm - minBpm) * 2) + 1;
   const ioiHist = new Float32Array(ioiBins);
@@ -1019,7 +1011,10 @@ export function detectBpmAndBeats(
       }
     }
   }
-
+  let maxIoi = 1e-12;
+  for (let i = 0; i < ioiBins; i++) {
+    if (ioiHist[i] > maxIoi) maxIoi = ioiHist[i];
+  }
   // Collect candidate tempos from BOTH ACF peaks and IOI histogram peaks (+ harmonic ratios)
   const candidateBpms = new Set<number>();
   const addWithHarmonics = (baseBpm: number) => {
@@ -1029,7 +1024,6 @@ export function detectBpmAndBeats(
       if (b >= minBpm && b <= maxBpm) candidateBpms.add(b);
     }
   };
-
   const coarseAcf: Array<{ bpm: number; score: number }> = [];
   for (let bpm = minBpm; bpm <= maxBpm; bpm += 0.5) {
     const lag = (envRate * 60) / bpm;
@@ -1050,7 +1044,6 @@ export function detectBpmAndBeats(
   for (let i = 0; i < Math.min(7, acfPeaks.length); i++) {
     addWithHarmonics(acfPeaks[i].bpm);
   }
-
   const ioiPeaks: Array<{ bpm: number; score: number }> = [];
   for (let i = 1; i < ioiBins - 1; i++) {
     if (ioiHist[i] >= ioiHist[i - 1] && ioiHist[i] >= ioiHist[i + 1]) {
@@ -1061,9 +1054,7 @@ export function detectBpmAndBeats(
   for (let i = 0; i < Math.min(7, ioiPeaks.length); i++) {
     addWithHarmonics(ioiPeaks[i].bpm);
   }
-
   if (candidateBpms.size === 0) candidateBpms.add(120);
-
   // Gaussian-Kernel Comb evaluation on 1 ms curves
   const evalWindowTempoFit = (
     w: ReturnType<typeof buildWindowData>,
@@ -1074,14 +1065,12 @@ export function detectBpmAndBeats(
     const sigmaFrames = Math.max(2.0, (envRate * sigmaMs) / 1000);
     const tolFrames = Math.ceil(sigmaFrames * 2.2);
     const phaseSteps = Math.max(24, Math.round(periodFrames / 2.2));
-
     const lutLen = tolFrames * 2 + 1;
     const gaussLut = new Float32Array(lutLen);
     for (let d = -tolFrames; d <= tolFrames; d++) {
       const z = d / sigmaFrames;
       gaussLut[d + tolFrames] = Math.exp(-0.5 * z * z);
     }
-
     const kernelMatch = (arr: Float32Array, posFloat: number) => {
       const center = Math.round(posFloat);
       const lo = Math.max(0, center - tolFrames);
@@ -1094,11 +1083,9 @@ export function detectBpmAndBeats(
       }
       return best;
     };
-
     let bestP = 0;
     let bestOnBeatSum = -Infinity;
     let bestCount = 0;
-
     for (let p = 0; p < phaseSteps; p++) {
       const phase = (p / phaseSteps) * periodFrames;
       let comb = 0;
@@ -1113,27 +1100,54 @@ export function detectBpmAndBeats(
         bestCount = count;
       }
     }
-
     let offBeatSum = 0;
     let halfKickSum = 0;
+    let halfSubSum = 0;
+    let halfHighSum = 0;
+    let halfHits = 0;
+    let thirdKickSum = 0;
+    let thirdHits = 0;
     let onPunchSum = 0;
     let onSubSum = 0;
+    let onHighSum = 0;
+    let evenKickSum = 0;
+    let oddKickSum = 0;
+    let evenSubSum = 0;
+    let oddSubSum = 0;
+    let evenHits = 0;
+    let oddHits = 0;
+    let evenCount = 0;
+    let oddCount = 0;
     let hits = 0;
     let punchHits = 0;
     let offCount = 0;
-
     const hitThresh = w.avg * 0.9;
     const punchThresh = w.punchAvg * 0.65;
-
-    for (let pos = bestP; pos < w.len - 1; pos += periodFrames) {
+    let beatIdx = 0;
+    for (let pos = bestP; pos < w.len - 1; pos += periodFrames, beatIdx++) {
       const val = kernelMatch(w.smooth, pos);
       const pVal = kernelMatch(w.punchRaw, pos);
       const sVal = kernelMatch(w.subRaw, pos);
-      if (val >= hitThresh) hits++;
+      const sLvl = kernelMatch(w.subLevelRaw, pos);
+      const hVal = kernelMatch(w.highRaw, pos);
+      const beatKick = sVal * 0.55 + pVal * 0.45;
+      const hit = val >= hitThresh ? 1 : 0;
+      if (hit) hits++;
       if (pVal >= punchThresh || sVal >= w.subAvg * 0.85) punchHits++;
       onPunchSum += pVal;
       onSubSum += sVal;
-
+      onHighSum += hVal;
+      if (beatIdx % 2 === 0) {
+        evenKickSum += beatKick;
+        evenSubSum += sLvl;
+        evenHits += hit;
+        evenCount++;
+      } else {
+        oddKickSum += beatKick;
+        oddSubSum += sLvl;
+        oddHits += hit;
+        oddCount++;
+      }
       if (pos + periodFrames * 0.67 < w.len - 1) {
         const offHalf = kernelMatch(w.smooth, pos + periodFrames * 0.5);
         const offThird = kernelMatch(w.smooth, pos + periodFrames / 3);
@@ -1141,34 +1155,73 @@ export function detectBpmAndBeats(
         offBeatSum += Math.max(offHalf, 0.88 * offThird, 0.88 * offTwoThird);
         const halfPunch = kernelMatch(w.punchRaw, pos + periodFrames * 0.5);
         const halfSub = kernelMatch(w.subRaw, pos + periodFrames * 0.5);
+        const halfHigh = kernelMatch(w.highRaw, pos + periodFrames * 0.5);
+        if (offHalf >= hitThresh) halfHits++;
         halfKickSum += halfSub * 0.55 + halfPunch * 0.45;
+        halfSubSum += halfSub;
+        halfHighSum += halfHigh;
+        const t1Kick = kernelMatch(w.subRaw, pos + periodFrames / 3) * 0.55 + kernelMatch(w.punchRaw, pos + periodFrames / 3) * 0.45;
+        const t2Kick = kernelMatch(w.subRaw, pos + (periodFrames * 2) / 3) * 0.55 + kernelMatch(w.punchRaw, pos + (periodFrames * 2) / 3) * 0.45;
+        thirdKickSum += Math.min(t1Kick, t2Kick);
+        if (offThird >= hitThresh && offTwoThird >= hitThresh) thirdHits++;
         offCount++;
       }
     }
-
     const hitRate = bestCount > 0 ? hits / bestCount : 0;
     const kickConsist = bestCount > 0 ? punchHits / bestCount : 0;
     const offBeatMean = offCount > 0 ? offBeatSum / offCount : 0;
     const onKickMean = bestCount > 0 ? (onSubSum * 0.55 + onPunchSum * 0.45) / bestCount : 0;
+    const onSubMean = bestCount > 0 ? onSubSum / bestCount : 0;
+    const onHighMean = bestCount > 0 ? onHighSum / bestCount : 0;
     const halfKickMean = offCount > 0 ? halfKickSum / offCount : 0;
-
-    const halfTempoPenalty =
-      bpm * 2 <= maxBpm && halfKickMean > onKickMean * 0.45
-        ? halfKickMean * 0.65
-        : 0;
-
+    const halfSubMean = offCount > 0 ? halfSubSum / offCount : 0;
+    const halfHighMean = offCount > 0 ? halfHighSum / offCount : 0;
+    const halfHitRate = offCount > 0 ? halfHits / offCount : 0;
+    const thirdKickMean = offCount > 0 ? thirdKickSum / offCount : 0;
+    const thirdHitRate = offCount > 0 ? thirdHits / offCount : 0;
+    // Penalize half-tempo or 1/3-tempo ONLY when midpoints truly carry equally strong kicks
+    const isTrueDoubleTimeKicks =
+      bpm * 2 <= maxBpm &&
+      halfKickMean > onKickMean * 0.64 &&
+      halfSubMean > onSubMean * 0.64 &&
+      halfHitRate >= 0.72 &&
+      halfHighMean <= halfSubMean * 1.8 + onHighMean * 1.15;
+    const isTrueTripleTimeKicks =
+      bpm * 3 <= maxBpm &&
+      thirdKickMean > onKickMean * 0.62 &&
+      thirdHitRate >= 0.70;
+    const halfTempoPenalty = isTrueDoubleTimeKicks
+      ? halfKickMean * 0.75
+      : isTrueTripleTimeKicks
+      ? thirdKickMean * 0.85
+      : 0;
+    // Penalize octave-doubled high tempos (> 165 BPM) when even vs odd beats are truly asymmetrical (allows 0.78 groove accents)
+    let doublingPenalty = 0;
+    if (bpm > 165 && bpm / 2 >= minBpm && evenCount >= 3 && oddCount >= 3) {
+      const evK = evenKickSum / evenCount;
+      const odK = oddKickSum / oddCount;
+      const evS = evenSubSum / evenCount;
+      const odS = oddSubSum / oddCount;
+      const evH = evenHits / evenCount;
+      const odH = oddHits / oddCount;
+      const kickSym = Math.min(evK, odK) / Math.max(1e-9, Math.max(evK, odK));
+      const subSym = Math.min(evS, odS) / Math.max(1e-9, Math.max(evS, odS));
+      const hitSym = Math.min(evH, odH) / Math.max(1e-9, Math.max(evH, odH));
+      const worstSym = Math.min(kickSym, subSym, hitSym);
+      if (kickSym < 0.62 || subSym < 0.64 || hitSym < 0.75) {
+        doublingPenalty = bestOnBeatSum * (0.45 + 0.55 * (1 - worstSym));
+      }
+    }
     const coverageScore =
       bestOnBeatSum * (0.35 + 0.65 * hitRate) * (0.7 + 0.3 * kickConsist) -
-      offBeatMean * 0.72 -
-      halfTempoPenalty;
-
+      offBeatMean * 0.28 -
+      halfTempoPenalty -
+      doublingPenalty;
     return { bestP, bestOnBeatSum, coverageScore };
   };
-
   let chosenBpm = 120;
   let chosenScore = -Infinity;
-  const evalWindows = windows.slice(0, 2);
-
+  const evalWindows = windows;
   for (const cand of candidateBpms) {
     let localBestBpm = cand;
     let localBestCov = -Infinity;
@@ -1182,10 +1235,15 @@ export function detectBpmAndBeats(
         cov += evalWindowTempoFit(w, b, 10).coverageScore;
       }
       cov /= evalWindows.length;
-      const directAcf = sampleAcf((envRate * 60) / b);
+      const directAcf = Math.max(0, sampleAcf((envRate * 60) / b));
+      const halfAcf = b / 2 >= minBpm ? Math.max(0, sampleAcf((envRate * 60) / (b / 2))) : 0;
+      const acfOctavePenalty =
+        b > 165 && halfAcf > directAcf * 1.12
+          ? Math.max(0.55, directAcf / (halfAcf + 1e-9))
+          : 1;
       const binIdx = Math.max(0, Math.min(ioiBins - 1, Math.round((b - minBpm) * 2)));
-      const ioiBoost = ioiHist[binIdx] > 0 ? 0.15 : 0;
-      const totalMetric = cov * (0.6 + 0.35 * Math.max(0, directAcf) + ioiBoost);
+      const ioiBoost = 0.25 * (ioiHist[binIdx] / maxIoi);
+      const totalMetric = cov * (0.6 + 0.35 * directAcf + ioiBoost) * acfOctavePenalty;
       if (totalMetric > localBestCov) {
         localBestCov = totalMetric;
         localBestBpm = b;
@@ -1196,39 +1254,49 @@ export function detectBpmAndBeats(
       chosenBpm = localBestBpm;
     }
   }
-
-  // Fine 0.05 BPM + Micro 0.01 BPM sweep on primaryWin using tight 4.5 ms kernel
+  // Fine 0.05 BPM + Micro 0.01 BPM sweep across selected windows using tight 4.5 ms kernel
   let bestBpm = chosenBpm;
   let bestPhaseFrames = 0;
   let bestCombScore = -Infinity;
-
   for (
     let bpm = Math.max(minBpm, chosenBpm - 0.8);
     bpm <= Math.min(maxBpm, chosenBpm + 0.8) + 1e-6;
     bpm += 0.05
   ) {
-    const { bestP, bestOnBeatSum } = evalWindowTempoFit(primaryWin, bpm, 5);
-    if (bestOnBeatSum > bestCombScore) {
-      bestCombScore = bestOnBeatSum;
+    let sumComb = 0;
+    let primaryPhase = 0;
+    for (let wi = 0; wi < evalWindows.length; wi++) {
+      const fit = evalWindowTempoFit(evalWindows[wi], bpm, 5);
+      sumComb += fit.bestOnBeatSum;
+      if (wi === 0) primaryPhase = fit.bestP;
+    }
+    const meanComb = sumComb / evalWindows.length;
+    if (meanComb > bestCombScore) {
+      bestCombScore = meanComb;
       bestBpm = bpm;
-      bestPhaseFrames = bestP;
+      bestPhaseFrames = primaryPhase;
     }
   }
-
   const microCenter = bestBpm;
   for (
     let bpm = Math.max(minBpm, microCenter - 0.08);
     bpm <= Math.min(maxBpm, microCenter + 0.08) + 1e-6;
     bpm += 0.01
   ) {
-    const { bestP, bestOnBeatSum } = evalWindowTempoFit(primaryWin, bpm, 4.5);
-    if (bestOnBeatSum > bestCombScore) {
-      bestCombScore = bestOnBeatSum;
+    let sumComb = 0;
+    let primaryPhase = 0;
+    for (let wi = 0; wi < evalWindows.length; wi++) {
+      const fit = evalWindowTempoFit(evalWindows[wi], bpm, 4.5);
+      sumComb += fit.bestOnBeatSum;
+      if (wi === 0) primaryPhase = fit.bestP;
+    }
+    const meanComb = sumComb / evalWindows.length;
+    if (meanComb > bestCombScore) {
+      bestCombScore = meanComb;
       bestBpm = bpm;
-      bestPhaseFrames = bestP;
+      bestPhaseFrames = primaryPhase;
     }
   }
-
   // Locate exact START OF KICK ATTACK ("démarrer à l'attaque"):
   // 1. Finds the sharp zero-lag attack edge frame around centerSample.
   // 2. Locates the initial transient peak, estimates local pre-kick ambient floor [-16ms .. -4ms],

@@ -1,3 +1,4 @@
+import { applyMusicalDelay, DELAY_DIVISIONS, DEFAULT_DIVISION } from './musicalDelay';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -163,4 +164,28 @@ test('Batch processor executes effect chain and encodes WAV outputs', async () =
   assert.equal(outputs.length, 1);
   assert.equal(outputs[0].outputFileName, 'take1_v15.wav');
   assert.equal(String.fromCharCode(...outputs[0].encoded.bytes.subarray(0, 4)), 'RIFF');
+});
+
+test('applyMusicalDelay supports smooth L/R pan and Center default', () => {
+  assert.equal(DELAY_DIVISIONS[DEFAULT_DIVISION].label, '1/1 pointée');
+  const sr = 48000;
+  const len = sr * 2;
+  const sigL = new Float32Array(len);
+  const sigR = new Float32Array(len);
+  sigL[0] = 0.5;
+  sigR[0] = 0.5;
+  const divIdx = DELAY_DIVISIONS.findIndex((d) => d.label === '1/4 droite');
+  const delaySample = Math.round(sr * 60 / 120);
+  // Center (pan=0): equal stereo repeats
+  const centered = applyMusicalDelay([sigL, sigR], sr, 120, divIdx, 'stereo', 1, 50, 0);
+  assert.ok(Math.abs(centered[0][delaySample] - 0.25) < 1e-4);
+  assert.ok(Math.abs(centered[1][delaySample] - 0.25) < 1e-4);
+  // Smooth intermediate Left (-40%): Left=100% of wet, Right=60% of wet
+  const panLeft40 = applyMusicalDelay([sigL, sigR], sr, 120, divIdx, 'stereo', 1, 50, -40);
+  assert.ok(Math.abs(panLeft40[0][delaySample] - 0.25) < 1e-4);
+  assert.ok(Math.abs(panLeft40[1][delaySample] - 0.15) < 1e-4);
+  // Smooth intermediate Right (+60%): Left=40% of wet, Right=100% of wet
+  const panRight60 = applyMusicalDelay([sigL, sigR], sr, 120, divIdx, 'stereo', 1, 50, 60);
+  assert.ok(Math.abs(panRight60[0][delaySample] - 0.10) < 1e-4);
+  assert.ok(Math.abs(panRight60[1][delaySample] - 0.25) < 1e-4);
 });
