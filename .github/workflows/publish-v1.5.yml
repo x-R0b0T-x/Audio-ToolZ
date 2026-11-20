@@ -1,0 +1,48 @@
+name: Publier Audio ToolZ v1.5 officielle
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-v1.5.yml']
+permissions:
+  actions: read
+  contents: write
+concurrency: audio-toolz-publish-v1.5
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE: 59d37c766387227833ef84321a6e4ed684ff092a
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Vérifier la compilation et publier les fichiers testés
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/44796427706" > run.json
+          jq -e --arg source "$SOURCE" '.status == "completed" and .conclusion == "success" and .head_sha == $source and .head_branch == "main" and .path == ".github/workflows/build-v1.5.yml"' run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14659850816" > artifact.json
+          jq -e '.expired == false and .workflow_run.id == 44796427706' artifact.json
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          test "$(jq '[.[] | select(.tag_name == "v1.5")] | length' releases.json)" = 0
+          if git show-ref --verify --quiet refs/tags/v1.5; then
+            echo 'Le tag v1.5 existe déjà : arrêt sans modification.'
+            exit 1
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14659850816/zip" > artifact.zip
+          mkdir package
+          unzip -q artifact.zip -d package
+          cd package
+          test -s 'Audio ToolZ.exe'
+          test -s SHA256SUMS.txt
+          sha256sum --check --strict SHA256SUMS.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          assert Path('Audio ToolZ.exe').read_bytes()[:2] == b'MZ', 'Exécutable Windows invalide'
+          Path('release-notes.md').write_text('## Audio ToolZ v1.5\n\nVersion Windows portable sous Tauri v2, sans Electron.\n\nCompilation Windows testée par le développeur avant publication.\n\nTéléchargez Audio ToolZ.exe pour lancer le programme. Le fichier SHA256SUMS.txt contient son empreinte de contrôle.\n', encoding='utf-8')
+          PY
+          gh release create v1.5 'Audio ToolZ.exe' SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --target "$SOURCE" --title 'Audio ToolZ v1.5' --notes-file release-notes.md --draft
+          gh release edit v1.5 --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest
