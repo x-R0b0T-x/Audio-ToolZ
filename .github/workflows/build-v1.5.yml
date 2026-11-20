@@ -27,8 +27,10 @@ jobs:
       - name: Recuperer les icones depuis l'historique du depot
         shell: pwsh
         run: |
-          git restore --source=6af5c11 -- public/icon.ico public/icon.png
-          if ($LASTEXITCODE -ne 0) { throw 'Icones introuvables' }
+          if (-not (Test-Path "public/icon.ico") -or -not (Test-Path "public/icon.png")) {
+            git restore --source=6af5c11 -- public/icon.ico public/icon.png
+            if ($LASTEXITCODE -ne 0) { throw 'Icones introuvables' }
+          }
 
       - name: Installer les dependances frontend et Tauri CLI
         run: |
