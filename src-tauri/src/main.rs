@@ -45,9 +45,19 @@ fn resolve_portable_user_data() -> PathBuf {
         .ok()
         .and_then(|p| p.parent().map(|d| d.to_path_buf()))
         .unwrap_or_else(|| PathBuf::from("."));
-    let user_data = exe_dir.join("user-data");
-    let _ = fs::create_dir_all(&user_data);
-    user_data.join("recent-files.json")
+    let portable_dir = exe_dir.join("user-data");
+    let probe = portable_dir.join(".write-check");
+    if fs::create_dir_all(&portable_dir).is_ok() && fs::write(&probe, b"").is_ok() {
+        let _ = fs::remove_file(&probe);
+        return portable_dir.join("recent-files.json");
+    }
+    let fallback_base = std::env::var_os("LOCALAPPDATA")
+        .or_else(|| std::env::var_os("XDG_DATA_HOME"))
+        .map(PathBuf::from)
+        .unwrap_or_else(std::env::temp_dir);
+    let fallback_dir = fallback_base.join("Audio ToolZ").join("user-data");
+    let _ = fs::create_dir_all(&fallback_dir);
+    fallback_dir.join("recent-files.json")
 }
 
 fn read_recent_list(store_path: &Path) -> Vec<RecentFile> {
