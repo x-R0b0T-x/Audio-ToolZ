@@ -127,8 +127,7 @@ export function installControlGestures(root: HTMLElement): () => void {
         field.min === '' ? -Number.MAX_VALUE : Number(field.min),
         field.max === '' ? Number.MAX_VALUE : Number(field.max), step)));
     } else {
-      const reverseKeys = field.classList.contains('atz-delay-switch');
-      field.dispatchEvent(new KeyboardEvent('keydown', { key: direction > 0 ? reverseKeys ? 'ArrowDown' : 'ArrowUp' : reverseKeys ? 'ArrowUp' : 'ArrowDown', bubbles: true, cancelable: true }));
+      field.dispatchEvent(new KeyboardEvent('keydown', { key: direction > 0 ? 'ArrowUp' : 'ArrowDown', bubbles: true, cancelable: true }));
     }
   };
   const doubleClick = (event: MouseEvent) => {
