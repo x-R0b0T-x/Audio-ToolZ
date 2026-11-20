@@ -534,7 +534,7 @@ export const TopMenuBar: React.FC<TopMenuBarProps> = ({
             data-testid="header-brand-title"
             className="text-lg font-display font-bold tracking-tight whitespace-nowrap"
           >
-            <span style={{ color: '#f8f8f2' }}>Audio </span>
+            <span style={{ color: '#ffffff' }}>Audio </span>
             <span style={{ color: '#45f882' }}>Tool</span>
             <span style={{ color: '#bd93f9' }}>Z</span>
           </span>
