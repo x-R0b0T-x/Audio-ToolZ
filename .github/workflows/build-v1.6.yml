@@ -2,21 +2,26 @@ name: Audio ToolZ v1.6 dev - Windows portable
 on:
   push:
     branches: [v1.6-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/workflows/build-v1.6.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/integrate-effects.py']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: windows-v16-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   windows:
+    if: github.ref == 'refs/heads/v1.6-dev'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply guarded effects integration
+        run: python .github/scripts/integrate-effects.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -32,8 +37,10 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
+      - name: Preview and filter tests
+        run: node --test src/audio/effectsIntegration.test.mjs
       - name: DSP and effect UI regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
@@ -47,6 +54,19 @@ jobs:
           Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
           $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
           "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
+      - name: Commit only validated effect sources to v1.6-dev
+        shell: pwsh
+        run: |
+          git add -- src .github/effects-integration.applied
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 1) {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Integrate validated Windows effect controls and continuous previews'
+            if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
+            git push origin HEAD:refs/heads/v1.6-dev
+            if ($LASTEXITCODE -ne 0) { throw 'Branch changed; refusing to overwrite it' }
+          } elseif ($LASTEXITCODE -ne 0) { throw 'Unable to check staged changes' }
       - uses: actions/upload-artifact@v5
         with:
           name: Audio-ToolZ-v1.6-dev-Windows-x64
