@@ -40,11 +40,11 @@ export function EffectParameter(p: Props) {
     <input type="number" aria-label={`${p.label} valeur`} min={s.min} max={s.max} step={s.fine} value={p.value} onChange={e => { if (e.target.value !== '') { activity.pulse(); p.onChange(parameterValue(Number(e.target.value), s)); } }}/>
   </div>;
 }
-export function EffectGain({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+export function EffectGain({ label, value, onChange, disabled=false }: { label: string; value: number; onChange: (v: number) => void; disabled?:boolean }) {
   const ref = useRef<HTMLDivElement>(null), activity = useActivity();
-  useWheel(ref, (direction, fine) => { activity.pulse(); onChange(stepParameter(value, direction, fine, { min: -18, max: 18, step: .5, fine: .1, digits: 1 })); });
-  return <div ref={ref} className={`atz-gain${activity.active ? ' is-adjusting' : ''}`} onDoubleClick={() => onChange(0)}>
+  useWheel(ref, (direction, fine) => { if(disabled)return; activity.pulse(); onChange(stepParameter(value, direction, fine, { min: -18, max: 18, step: .5, fine: .1, digits: 1 })); });
+  return <div ref={ref} className={`atz-gain${activity.active ? ' is-adjusting' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
     <div className="atz-fader-track"><div className="atz-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
-    <input type="range" aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.1} value={value} style={{ '--atz-f': (value + 18) / 36 } as React.CSSProperties} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); activity.begin(); }} onPointerUp={activity.end} onPointerCancel={activity.end} onLostPointerCapture={activity.end} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{value.toFixed(1)}</output>
+    <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.1} value={value} style={{ '--atz-f': (value + 18) / 36 } as React.CSSProperties} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); activity.begin(); }} onPointerUp={activity.end} onPointerCancel={activity.end} onLostPointerCapture={activity.end} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{value.toFixed(1)}</output>
   </div>;
 }

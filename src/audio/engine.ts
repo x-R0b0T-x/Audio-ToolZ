@@ -144,6 +144,7 @@ export class AudioEngine {
     this.startedAtCtxTime = ctx.currentTime; this.offsetSamplesAtStart = initialOffset; this.onEndedCallback = options.onEnded ?? null;
     src.onended = () => {
       if (this.sourceNode === src && this.isPlayingState && !this.isLooping) {
+        this.offsetSamplesAtStart=this.playbackEndSample-this.playbackStartSample;
         this.isPlayingState = false; this.isPausedState = false; this.isReverse = false;
         this.sourceNode = null; this.currentBuffer = null; this.onEndedCallback?.();
       }
@@ -151,39 +152,19 @@ export class AudioEngine {
     const bufferStartSample = loop ? (reverse ? total - safeEnd + initialOffset : safeStart + initialOffset) : initialOffset;
     src.start(0, bufferStartSample / sampleRate);
   }
-  replacePreviewAudio(channels: Float32Array[], sampleRate: number): boolean {
-    const ctx = this.ctx, oldSource = this.sourceNode, destination = this.previewNodes[0] ?? this.preSplitGain;
-    const total = channels[0]?.length ?? 0;
-    if (!ctx || !oldSource || !destination || !this.isPlayingState || !this.isLooping || this.isReverse || total === 0 ||
-      !Number.isFinite(sampleRate) || sampleRate <= 0 || channels.some((c) => c.length !== total)) return false;
-    const buffer = ctx.createBuffer(channels.length, total, sampleRate);
-    for (let c = 0; c < channels.length; c++) buffer.getChannelData(c).set(channels[c]);
-    const previousLength = Math.max(1, this.playbackEndSample - this.playbackStartSample);
-    const previousPosition = Math.max(0, this.getCurrentSample() - this.playbackStartSample);
-    const nextPosition = Math.min(total - 1, Math.floor((previousPosition % previousLength) / previousLength * total));
-    const now = ctx.currentTime, transitionSeconds = 0.02;
-    const incomingGain = ctx.createGain(), outgoingGain = ctx.createGain();
-    incomingGain.gain.setValueAtTime(0, now); incomingGain.gain.linearRampToValueAtTime(1, now + transitionSeconds);
-    outgoingGain.gain.setValueAtTime(1, now); outgoingGain.gain.linearRampToValueAtTime(0, now + transitionSeconds);
-    const nextSource = ctx.createBufferSource(); nextSource.buffer = buffer; nextSource.loop = true;
-    nextSource.loopStart = 0; nextSource.loopEnd = total / sampleRate;
-    nextSource.playbackRate.setValueAtTime(this.speedRatio, now);
-    nextSource.connect(incomingGain); incomingGain.connect(destination); outgoingGain.connect(destination);
-    oldSource.disconnect(); oldSource.connect(outgoingGain); oldSource.onended = null;
-    nextSource.start(now, nextPosition / sampleRate);
-    this.sourceNode = nextSource; this.currentBuffer = buffer; this.currentTotalSamples = total;
-    this.currentChannelCount = channels.length; this.currentDocSampleRate = sampleRate;
-    this.playbackStartSample = 0; this.playbackEndSample = total; this.offsetSamplesAtStart = nextPosition;
-    this.startedAtCtxTime = now; this.isPlayingState = true; this.isPausedState = false; this.isLooping = true; this.isReverse = false;
-    this.setEnabledChannels(this.enabledChannels, channels.length);
-    oldSource.stop(now + transitionSeconds);
-    window.setTimeout(() => {
-      try { oldSource.disconnect(); } catch { /* Already disconnected. */ }
-      outgoingGain.disconnect();
-      if (this.sourceNode === nextSource) { nextSource.disconnect(); nextSource.connect(destination); }
-      incomingGain.disconnect();
-    }, Math.ceil(transitionSeconds * 1000) + 50);
-    return true;
+  replacePreviewAudio(channels:Float32Array[],sampleRate:number,options:{position?:number;loop?:boolean;loopStart?:number;loopEnd?:number;volumeDb?:number}={}):boolean {
+    const ctx=this.ctx,old=this.sourceNode,destination=this.preSplitGain,total=channels[0]?.length??0;
+    if(!ctx||!old||!destination||!this.isPlayingState||this.isReverse||!total||!Number.isFinite(sampleRate)||sampleRate<=0||channels.some(c=>c.length!==total))return false;
+    const captured=ctx.currentTime,base=options.position??this.getCurrentSample(),buffer=ctx.createBuffer(channels.length,total,sampleRate);channels.forEach((ch,i)=>buffer.getChannelData(i).set(ch));
+    const loop=options.loop??this.isLooping,start=loop?Math.max(0,Math.min(total-1,Math.floor(options.loopStart??this.playbackStartSample))):0,end=loop?Math.max(start+1,Math.min(total,Math.floor(options.loopEnd??this.playbackEndSample))):total,now=ctx.currentTime;
+    let position=Math.max(0,base+(now-captured)*sampleRate*this.speedRatio);position=loop&&position>=end?start+(position-start)%(end-start):Math.min(total-1,position);
+    const incoming=ctx.createGain(),outgoing=ctx.createGain(),next=ctx.createBufferSource();incoming.gain.setValueAtTime(0,now);incoming.gain.linearRampToValueAtTime(1,now+.02);outgoing.gain.setValueAtTime(1,now);outgoing.gain.linearRampToValueAtTime(0,now+.02);
+    next.buffer=buffer;next.loop=loop;next.loopStart=start/sampleRate;next.loopEnd=end/sampleRate;next.playbackRate.setValueAtTime(this.speedRatio,now);next.connect(incoming);incoming.connect(destination);outgoing.connect(destination);old.onended=null;old.disconnect();old.connect(outgoing);
+    for(const node of this.previewNodes)node.disconnect();this.previewNodes=[];
+    this.sourceNode=next;this.currentBuffer=buffer;this.currentTotalSamples=total;this.currentChannelCount=channels.length;this.currentDocSampleRate=sampleRate;this.playbackStartSample=start;this.playbackEndSample=end;this.offsetSamplesAtStart=position-start;this.startedAtCtxTime=now;this.isPlayingState=true;this.isPausedState=false;this.isLooping=loop;this.isReverse=false;
+    next.onended=()=>{if(this.sourceNode!==next||this.isLooping)return;this.offsetSamplesAtStart=total-this.playbackStartSample;this.isPlayingState=false;this.isPausedState=false;this.sourceNode=null;this.currentBuffer=null;incoming.disconnect();this.onEndedCallback?.();};
+    if(options.volumeDb!==undefined)this.setVolumeDb(options.volumeDb);this.setEnabledChannels(this.enabledChannels,channels.length);next.start(now,position/sampleRate);old.stop(now+.02);
+    window.setTimeout(()=>{try{old.disconnect();}catch{}outgoing.disconnect();if(this.sourceNode===next){next.disconnect();next.connect(destination);}incoming.disconnect();},70);return true;
   }
   updateLoopRegion(startSample: number, endSample: number, restartFromStart: boolean): void {
     if (!this.isPlayingState || !this.isLooping || !this.ctx || !this.currentBuffer || !this.gainNode) return;

@@ -93,3 +93,14 @@
 .atz-advanced [class~="atz-parameter"]>button[role="slider"]:not(:disabled):not([aria-disabled="true"]):hover{box-shadow:none!important;background:transparent!important;filter:none!important;outline:none!important}
 .atz-parameter>button:focus-visible{outline:none!important}
 .atz-parameter>button:focus-visible svg circle{stroke:#39ff14;filter:drop-shadow(0 0 3px #39ff14)}
+
+.atz-gain input,.atz-gain:hover input,.atz-gain.is-adjusting input,.atz-gain input:focus-visible{filter:none!important;box-shadow:none!important;outline:none!important}
+.atz-gain input::-webkit-slider-thumb{box-shadow:none}
+.atz-gain input:hover:not(:disabled)::-webkit-slider-thumb,.atz-gain.is-adjusting input:not(:disabled)::-webkit-slider-thumb,.atz-gain input:focus-visible:not(:disabled)::-webkit-slider-thumb{box-shadow:0 0 3px #39ff14,0 0 8px #39ff14bf}
+.atz-gain.is-disabled{opacity:.35}
+.atz-advanced .atz-parameter svg>line:not(:last-child),.atz-advanced .atz-knob svg>line:not(:last-child){stroke:#39ff14}
+.atz-filter-type{display:flex;flex-direction:column;gap:3px;width:100%;color:#fff}
+.atz-filter-type select{width:100%;min-width:0;background:var(--bg-elevated);border:1px solid var(--border-subtle);color:#fff;font:11px system-ui;padding:2px 0}
+.atz-filter-type select:disabled{opacity:.35}
+.atz-advanced footer [role=status]{display:block;max-width:55%;font-size:12px}
+.atz-dynamics .atz-graph-caption{display:none}

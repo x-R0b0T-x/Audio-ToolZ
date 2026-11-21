@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { PreviewBand } from '../audio/engine';
 import type { AudioDocument } from '../audio/types';
-import { clampSelection } from '../audio/dsp';
+import {targetRange,hasGain} from '../audio/effectsModel.mjs';
 import { bandsDefault, colors, dynamicsDefault, type Band, type Dynamics, type Trace } from '../audio/advancedDsp';
 import { EffectPanel } from './EffectPanel';
 import { EffectGain, EffectParameter } from './EffectParameter';
@@ -15,11 +15,11 @@ type Props = {
 type RenderRequest = { id: number; kind: 'eq'; bands: Band[] } | { id: number; kind: 'dynamics'; params: Dynamics };
 export function AdvancedEffects(props: Props) {
   const doc = props.document, eq = props.effect === 'eq';
-  const range = useMemo(() => clampSelection(doc.selection, doc.channels[0]?.length ?? 0), [doc]);
+  const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {startSample:r.start,endSample:r.end};},[doc]);
   const source = useMemo(() => doc.channels.map(ch => ch.subarray(range.startSample, range.endSample)), [doc, range]);
   const [bands, setBands] = useState(() => bandsDefault(doc.sampleRate));
   const [params, setParams] = useState(() => dynamicsDefault(props.effect === 'compressor' ? 'compressor' : 'limiter'));
-  const [pending, setPending] = useState(!eq), [applying, setApplying] = useState(false), [error, setError] = useState('');
+  const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
   const [output, setOutput] = useState<Float32Array[] | null>(null), [trace, setTrace] = useState<Trace | null>(null);
   const worker = useRef<Worker | null>(null), serial = useRef(0), busy = useRef(false), desired = useRef<RenderRequest | null>(null);
   const applyId = useRef(-1), rendered = useRef<{ id: number; channels: Float32Array[] } | null>(null);
@@ -55,9 +55,8 @@ export function AdvancedEffects(props: Props) {
   }, [source, doc.sampleRate]);
   useEffect(() => {
     if (!source[0]?.length) return;
-    if (eq) { callbacks.current.onStartPreview(source, doc.sampleRate, undefined, bands.map(b => ({ ...b, type: 'peaking' as const }))); return; }
     const id = ++serial.current; rendered.current = null; setPending(true);
-    desired.current = { kind: 'dynamics', id, params };
+    desired.current=eq?{kind:'eq',id,bands}:{kind:'dynamics',id,params};
     const timer = window.setTimeout(() => { if (desired.current) dispatch(desired.current); }, 75);
     return () => window.clearTimeout(timer);
   }, [eq, source, doc.sampleRate, bands, params]);
@@ -65,7 +64,7 @@ export function AdvancedEffects(props: Props) {
   const apply = () => {
     if (pending || applying || !source[0]?.length) return;
     setApplying(true);
-    if (!eq && rendered.current?.id === serial.current) { commit.current(rendered.current.channels); return; }
+    if (rendered.current?.id === serial.current) { commit.current(rendered.current.channels); return; }
     const id = ++serial.current; applyId.current = id; dispatch({ kind: 'eq', id, bands });
   };
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
@@ -77,14 +76,17 @@ export function AdvancedEffects(props: Props) {
       {eq ? <><div className="atz-eq-layout">{graph}<div className="atz-eq-rack" role="group" aria-label="Sept bandes de l’égaliseur">
         {bands.map((b, i) => <div className="atz-band" key={i} style={{ color: colors[i], borderColor: colors[i] }} role="group" aria-label={`Bande de ${b.frequency} Hz`}>
           <strong>{Math.round(b.frequency)} Hz</strong>
-          <EffectGain label={`${b.frequency} Hz : gain`} value={b.gainDb} onChange={gainDb => update(i, { gainDb })}/>
+          <div className="atz-filter-type" onDoubleClick={()=>update(i,{type:'peaking',order:2})}>
+            <select aria-label={`Bande ${i+1} : type`} value={b.type??'peaking'} onChange={e=>update(i,{type:e.target.value as Band['type']})}>{[['off','Désactivé'],['peaking','Cloche'],['lowshelf','Plateau grave'],['highshelf','Plateau aigu'],['highpass','Coupe-bas'],['lowpass','Coupe-haut'],['bandpass','Passe-bande'],['notch','Notch']].map(([v,t])=><option key={v} value={v}>{t}</option>)}</select>
+            <select aria-label={`Bande ${i+1} : pente`} disabled={!['highpass','lowpass','lowshelf','highshelf'].includes(b.type??'peaking')} value={b.order??2} onChange={e=>update(i,{order:Number(e.target.value) as Band['order']})}>{[1,2,4,6,8].map(n=><option key={n} value={n}>{n*6} dB/oct{n===1?' Gentle':n>=4?' Steep':''}</option>)}</select>
+          </div>
+          <EffectGain disabled={!hasGain(b)} label={`${b.frequency} Hz : gain`} value={b.gainDb} onChange={gainDb => update(i, { gainDb })}/>
           <EffectParameter compact label="Hz" value={b.frequency} initial={bandsDefault(doc.sampleRate)[i].frequency} spec={{ min: 20, max: Math.min(20000, Math.floor(doc.sampleRate * .45)), step: 1, fine: 1, digits: 0, logarithmic: true }} unit="Hz" onChange={frequency => update(i, { frequency })}/>
-          <EffectParameter compact label="Q" value={b.q} initial={1} spec={{ min: .1, max: 24, step: .1, fine: .001, digits: 3, logarithmic: true }} onChange={q => update(i, { q })}/>
         </div>)}
       </div></div><p className="atz-hint">Spectre d’entrée stéréo · Glisser un point : fréquence/gain · Molette sur un point : largeur Q · Maj : réglage fin · Double-clic : valeur initiale</p></> : <>
         {graph}<div className="atz-dynamics-controls">
           <div className="atz-control-group atz-mode" role="group" aria-label="Mode" onDoubleClick={() => setParams(old => ({ ...old, mode: props.effect === 'compressor' ? 'compressor' : 'limiter' }))}><span>MODE</span>{(['limiter', 'compressor'] as const).map(mode => <button type="button" key={mode} aria-pressed={params.mode === mode} onClick={() => setParams(old => ({ ...old, mode }))}>{mode === 'limiter' ? 'LIMIT' : 'COMP'}</button>)}</div>
-          <div className="atz-control-group" role="group" aria-label="Niveau"><span>NIVEAU</span>{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{params.mode === 'limiter' ? control('ceiling', 'Plafond', -18, 0, .5, .1, 1, 'dBFS') : control('threshold', 'Seuil', -60, 0, .5, .1, 1, 'dBFS')}</div>
+          <div className="atz-control-group" role="group" aria-label="Niveau"><span>NIVEAU</span>{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{control('ceiling','Plafond',-18,0,.5,.1,1,'dBFS')}{params.mode==='compressor'&&control('threshold','Seuil',-60,0,.5,.1,1,'dBFS')}</div>
           {params.mode === 'compressor' && <div className="atz-control-group" role="group" aria-label="Compression"><span>COMPRESSION</span>{control('ratio', 'Ratio', 1, 20, .5, .1, 1, ':1')}{control('knee', 'Coude', 0, 24, .5, .1, 1, 'dB')}{control('makeup', 'Compens.', -24, 24, .5, .1, 1, 'dB')}</div>}
           <div className="atz-control-group" role="group" aria-label="Enveloppe"><span>ENVELOPPE</span>{control('attack', 'Attaque', 0, 100, 1, .1, 1, 'ms')}{control('release', 'Relâch.', 10, 2000, 20, 1, 0, 'ms')}</div>
         </div><p className="atz-hint">Sortie : clair → orange pour les niveaux forts · Réduction de gain : violet · Ligne verte : seuil/plafond en direct · Limiteur sur crêtes d’échantillons, pas true peak</p>

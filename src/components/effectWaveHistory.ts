@@ -5,8 +5,8 @@ export class EffectWaveHistory {
   private raw: Float32Array[];
   private scratch: Float32Array[];
   private tones: Uint8Array;
-  private reductions: Uint8Array;
-  private reductionScratch: Uint8Array;
+  private reductions: Float32Array;
+  private reductionScratch: Float32Array;
   private toneScratch: Uint8Array;
   private low = [0, 0];
   private highCut = [0, 0];
@@ -15,10 +15,10 @@ export class EffectWaveHistory {
     this.capacity = Math.ceil(rate * 50);
     this.raw = Array.from({ length: channels }, () => new Float32Array(this.capacity));
     this.scratch = this.raw.map(() => new Float32Array(this.capacity));
-    this.reductions = new Uint8Array(this.capacity); this.reductionScratch = new Uint8Array(this.capacity);
+    this.reductions = new Float32Array(this.capacity); this.reductionScratch = new Float32Array(this.capacity);
     this.tones = new Uint8Array(this.capacity); this.toneScratch = new Uint8Array(this.capacity);
   }
-  append(source: Float32Array[], start: number, count: number, reduction?: Float32Array, hop = 256) {
+  append(source: Float32Array[], start: number, count: number, reduction?: Float32Array, hop = 256, reductionOffset = 0) {
     const length = source[0]?.length ?? 0; if (!length) return;
     const a = 1 - Math.exp(-2 * Math.PI * 250 / this.rate), b = 1 - Math.exp(-2 * Math.PI * 4000 / this.rate), smooth = 1 - Math.exp(-1 / (.005 * this.rate));
     count = Math.min(this.capacity, Math.max(0, Math.floor(count)));
@@ -33,7 +33,7 @@ export class EffectWaveHistory {
       for (let k = 0; k < 3; k++) this.energy[k] += smooth * (power[k] - this.energy[k]);
       const l = this.energy[0] ** 1.5, m = this.energy[1] ** 1.5, h = this.energy[2] ** 1.5, sum = l + m + h;
       this.tones[slot] = sum > 1e-18 ? Math.round((l * 24 + m * 60 + h * 94) / sum) : 60;
-      this.reductions[slot] = Math.round(Math.max(0, Math.min(25.5, reduction?.[Math.floor(pos / hop)] ?? 0)) * 10);
+      this.reductions[slot] = Math.max(0,reduction?.[Math.floor((pos-reductionOffset) / hop)]??0);
       this.total++;
     }
   }

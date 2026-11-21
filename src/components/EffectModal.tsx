@@ -1,23 +1,24 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import type {PreviewBand} from '../audio/engine';
-import {applyVolume,normalizeChannels,applyFade,applySpeedAndPitch,clampSelection,computeFadeGain} from '../audio/dsp';
+import {applyVolume,normalizeChannels,applyFade,applySpeedAndPitch,computeFadeGain} from '../audio/dsp';
 import {applySpectralNoiseReduction,captureNoiseProfile,type NoiseProfile} from '../audio/studioDsp';
 import {applyMusicalDelay,DELAY_DIVISIONS,DEFAULT_DIVISION,type DelayMode} from '../audio/musicalDelay';
 import type {AudioDocument,EffectModalId,FadeCurve,FadeDirection} from '../audio/types';
 import {Fader,Knob,DelayModeSwitch} from './EffectControls';
 import {AdvancedEffects} from './AdvancedEffects';
 import {EffectPanel} from './EffectPanel';
+import {targetRange} from '../audio/effectsModel.mjs';
 interface Props{effect:EffectModalId;document:AudioDocument|null;noiseProfile?:NoiseProfile|null;onCaptureNoiseProfile?:(p:NoiseProfile)=>void;isPreviewPlaying:boolean;onStartPreview:(c:Float32Array[],r:number,g?:number,b?:PreviewBand[])=>void;onStopPreview:()=>void;onApply:(c:Float32Array[],label:string,s?:{startSample:number;endSample:number})=>void;onClose:()=>void;}
 export const EffectModal:React.FC<Props>=p=>{if(!p.effect||!p.document)return null;return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>:<Legacy key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;};
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const {document:doc,effect}=p,[c,set]=useState({gain:0,target:-1,direction:'in' as FadeDirection,curve:'scurve' as FadeCurve,speed:1,pitch:0,reduction:14,division:DEFAULT_DIVISION,mode:'off' as DelayMode,repetitions:0,wet:0,pan:0});
  const change=(v:Partial<typeof c>)=>set(old=>({...old,...v})),callback=useRef(p);callback.current=p;
- const range=useMemo(()=>clampSelection(doc.selection,doc.channels[0]?.length??0),[doc]),start=range.startSample,end=range.endSample,source=useMemo(()=>doc.channels.map(ch=>ch.subarray(start,end)),[doc,start,end]),n=source[0]?.length??0,bpm=doc.bpmInfo?.bpm??0;
+ const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {startSample:r.start,endSample:r.end};},[doc]),start=range.startSample,end=range.endSample,source=useMemo(()=>doc.channels.map(ch=>ch.subarray(start,end)),[doc,start,end]),n=source[0]?.length??0,bpm=doc.bpmInfo?.bpm??0;
  const blocked=effect==='echo'&&c.mode!=='off'&&c.repetitions>0&&c.wet>0&&!(Number.isFinite(bpm)&&bpm>0);
  const label=({volume:'Volume',normalize:'Normaliser le niveau',fade:'Fondus','speed-pitch':'Vitesse et hauteur','noise-reduction':'Réduction de bruit spectrale',echo:'Délai synchronisé'} as Record<string,string>)[effect];
  const process=()=>{switch(effect){case 'volume':return applyVolume(source,0,n,c.gain);case 'normalize':return normalizeChannels(source,0,n,c.target).channels;case 'fade':return applyFade(source,0,n,c.direction,c.curve);case 'noise-reduction':return applySpectralNoiseReduction(source,0,n,p.noiseProfile??captureNoiseProfile(source,doc.sampleRate,0,n),{reductionDb:c.reduction,sensitivity:1,smoothing:.35});case 'echo':return blocked?source:applyMusicalDelay(source,doc.sampleRate,bpm,c.division,c.mode,c.repetitions,c.wet,c.pan);default:return source;}};
  const speed=()=>applySpeedAndPitch(doc.channels,doc.sampleRate,start,end,c.speed,c.pitch,true);
- useEffect(()=>{if(!n)return;if(effect==='volume'){callback.current.onStartPreview(source,doc.sampleRate,c.gain);return;}const timer=window.setTimeout(()=>{if(effect==='speed-pitch'){const r=speed();callback.current.onStartPreview(r.channels.map(ch=>ch.subarray(r.selection.startSample,r.selection.endSample)),doc.sampleRate);}else callback.current.onStartPreview(process(),doc.sampleRate);},60);return()=>window.clearTimeout(timer);},[effect,doc,c,source,p.noiseProfile,blocked]);
+ useEffect(()=>{if(!n)return;if(effect==='volume'){callback.current.onStartPreview(process(),doc.sampleRate);return;}const timer=window.setTimeout(()=>{if(effect==='speed-pitch'){const r=speed();callback.current.onStartPreview(r.channels.map(ch=>ch.subarray(r.selection.startSample,r.selection.endSample)),doc.sampleRate);}else callback.current.onStartPreview(process(),doc.sampleRate);},60);return()=>window.clearTimeout(timer);},[effect,doc,c,source,p.noiseProfile,blocked]);
  const apply=()=>{if(!n||blocked)return;if(effect==='speed-pitch'){const r=speed();p.onApply(r.channels,label,r.selection);return;}p.onApply(process().map((segment,i)=>{const full=new Float32Array(doc.channels[i]??doc.channels[0]);full.set(segment,start);return full;}),label);};
  const f=(key:'gain'|'target'|'speed'|'pitch'|'reduction',name:string,initial:number,min:number,max:number,step:number,unit:string)=><Fader label={name} value={c[key]} defaultValue={initial} min={min} max={max} step={step} display={`${c[key]} ${unit}`} onChange={v=>change({[key]:v})}/>;
  const curveLabels:Record<FadeCurve,string>={linear:'Linéaire',exponential:'Exponentielle',scurve:'Courbe en S'};

@@ -1,22 +1,12 @@
-export type Band = { frequency: number; gainDb: number; q: number };
+import {sections,bandResponse,filterAudio,type EqBand} from './effectsModel.mjs';
+export type Band=EqBand;
 export const colors = ['#a65de0','#df69b3','#df8762','#d6cb65','#84c866','#61bcb5','#6499df'];
 export const frequencies = [63,136,294,632,1363,2936,6324];
 export const clamp = (v:number,a:number,b:number) => Math.max(a,Math.min(b,v));
-export const bandsDefault = (rate:number):Band[] => frequencies.map(f=>({frequency:Math.min(f,Math.floor(rate*.45)),gainDb:0,q:1}));
-export function coefficients(b:Band,rate:number) {
- const w=2*Math.PI*clamp(b.frequency,10,rate*.45)/rate, A=10**(b.gainDb/40), alpha=Math.sin(w)/(2*clamp(b.q,.1,24)), a0=1+alpha/A;
- return [(1+alpha*A)/a0,-2*Math.cos(w)/a0,(1-alpha*A)/a0,-2*Math.cos(w)/a0,(1-alpha/A)/a0];
-}
-export function response(bands:Band[],rate:number,f:number) {
- const w=2*Math.PI*f/rate,c=Math.cos(w),s=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);
- return bands.reduce((db,b)=>{const [b0,b1,b2,a1,a2]=coefficients(b,rate);return db+10*Math.log10(Math.max(1e-20,((b0+b1*c+b2*c2)**2+(b1*s+b2*s2)**2)/Math.max(1e-20,(1+a1*c+a2*c2)**2+(a1*s+a2*s2)**2)));},0);
-}
-export function equalize(source:Float32Array[],rate:number,bands:Band[]) {
- const out=source.map(ch=>new Float32Array(ch));
- for(const b of bands){if(b.gainDb===0)continue;const [b0,b1,b2,a1,a2]=coefficients(b,rate);
-  for(const ch of out){let z1=0,z2=0;for(let i=0;i<ch.length;i++){const x=ch[i],y=b0*x+z1;z1=b1*x-a1*y+z2;z2=b2*x-a2*y;ch[i]=y;}}
- }return out;
-}
+export const bandsDefault = (rate:number):Band[] => frequencies.map(f=>({frequency:Math.min(f,Math.floor(rate*.45)),gainDb:0,q:1,type:'peaking' as const,order:2 as const}));
+export function coefficients(b:Band,rate:number){return sections(b,rate)[0]??[1,0,0,0,0];}
+export function response(bands:Band[],rate:number,f:number){return bandResponse(bands,rate,f);}
+export function equalize(source:Float32Array[],rate:number,bands:Band[]){return filterAudio(source,rate,bands);}
 export type Dynamics = { mode:'limiter'|'compressor';input:number;ceiling:number;threshold:number;ratio:number;knee:number;attack:number;release:number;makeup:number };
 export const dynamicsDefault = (mode:Dynamics['mode']='limiter'):Dynamics => ({mode,input:0,ceiling:-1,threshold:-18,ratio:4,knee:6,attack:1,release:120,makeup:0});
 export type Trace = { input:Float32Array;output:Float32Array;reduction:Float32Array;hop:number };
@@ -41,7 +31,7 @@ export function dynamics(source:Float32Array[],rate:number,p:Dynamics) {
   const smoothing=target<dbGain?attack:release;dbGain=smoothing*dbGain+(1-smoothing)*target;
   let gain=10**(dbGain/20);
   // Linked sample-peak safety, not an oversampled true-peak limiter.
-  if(p.mode==='limiter')gain=Math.min(gain,ceiling/Math.max(1e-12,peak[i]));
+  gain=Math.min(gain,ceiling/Math.max(1e-12,peak[i]*makeup));
   const bin=Math.floor(i/hop);trace.input[bin]=Math.max(trace.input[bin],peak[i]);trace.reduction[bin]=Math.max(trace.reduction[bin],-20*Math.log10(Math.max(1e-12,gain)));
   for(let c=0;c<out.length;c++){out[c][i]=source[c][i]*input*gain*makeup;trace.output[bin]=Math.max(trace.output[bin],Math.abs(out[c][i]));}
  }return {channels:out,trace};
