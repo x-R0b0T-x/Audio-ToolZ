@@ -6,6 +6,7 @@ export function wheelValue(value: number, min: number, max: number, step: number
 export function installControlWheel(root: HTMLElement): () => void {
   const wheel = (event: WheelEvent) => {
     if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.deltaY === 0 || !(event.target instanceof Element)) return;
+    if(event.target.closest('[data-eq-band]'))return;
     const control = event.target.closest<HTMLElement>('input[type="range"], input[type="number"], [role="slider"]');
     if (!control || !root.contains(control) || control.matches(':disabled') || control.closest('fieldset:disabled, [inert], [aria-disabled="true"]')) return;
     const view = control.ownerDocument.defaultView;

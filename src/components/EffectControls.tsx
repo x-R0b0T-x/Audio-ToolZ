@@ -96,7 +96,7 @@ export const Knob: React.FC<KnobProps> = (p) => {
               ? (i === 1 && p.value === 0) || (i === 0 && p.value < 0) || (i === 2 && p.value > 0)
               : fraction <= 0.5 ? (tickFraction >= fraction - 0.02 && tickFraction <= 0.51) : (tickFraction >= 0.49 && tickFraction <= fraction + 0.02))
             : tickFraction <= fraction + 1e-6;
-          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke={active ? '#45f882' : '#a987df'} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
+          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke="#39ff14" opacity={active?1:.75} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
         })}
         <circle cx="50" cy="50" r="31" fill="#3d2466" stroke="#bd93f9" strokeWidth="2" />
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />

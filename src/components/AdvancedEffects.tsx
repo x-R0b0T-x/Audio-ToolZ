@@ -6,6 +6,7 @@ import { bandsDefault, colors, dynamicsDefault, type Band, type Dynamics, type T
 import { EffectPanel } from './EffectPanel';
 import { EffectGain, EffectParameter } from './EffectParameter';
 import { DetailedEffectGraph } from './DetailedEffectGraph';
+import {FilterShape} from './FilterShape';
 import './advancedEffects.css';
 type Props = {
   document: AudioDocument; effect: 'eq' | 'filter' | 'compressor'; onClose: () => void;
@@ -76,14 +77,13 @@ export function AdvancedEffects(props: Props) {
       {eq ? <><div className="atz-eq-layout">{graph}<div className="atz-eq-rack" role="group" aria-label="Sept bandes de l’égaliseur">
         {bands.map((b, i) => <div className="atz-band" key={i} style={{ color: colors[i], borderColor: colors[i] }} role="group" aria-label={`Bande de ${b.frequency} Hz`}>
           <strong>{Math.round(b.frequency)} Hz</strong>
-          <div className="atz-filter-type" onDoubleClick={()=>update(i,{type:'peaking',order:2})}>
-            <select aria-label={`Bande ${i+1} : type`} value={b.type??'peaking'} onChange={e=>update(i,{type:e.target.value as Band['type']})}>{[['off','Désactivé'],['peaking','Cloche'],['lowshelf','Plateau grave'],['highshelf','Plateau aigu'],['highpass','Coupe-bas'],['lowpass','Coupe-haut'],['bandpass','Passe-bande'],['notch','Notch']].map(([v,t])=><option key={v} value={v}>{t}</option>)}</select>
+          <div className="atz-filter-type">
+            <FilterShape value={b.type??'peaking'} index={i} onChange={type=>update(i,{type})}/>
             <select aria-label={`Bande ${i+1} : pente`} disabled={!['highpass','lowpass','lowshelf','highshelf'].includes(b.type??'peaking')} value={b.order??2} onChange={e=>update(i,{order:Number(e.target.value) as Band['order']})}>{[1,2,4,6,8].map(n=><option key={n} value={n}>{n*6} dB/oct{n===1?' Gentle':n>=4?' Steep':''}</option>)}</select>
           </div>
           <EffectGain disabled={!hasGain(b)} label={`${b.frequency} Hz : gain`} value={b.gainDb} onChange={gainDb => update(i, { gainDb })}/>
-          <EffectParameter compact label="Hz" value={b.frequency} initial={bandsDefault(doc.sampleRate)[i].frequency} spec={{ min: 20, max: Math.min(20000, Math.floor(doc.sampleRate * .45)), step: 1, fine: 1, digits: 0, logarithmic: true }} unit="Hz" onChange={frequency => update(i, { frequency })}/>
         </div>)}
-      </div></div><p className="atz-hint">Spectre d’entrée stéréo · Glisser un point : fréquence/gain · Molette sur un point : largeur Q · Maj : réglage fin · Double-clic : valeur initiale</p></> : <>
+      </div></div><p className="atz-hint">Spectre d’entrée stéréo · Glisser un point : fréquence/gain · Molette sur un point : largeur Q · Maj : réglage fin</p></> : <>
         {graph}<div className="atz-dynamics-controls">
           <div className="atz-control-group atz-mode" role="group" aria-label="Mode" onDoubleClick={() => setParams(old => ({ ...old, mode: props.effect === 'compressor' ? 'compressor' : 'limiter' }))}><span>MODE</span>{(['limiter', 'compressor'] as const).map(mode => <button type="button" key={mode} aria-pressed={params.mode === mode} onClick={() => setParams(old => ({ ...old, mode }))}>{mode === 'limiter' ? 'LIMIT' : 'COMP'}</button>)}</div>
           <div className="atz-control-group" role="group" aria-label="Niveau"><span>NIVEAU</span>{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{control('ceiling','Plafond',-18,0,.5,.1,1,'dBFS')}{params.mode==='compressor'&&control('threshold','Seuil',-60,0,.5,.1,1,'dBFS')}</div>
@@ -92,6 +92,6 @@ export function AdvancedEffects(props: Props) {
         </div><p className="atz-hint">Sortie : clair → orange pour les niveaux forts · Réduction de gain : violet · Ligne verte : seuil/plafond en direct · Limiteur sur crêtes d’échantillons, pas true peak</p>
       </>}
     </fieldset>{error && <p role="alert">{error}</p>}</main>
-    <footer><span role="status">{applying ? 'Application…' : pending ? 'Recalcul audio… le traitement précédent continue' : 'Molette : réglage · Maj : précision · Double-clic : réinitialisation'}</span><button type="button" onClick={props.onClose}>Annuler</button><button type="button" onClick={apply} disabled={!source[0]?.length || pending || applying || !!error}>Appliquer</button></footer>
+    <footer><span role="status">{applying ? 'Application…' : ''}</span><button type="button" onClick={props.onClose}>Annuler</button><button type="button" onClick={apply} disabled={!source[0]?.length || pending || applying || !!error}>Appliquer</button></footer>
   </EffectPanel></div>;
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parameterValue, stepParameter, type ParameterSpec } from './effectUiMath';
+import {NumericValue} from './NumericValue';
 type Props = { label: string; value: number; initial: number; spec: ParameterSpec; unit?: string; onChange: (v: number) => void; compact?: boolean };
 function useActivity() {
   const [active, setActive] = useState(false), timer = useRef<ReturnType<typeof setTimeout> | null>(null), held = useRef(false);
@@ -12,6 +13,7 @@ function useWheel(ref: React.RefObject<HTMLDivElement | null>, action: (directio
   useEffect(() => {
     const node = ref.current; if (!node) return;
     const wheel = (e: WheelEvent) => {
+      if(e.target instanceof Element&&e.target.closest('.atz-value-entry input'))return;
       if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !e.deltaY || node.closest('fieldset:disabled,[inert]')) return;
       e.preventDefault(); callback.current(e.deltaY < 0 ? 1 : -1, e.shiftKey);
     };
@@ -24,8 +26,8 @@ export function EffectParameter(p: Props) {
   const setFraction = (v: number) => p.onChange(parameterValue(s.logarithmic ? s.min * (s.max / s.min) ** Math.max(0, Math.min(1, v)) : s.min + (s.max - s.min) * v, s));
   const end = () => { drag.current = null; activity.end(); };
   useWheel(ref, (direction, fine) => { activity.pulse(); p.onChange(stepParameter(p.value, direction, fine, s)); });
-  return <div ref={ref} className={`atz-parameter${p.compact ? ' compact' : ''}${activity.active ? ' is-adjusting' : ''}`} onDoubleClick={() => p.onChange(p.initial)}>
-    <span>{p.label}</span><button type="button" role="slider" aria-label={p.label} aria-valuemin={s.min} aria-valuemax={s.max} aria-valuenow={p.value} aria-valuetext={`${p.value} ${p.unit ?? ''}`} title="Glisser ou molette · Maj : réglage fin · Double-clic : valeur initiale"
+  return <div ref={ref} className={`atz-parameter${p.compact ? ' compact' : ''}${activity.active ? ' is-adjusting' : ''}`}>
+    <span>{p.label}</span><button type="button" onDoubleClick={()=>p.onChange(p.initial)} role="slider" aria-label={p.label} aria-valuemin={s.min} aria-valuemax={s.max} aria-valuenow={p.value} aria-valuetext={`${p.value} ${p.unit ?? ''}`} title="Glisser ou molette · Maj : réglage fin · Double-clic : valeur initiale"
       onPointerDown={e => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, fraction: fraction(p.value) }; activity.begin(); }}
       onPointerMove={e => { const d = drag.current; if (d) setFraction(d.fraction + (d.y - e.clientY + e.clientX - d.x) / (e.shiftKey ? 1600 : 160)); }}
       onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end}
@@ -37,7 +39,7 @@ export function EffectParameter(p: Props) {
         <circle cx="32" cy="32" r="21" fill="#533271" stroke="currentColor" strokeWidth="2"/>
         <line x1="32" y1="19" x2="32" y2="11" stroke="#fff" strokeWidth="3" transform={`rotate(${-135 + fraction(p.value) * 270} 32 32)`}/>
       </svg></button>
-    <input type="number" aria-label={`${p.label} valeur`} min={s.min} max={s.max} step={s.fine} value={p.value} onChange={e => { if (e.target.value !== '') { activity.pulse(); p.onChange(parameterValue(Number(e.target.value), s)); } }}/>
+    <NumericValue label={p.label} value={p.value} min={s.min} max={s.max} digits={s.digits} onCommit={v=>{activity.pulse();p.onChange(parameterValue(v,s));}}/>
   </div>;
 }
 export function EffectGain({ label, value, onChange, disabled=false }: { label: string; value: number; onChange: (v: number) => void; disabled?:boolean }) {
