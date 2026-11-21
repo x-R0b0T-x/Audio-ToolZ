@@ -1,0 +1,54 @@
+name: Audio ToolZ v1.6 dev - Windows portable
+on:
+  push:
+    branches: [v1.6-dev]
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/workflows/build-v1.6.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-v16-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Restore application icons
+        shell: pwsh
+        run: |
+          if (-not (Test-Path public/icon.ico) -or -not (Test-Path public/icon.png)) {
+            git restore --source=6af5c11 -- public/icon.ico public/icon.png
+            if ($LASTEXITCODE -ne 0) { throw 'Icons unavailable' }
+          }
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install --no-save @tauri-apps/cli@2
+      - name: DSP and wheel regression tests
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/utils/controlWheel.test.ts
+      - name: TypeScript check
+        run: npm run lint
+      - name: Build portable application
+        run: npx tauri build --no-bundle
+      - name: Prepare test executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release-output | Out-Null
+          $exe = Get-ChildItem src-tauri/target/release/*.exe | Where-Object { $_.Name -match 'audio.?toolz' } | Select-Object -First 1
+          if (-not $exe) { throw 'Executable unavailable' }
+          Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
+          $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
+          "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.6-dev-Windows-x64
+          path: release-output/*
+          if-no-files-found: error
