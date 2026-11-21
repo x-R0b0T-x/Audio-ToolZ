@@ -1,0 +1,9 @@
+export type EqBand={frequency:number;gainDb:number;q:number;type?:'off'|'peaking'|'lowshelf'|'highshelf'|'highpass'|'lowpass'|'bandpass'|'notch';order?:1|2|4|6|8};
+export function hasGain(b:EqBand):boolean;
+export function targetRange(s:{startSample:number;endSample:number},total:number):{start:number;end:number};
+export function toPreview(p:number,a:number,b:number,n:number):number;
+export function fromPreview(p:number,a:number,b:number,n:number):number;
+export function splicePreview(ch:Float32Array[],seg:Float32Array[],a:number,b:number,enabled?:boolean[]):Float32Array[];
+export function sections(b:EqBand,rate:number):number[][];
+export function bandResponse(bands:EqBand[],rate:number,f:number):number;
+export function filterAudio(source:Float32Array[],rate:number,bands:EqBand[]):Float32Array[];

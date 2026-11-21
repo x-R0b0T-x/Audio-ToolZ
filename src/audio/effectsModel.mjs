@@ -1,0 +1,16 @@
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+export const hasGain=b=>!['off','highpass','lowpass','bandpass','notch'].includes(b.type??'peaking');
+export function targetRange(s,total){const a=clamp(Math.floor(s.startSample),0,total),b=clamp(Math.floor(s.endSample),0,total);return b>a?{start:a,end:b}:{start:0,end:total};}
+export function toPreview(p,a,b,n){return p<=a?p:p<b?a+(p-a)*n/Math.max(1,b-a):p+n-(b-a);}
+export function fromPreview(p,a,b,n){return p<=a?p:p<a+n?a+(p-a)*(b-a)/Math.max(1,n):p-n+(b-a);}
+export function splicePreview(ch,seg,a,b,enabled=[true,true]){const n=seg[0]?.length??0,total=ch[0]?.length??0;if(!seg.length||seg.some(c=>c.length!==n))throw Error('Invalid preview');return Array.from({length:Math.max(ch.length,seg.length)},(_,i)=>{const orig=ch[i]??ch[0],out=new Float32Array(total-b+a+n);out.set(orig.subarray(0,a));out.set(n===b-a&&enabled[i]===false?orig.subarray(a,b):(seg[i]??seg[0]),a);out.set(orig.subarray(b),a+n);return out;});}
+export function sections(b,rate){
+ const type=b.type??'peaking';if(type==='off')return [];
+ const f=clamp(b.frequency,10,rate*.45),q=clamp(b.q,.1,24),order=[1,2,4,6,8].includes(b.order)?b.order:2,shaped=['lowpass','highpass','lowshelf','highshelf'].includes(type);
+ if(shaped&&order===1){const k=Math.tan(Math.PI*f/rate),g=10**(b.gainDb/20),a=Math.sqrt(g);if(type==='lowpass'){const n=1/(1+k);return [[k*n,k*n,0,(k-1)*n,0]];}if(type==='highpass'){const n=1/(1+k);return [[n,-n,0,(k-1)*n,0]];}const d=type==='lowshelf'?1+k/a:1+k*a;return [type==='lowshelf'?[(1+k*a)/d,(k*a-1)/d,0,(k/a-1)/d,0]:[g*(1+k/a)/d,g*(k/a-1)/d,0,(k*a-1)/d,0]];}
+ const n=shaped?Math.max(1,order/2):1;
+ return Array.from({length:n},(_,i)=>{const w=2*Math.PI*f/rate,c=Math.cos(w),s=Math.sin(w),cut=type==='lowpass'||type==='highpass',sq=cut?q/(2*Math.cos((2*i+1)*Math.PI/(4*n))):q,alpha=s/(2*sq),A=10**(b.gainDb/n/40),r=2*Math.sqrt(A)*alpha;let v;
+ switch(type){case 'lowpass':v=[(1-c)/2,1-c,(1-c)/2,1+alpha,-2*c,1-alpha];break;case 'highpass':v=[(1+c)/2,-1-c,(1+c)/2,1+alpha,-2*c,1-alpha];break;case 'bandpass':v=[alpha,0,-alpha,1+alpha,-2*c,1-alpha];break;case 'notch':v=[1,-2*c,1,1+alpha,-2*c,1-alpha];break;case 'lowshelf':v=[A*((A+1)-(A-1)*c+r),2*A*((A-1)-(A+1)*c),A*((A+1)-(A-1)*c-r),(A+1)+(A-1)*c+r,-2*((A-1)+(A+1)*c),(A+1)+(A-1)*c-r];break;case 'highshelf':v=[A*((A+1)+(A-1)*c+r),-2*A*((A-1)+(A+1)*c),A*((A+1)+(A-1)*c-r),(A+1)-(A-1)*c+r,2*((A-1)-(A+1)*c),(A+1)-(A-1)*c-r];break;default:v=[1+alpha*A,-2*c,1-alpha*A,1+alpha/A,-2*c,1-alpha/A];}return [v[0]/v[3],v[1]/v[3],v[2]/v[3],v[4]/v[3],v[5]/v[3]];});
+}
+export function bandResponse(bands,rate,f){const w=2*Math.PI*f/rate,c=Math.cos(w),s=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);let db=0;for(const b of bands)for(const [b0,b1,b2,a1,a2]of sections(b,rate))db+=10*Math.log10(Math.max(1e-24,((b0+b1*c+b2*c2)**2+(b1*s+b2*s2)**2)/Math.max(1e-24,(1+a1*c+a2*c2)**2+(a1*s+a2*s2)**2)));return db;}
+export function filterAudio(source,rate,bands){const out=source.map(ch=>new Float32Array(ch));for(const b of bands)for(const [b0,b1,b2,a1,a2]of sections(b,rate)){if(Math.abs(b0-1)<1e-14&&Math.abs(b1-a1)<1e-14&&Math.abs(b2-a2)<1e-14)continue;for(const ch of out){let z1=0,z2=0;for(let i=0;i<ch.length;i++){const x=ch[i],y=b0*x+z1;z1=b1*x-a1*y+z2;z2=b2*x-a2*y;ch[i]=y;}}}return out;}

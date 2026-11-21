@@ -1,0 +1,13 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {targetRange,toPreview,fromPreview,splicePreview,bandResponse,filterAudio} from './effectsModel.mjs';
+const b=(type,order=2)=>({type,order,frequency:1000,gainDb:9,q:1});
+const types=['off','peaking','lowshelf','highshelf','highpass','lowpass','bandpass','notch'];
+test('cursor means full document',()=>{for(const p of [0,50,100])assert.deepEqual(targetRange({startSample:p,endSample:p},100),{start:0,end:100});});
+test('selection bounds',()=>assert.deepEqual(targetRange({startSample:20,endSample:60},100),{start:20,end:60}));
+test('position mapping including end',()=>{for(const [a,c,n]of [[20,60,80],[0,100,50],[20,60,40]])for(let p=0;p<=100;p++)assert.ok(Math.abs(fromPreview(toPreview(p,a,c,n),a,c,n)-p)<1e-9);});
+test('splice preserves unaffected audio',()=>assert.deepEqual([...splicePreview([Float32Array.from([1,2,3,4])],[Float32Array.from([8,9])],1,3)[0]],[1,8,9,4]));
+test('channel mask',()=>assert.deepEqual([...splicePreview([Float32Array.from([1,2,3,4])],[Float32Array.from([8,9])],1,3,[false])[0]],[1,2,3,4]));
+test('all types and orders remain finite',()=>{for(const rate of [8000,44100,48000,96000])for(const t of types)for(const n of [1,2,4,6,8])assert.ok(filterAudio([Float32Array.from({length:4096},(_,i)=>.2*Math.sin(i*.2))],rate,[b(t,n)])[0].every(Number.isFinite));});
+test('curve matches DSP for every type and slope',()=>{const s=Float32Array.from({length:24000},(_,i)=>.1*Math.sin(2*Math.PI*700*i/48000)),rms=a=>Math.sqrt(a.reduce((n,v)=>n+v*v,0)/a.length);for(const t of types)for(const n of [1,2,4,6,8]){const out=filterAudio([s],48000,[b(t,n)])[0],measured=20*Math.log10(rms(out.subarray(12000))/rms(s.subarray(12000)));assert.ok(Math.abs(measured-bandResponse([b(t,n)],48000,700))<.025);}});
+test('bypass is exact',()=>{const s=Float32Array.from([.1,.2,.3]);assert.deepEqual(filterAudio([s],48000,[b('off')])[0],s);});
+test('steep slope changes audio response',()=>assert.ok(bandResponse([b('lowpass',8)],48000,5000)<bandResponse([b('lowpass',2)],48000,5000)-30));
