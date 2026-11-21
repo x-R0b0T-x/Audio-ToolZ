@@ -1,6 +1,6 @@
-/* Extend Audio ToolZ's existing green halo to the 1.6 effect windows.
+/* Green halo of the other dialogs. The 1.6 effect windows (.atz-advanced) no longer glow as a whole:
+   their halo only appears on the control being hovered or used (see advancedEffects.css).
    Do not recolor the seven EQ bands, their controls or their response curves. */
-.atz-advanced[role="dialog"],
 [role="dialog"].fixed.inset-0 > div,
 [role="dialog"].fixed:not(.inset-0) {
   border-color: rgba(57, 255, 20, 0.85) !important;

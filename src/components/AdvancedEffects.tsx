@@ -71,7 +71,7 @@ export function AdvancedEffects(props: Props) {
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
     <EffectParameter label={caption} value={params[key]} initial={dynamicsDefault()[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
   const graph = <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} onBandChange={update}/>;
-  return <div className="atz-advanced-backdrop"><EffectPanel className={`atz-advanced ${eq ? 'atz-equalizer' : 'atz-dynamics'}`} minWidth={760} minHeight={400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
+  return <div className="atz-advanced-backdrop"><EffectPanel className={`atz-advanced ${eq ? 'atz-equalizer' : 'atz-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
     <header><div><h2 id="advanced-title">{eq ? label : 'Limiteur / Compresseur'}</h2><small>Audio ToolZ 1.6 dev · Écoute directe</small></div><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
     <main><fieldset className="atz-effect-body" disabled={applying} inert={applying}>
       {eq ? <><div className="atz-eq-layout">{graph}<div className="atz-eq-rack" role="group" aria-label="Sept bandes de l’égaliseur">

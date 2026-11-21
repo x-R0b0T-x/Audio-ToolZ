@@ -5,12 +5,37 @@ import { SourceSpectrum } from './effectUiMath';
 import { EffectParameter } from './EffectParameter';
 import { EffectWaveHistory } from './effectWaveHistory';
 type Props = { eq: boolean; bands: Band[]; source: Float32Array[]; output: Float32Array[] | null; rate: number; params: Dynamics; trace: Trace | null; onBandChange: (i: number, patch: Partial<Band>) => void };
-const gainY = (db: number) => 140 - db * 6;
+/* Le graphique de l'égaliseur est dessiné en pixels réels (aucune déformation) :
+   les points restent ronds et les textes gardent leurs proportions à toute taille de fenêtre. */
+const MARGIN = { l: 50, r: 20, t: 16, b: 34 };
+type Size = { w: number; h: number };
+const geometry = (s: Size, max: number) => {
+  const w = Math.max(1, s.w - MARGIN.l - MARGIN.r), h = Math.max(1, s.h - MARGIN.t - MARGIN.b), span = Math.log(max / 20);
+  return {
+    w, h, l: MARGIN.l, t: MARGIN.t,
+    fx: (f: number) => MARGIN.l + w * Math.log(f / 20) / span,
+    gy: (db: number) => MARGIN.t + h * (18 - db) / 36,
+    freqAt: (x: number) => 20 * Math.exp(span * (x - MARGIN.l) / w),
+    dbAt: (y: number) => 18 - 36 * (y - MARGIN.t) / h,
+  };
+};
+const GRID_FREQUENCIES = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
+/* Spectre : plus une fréquence est forte, plus le violet est clair et lumineux ; plus elle est faible, plus il est sombre. */
+const spectrumShade = (level: number) => `hsl(272 72% ${(22 + 58 * level).toFixed(1)}%)`;
 export function DetailedEffectGraph(props: Props) {
   const host = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null), latest = useRef(props); latest.current = props;
   const [scroll, setScroll] = useState(0), speed = useRef(0); speed.current = scroll;
-  const max = Math.min(20000, props.rate * .45), fx = (f: number) => 40 + 700 * Math.log(f / 20) / Math.log(max / 20);
-  const curve = useMemo(() => Array.from({ length: 701 }, (_, i) => `${i ? 'L' : 'M'}${40 + i},${clamp(gainY(response(props.bands, props.rate, 20 * (max / 20) ** (i / 700))), 20, 248)}`).join(' '), [props.bands, props.rate, max]);
+  const [size, setSize] = useState<Size>({ w: 780, h: 270 }), sizeRef = useRef(size); sizeRef.current = size;
+  const max = Math.min(20000, props.rate * .45), geo = geometry(size, max);
+  const curve = useMemo(() => {
+    const g = geometry(size, max), n = Math.max(120, Math.round(g.w / 2));
+    return Array.from({ length: n + 1 }, (_, i) => `${i ? 'L' : 'M'}${(g.l + g.w * i / n).toFixed(1)},${clamp(g.gy(response(props.bands, props.rate, 20 * (max / 20) ** (i / n))), g.t, g.t + g.h).toFixed(1)}`).join(' ');
+  }, [props.bands, props.rate, max, size]);
+  useEffect(() => {
+    const node = host.current; if (!node) return;
+    const read = () => { const w = Math.max(1, Math.round(node.clientWidth)), h = Math.max(1, Math.round(node.clientHeight)); setSize(old => old.w === w && old.h === h ? old : { w, h }); };
+    read(); const observer = new ResizeObserver(read); observer.observe(node); return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     const wheel = (e: WheelEvent) => {
       const point = e.target instanceof Element ? e.target.closest('[data-eq-band]') : null;
@@ -21,7 +46,7 @@ export function DetailedEffectGraph(props: Props) {
     const node = host.current; node?.addEventListener('wheel', wheel, { passive: false }); return () => node?.removeEventListener('wheel', wheel);
   }, []);
   useEffect(() => {
-    let frame = 0, last = 0, previous: number | null = null, history: EffectWaveHistory | null = null;
+    let frame = 0, last = 0, previous: number | null = null, history: EffectWaveHistory | null = null, lastKey = '', smooth = new Float32Array(0);
     const fft = new SourceSpectrum();
     const draw = (now: number) => {
       if (now - last >= 30) {
@@ -33,14 +58,23 @@ export function DetailedEffectGraph(props: Props) {
           if (node.width !== w || node.height !== h) { node.width = w; node.height = h; }
           const playing = audioEngine.isPlaying, pos = Math.floor(audioEngine.getCurrentSample());
           if (p.eq) {
-            if (playing) {
-              ctx.setTransform(w / 780, 0, 0, h / 270, 0, 0); ctx.clearRect(0, 0, 780, 270);
-              const bins = fft.read(p.source, pos), columns = Math.max(350, Math.round(w * 700 / 780));
+            const top = Math.min(20000, p.rate * .45), g = geometry(sizeRef.current, top), key = `${pos}|${w}|${h}|${g.w}|${g.h}`;
+            if (playing || key !== lastKey) {
+              lastKey = key;
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
+              const bins = fft.read(p.source, pos), columns = Math.max(1, Math.floor(g.w * dpr)), colWidth = g.w / columns, base = g.t + g.h;
+              if (smooth.length !== columns) smooth = new Float32Array(columns);
+              const level = new Float32Array(columns);
               for (let x = 0; x < columns; x++) {
-                const f = 20 * (Math.min(20000, p.rate * .45) / 20) ** (x / columns), k = clamp(Math.round(f * fft.size / p.rate), 0, bins.length - 1);
-                const v = clamp((20 * Math.log10(Math.max(1e-6, bins[k])) + 84) / 84, 0, 1);
-                ctx.fillStyle = `hsl(272 65% ${86 - 55 * v}%)`; ctx.fillRect(40 + x * 700 / columns, 248 - v * 216, 700 / columns + .3, v * 216);
+                const f = 20 * (top / 20) ** ((x + .5) / columns), bin = clamp(f * fft.size / p.rate, 0, bins.length - 2), k = Math.floor(bin), fraction = bin - k;
+                const amplitude = bins[k] * (1 - fraction) + bins[k + 1] * fraction;
+                const v = clamp((20 * Math.log10(Math.max(1e-6, amplitude)) + 84) / 84, 0, 1);
+                smooth[x] = v >= smooth[x] ? v : smooth[x] * .8 + v * .2; level[x] = smooth[x];
+                ctx.fillStyle = spectrumShade(level[x]); ctx.fillRect(g.l + x * colWidth, base - level[x] * g.h, colWidth + .35, level[x] * g.h);
               }
+              ctx.beginPath(); ctx.strokeStyle = 'hsl(272 100% 90% / .9)'; ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+              for (let x = 0; x < columns; x++) { const px = g.l + (x + .5) * colWidth, py = base - level[x] * g.h; if (x) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+              ctx.stroke();
             }
           } else {
             const output = p.output, length = output?.[0]?.length ?? 0;
@@ -104,11 +138,11 @@ export function DetailedEffectGraph(props: Props) {
     frame = requestAnimationFrame(draw); return () => cancelAnimationFrame(frame);
   }, []);
   return <div className="atz-graph-block"><div ref={host} className="atz-graph detailed"><canvas ref={canvas} aria-hidden="true"/>
-    {props.eq ? <svg viewBox="0 0 780 270" preserveAspectRatio="none" aria-label="Spectre et réponse de l’égaliseur">{[-18,-12,-6,0,6,12,18].map(db => <g key={db}><line x1="40" x2="740" y1={gainY(db)} y2={gainY(db)} stroke="#ffffff22"/><text x="3" y={gainY(db)+4}>{db}</text></g>)}{[20,50,100,200,500,1000,2000,5000,10000,20000].filter(f=>f<=max).map(f=><g key={f}><line x1={fx(f)} x2={fx(f)} y1="32" y2="248" stroke="#ffffff15"/><text x={fx(f)} y="265" textAnchor="middle">{f>=1000?`${f/1000}k`:f}</text></g>)}<path d={curve} fill="none" stroke="#fff" strokeWidth="1.8"/></svg> : <span className="atz-graph-caption">{props.params.mode === 'limiter' ? 'Plafond' : 'Seuil'} {(props.params.mode === 'limiter' ? props.params.ceiling : props.params.threshold).toFixed(1)} dBFS</span>}
-    {props.eq && props.bands.map((b,i)=><button type="button" key={i} data-eq-band={i} className="atz-eq-point" style={{left:`${fx(b.frequency)/780*100}%`,top:`${gainY(b.gainDb)/270*100}%`,borderColor:colors[i]}} role="slider" aria-label={`Bande ${i+1}, gain`} aria-valuemin={-18} aria-valuemax={18} aria-valuenow={b.gainDb}
+    {props.eq ? <svg width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-label="Spectre et réponse de l’égaliseur">{[-18,-12,-6,0,6,12,18].map(db => <g key={db}><line x1={geo.l} x2={geo.l+geo.w} y1={geo.gy(db)} y2={geo.gy(db)} stroke={db===0?'#ffffff40':'#ffffff22'}/><text x={geo.l-9} y={geo.gy(db)+4.5} textAnchor="end">{db}</text></g>)}{GRID_FREQUENCIES.filter(f=>f<=max).map(f=><g key={f}><line x1={geo.fx(f)} x2={geo.fx(f)} y1={geo.t} y2={geo.t+geo.h} stroke="#ffffff15"/><text x={geo.fx(f)} y={geo.t+geo.h+21} textAnchor="middle">{f>=1000?`${f/1000}k`:f}</text></g>)}<path d={curve} fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/></svg> : <span className="atz-graph-caption">{props.params.mode === 'limiter' ? 'Plafond' : 'Seuil'} {(props.params.mode === 'limiter' ? props.params.ceiling : props.params.threshold).toFixed(1)} dBFS</span>}
+    {props.eq && props.bands.map((b,i)=><button type="button" key={i} data-eq-band={i} className="atz-eq-point" style={{left:geo.fx(b.frequency),top:geo.gy(b.gainDb),borderColor:colors[i]}} role="slider" aria-label={`Bande ${i+1}, gain`} aria-valuemin={-18} aria-valuemax={18} aria-valuenow={b.gainDb}
       onDoubleClick={()=>props.onBandChange(i,bandsDefault(props.rate)[i])}
       onPointerDown={e=>{if(e.button===0){e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);}}}
-      onPointerMove={e=>{if(!e.currentTarget.hasPointerCapture(e.pointerId))return;const r=host.current!.getBoundingClientRect();props.onBandChange(i,{frequency:Math.round(clamp(20*(max/20)**(((e.clientX-r.left)*780/r.width-40)/700),20,max)),gainDb:Number(clamp((140-(e.clientY-r.top)*270/r.height)/6,-18,18).toFixed(1))});}}
+      onPointerMove={e=>{if(!e.currentTarget.hasPointerCapture(e.pointerId))return;const node=host.current!,r=node.getBoundingClientRect(),g=geometry(sizeRef.current,max);props.onBandChange(i,{frequency:Math.round(clamp(g.freqAt(e.clientX-r.left-node.clientLeft),20,max)),gainDb:Number(clamp(g.dbAt(e.clientY-r.top-node.clientTop),-18,18).toFixed(1))});}}
       onKeyDown={e=>{if(e.key==='Home'){e.preventDefault();props.onBandChange(i,bandsDefault(props.rate)[i]);}else if(['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();props.onBandChange(i,{gainDb:Number(clamp(b.gainDb+(e.key==='ArrowUp'?1:-1)*(e.shiftKey ? .1 : .5),-18,18).toFixed(1))});}else if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();props.onBandChange(i,{frequency:Math.round(clamp(b.frequency*(e.key==='ArrowRight'?1.02:1/1.02),20,max))});}}}>{i+1}</button>)}
     </div>{!props.eq&&<div className="atz-scroll-toolbar"><EffectParameter label="Défilement" value={scroll} initial={0} spec={{min:-3,max:3,step:.25,fine:.05,digits:2}} onChange={setScroll}/><p>Graves : violet sombre · Médiums : violet · Aigus : lilas clair<br/>Waveform linéaire G/D · Vumètre : 0 à −12 dBFS · Trait blanc : réduction 0–12 dB<br/>0 : défilement de référence · Molette · Double-clic : remise à zéro</p></div>}</div>;
 }
