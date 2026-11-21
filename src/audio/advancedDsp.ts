@@ -1,6 +1,6 @@
 export type Band = { frequency: number; gainDb: number; q: number };
 export const colors = ['#a65de0','#df69b3','#df8762','#d6cb65','#84c866','#61bcb5','#6499df'];
-export const frequencies = [60,150,400,1000,2500,6000,12000];
+export const frequencies = [63,136,294,632,1363,2936,6324];
 export const clamp = (v:number,a:number,b:number) => Math.max(a,Math.min(b,v));
 export const bandsDefault = (rate:number):Band[] => frequencies.map(f=>({frequency:Math.min(f,Math.floor(rate*.45)),gainDb:0,q:1}));
 export function coefficients(b:Band,rate:number) {

@@ -32,8 +32,8 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: DSP and wheel regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/utils/controlWheel.test.ts
+      - name: DSP and effect UI regression tests
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
