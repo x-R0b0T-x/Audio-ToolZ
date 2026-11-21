@@ -2,7 +2,7 @@ name: Audio ToolZ v1.6 dev - Windows portable
 on:
   push:
     branches: [v1.6-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/integrate-effects.py']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/**', '.github/workflows/build-v1.6.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -22,6 +22,8 @@ jobs:
           python-version: '3.12'
       - name: Apply guarded effects integration
         run: python .github/scripts/integrate-effects.py
+      - name: Apply guarded effect UI polish
+        run: python .github/scripts/polish-effects.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -57,12 +59,12 @@ jobs:
       - name: Commit only validated effect sources to v1.6-dev
         shell: pwsh
         run: |
-          git add -- src .github/effects-integration.applied
+          git add -- src .github/effects-integration.applied .github/effects-polish.applied
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Integrate validated Windows effect controls and continuous previews'
+            git commit -m 'Polish validated Windows effect interfaces'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch changed; refusing to overwrite it' }
