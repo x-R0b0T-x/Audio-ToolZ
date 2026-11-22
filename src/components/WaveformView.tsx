@@ -93,7 +93,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
   useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording, isLooping,
     onSelectionChange, onSelectionCommit, onViewRangeChange });
 
-  useOverviewNavigation({canvas:overviewCanvasRef,doc:activeDoc,isRecording,isLooping,onViewRangeChange});
+  const overviewRangeRef=useOverviewNavigation({canvas:overviewCanvasRef,doc:activeDoc,isRecording,isLooping,onViewRangeChange});
 
   const readCssVar = (name: string, fallback: string): string => {
     if (typeof window === 'undefined') return fallback;
@@ -600,7 +600,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
               if (x0 > 0) ctx.fillRect(0, 0, x0, h);
               if (x1 < w) ctx.fillRect(x1, 0, w - x1, h);
             }
-            const vx0 = activeDoc.viewStartSample / total * w, vx1 = activeDoc.viewEndSample / total * w;
+            const vx0 = overviewRangeRef.current[0] / total * w, vx1 = overviewRangeRef.current[1] / total * w;
             ctx.fillStyle = selBg; ctx.fillRect(vx0, 0, Math.max(3, vx1 - vx0), h);
             ctx.strokeStyle = '#39ff14'; ctx.lineWidth = 2;
             ctx.shadowColor = '#39ff14'; ctx.shadowBlur = 7;

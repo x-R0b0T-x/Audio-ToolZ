@@ -141,3 +141,5 @@
 #root .atz-dynamics .atz-scroll-toolbar .atz-parameter>button{width:32px;height:32px}
 #root .atz-dynamics-controls{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding-top:8px}
 #root .atz-dynamics-controls>.atz-control-group{flex:none;gap:6px;padding-left:7px;padding-right:7px}
+
+#root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"] .atz-parameter>button{width:54px;height:54px}

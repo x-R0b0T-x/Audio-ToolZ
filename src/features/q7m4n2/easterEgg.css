@@ -10,7 +10,7 @@
 .atz-party-bravo text{font:900 140px system-ui,sans-serif;text-anchor:middle;stroke-linejoin:round}
 .atz-party-streak{stroke-dasharray:22 48;animation:atz-letter-run 2s linear infinite}
 .atz-party h1>span{display:block;font-size:clamp(18px,2.6vw,30px);margin-top:4px}
-.atz-party-media{display:block;width:min(44vw,360px);height:49vh;object-fit:contain;filter:drop-shadow(0 0 9px #39ff14) drop-shadow(0 0 22px #39ff1499);animation:atz-robot-arrive 1.2s cubic-bezier(.2,.8,.2,1) both,atz-robot-breathe 2.6s 1.2s ease-in-out infinite}
+.atz-party-media{display:block;width:min(44vw,360px);height:49vh;object-fit:contain;filter:drop-shadow(0 0 9px #39ff14) drop-shadow(0 0 22px #39ff1499);animation:atz-robot-arrive 1.2s cubic-bezier(.2,.8,.2,1) both}
 .atz-party-channel{position:relative;width:max-content;max-width:100%;animation:atz-copy-in .6s 1s both}
 .atz-party-channel svg{position:absolute;right:calc(100% + 10px);top:50%;width:70px;height:40px;overflow:visible;transform:translateY(-50%);filter:drop-shadow(0 0 5px #39ff14)}
 .atz-party-channel a{font-size:clamp(22px,3vw,34px);font-weight:750;color:#fff!important;text-decoration:underline;text-underline-offset:7px;background:transparent;border:0;box-shadow:none}
@@ -23,3 +23,5 @@
 @keyframes atz-letter-run{to{stroke-dashoffset:-140}}
 @keyframes atz-copy-in{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.atz-party *{animation:none!important}}
+
+.atz-party-media{will-change:transform,scale;transform-origin:center}

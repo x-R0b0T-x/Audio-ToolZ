@@ -1,6 +1,6 @@
 import {startDecodedLoop} from './bufferLoop.mjs';
-import {balanceGains} from '../utils/workspaceMath.mjs';
-import { computeChannelMuteGains, computePlaybackSamplePosition, dbToLinear, reverseChannelsRange } from './dsp';
+import {balanceGains,kickPulseAt,smoothPulse} from '../utils/workspaceMath.mjs';
+import { detectBpmAndBeats, computeChannelMuteGains, computePlaybackSamplePosition, dbToLinear, reverseChannelsRange } from './dsp';
 export interface PreviewBand { type: BiquadFilterType; frequency: number; gainDb?: number; q?: number; }
 export interface MeterLevels { leftPeak: number; rightPeak: number; leftRms: number; rightRms: number; }
 export interface AudioInputDevice { deviceId: string; label: string; groupId?: string; }
@@ -344,11 +344,29 @@ export class AudioEngine {
     this.analyserLeft.getByteFrequencyData(this.freqBufL); this.analyserRight.getByteFrequencyData(this.freqBufR);
     return { left: this.freqBufL, right: this.freqBufR };
   }
-  async playAuxiliaryLoop(data:ArrayBuffer,options:{volume?:number;signal?:AbortSignal}={}):Promise<()=>void>{
+  async playAuxiliaryLoop(data:ArrayBuffer,options:{volume?:number;signal?:AbortSignal;onPulse?:(value:number)=>void}={}):Promise<()=>void>{
     const ctx=this.ensureContext(),buffer=await ctx.decodeAudioData(data.slice(0));
     if(options.signal?.aborted)throw new DOMException('Aborted','AbortError');
     if(ctx.state==='suspended')await ctx.resume();
-    return startDecodedLoop(ctx,buffer,options);
+    if(!options.onPulse)return startDecodedLoop(ctx,buffer,options);
+    const channels=Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i));
+    const detected=detectBpmAndBeats(channels,buffer.sampleRate);
+    const targets=detected.kickSamples.length?detected.kickSamples:detected.beatSamples;
+    if(options.signal?.aborted)throw new DOMException('Aborted','AbortError');
+    const started=ctx.currentTime,end=startDecodedLoop(ctx,buffer,options);
+    let frame=0,last=0,level=0,stopped=false;
+    const stop=()=>{if(stopped)return;stopped=true;cancelAnimationFrame(frame);options.signal?.removeEventListener('abort',stop);end();options.onPulse?.(0);};
+    const tick=(now:number)=>{
+      if(stopped)return;
+      const elapsed=last?(now-last)/1000:1/60;last=now;
+      const sample=((ctx.currentTime-started)%buffer.duration)*buffer.sampleRate;
+      const desired=ctx.state==='running'?kickPulseAt(sample,buffer.sampleRate,targets):0;
+      level=smoothPulse(level,desired,elapsed);options.onPulse?.(level);
+      frame=requestAnimationFrame(tick);
+    };
+    options.signal?.addEventListener('abort',stop,{once:true});
+    if(options.signal?.aborted)stop();else frame=requestAnimationFrame(tick);
+    return stop;
   }
   async decodeFile(arrayBuffer: ArrayBuffer): Promise<{ channels: Float32Array[]; sampleRate: number }> {
     const ctx = this.ensureContext(), audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));

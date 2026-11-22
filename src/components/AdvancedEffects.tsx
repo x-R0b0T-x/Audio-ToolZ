@@ -20,6 +20,7 @@ export function AdvancedEffects(props: Props) {
   const source = useMemo(() => doc.channels.map(ch => ch.subarray(range.startSample, range.endSample)), [doc, range]);
   const [bands, setBands] = useState(() => bandsDefault(doc.sampleRate));
   const [params, setParams] = useState(() => dynamicsDefault(props.effect === 'compressor' ? 'compressor' : 'limiter'));
+  const [scroll,setScroll]=useState(0);
   const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
   const [output, setOutput] = useState<Float32Array[] | null>(null), [trace, setTrace] = useState<Trace | null>(null);
   const worker = useRef<Worker | null>(null), serial = useRef(0), busy = useRef(false), desired = useRef<RenderRequest | null>(null);
@@ -70,7 +71,7 @@ export function AdvancedEffects(props: Props) {
   };
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
     <EffectParameter label={caption} value={params[key]} initial={dynamicsDefault(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
-  const graph = <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} onBandChange={update}/>;
+  const graph = <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/>;
   return <div className="atz-advanced-backdrop"><EffectPanel className={`atz-advanced ${eq ? 'atz-equalizer' : 'atz-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
     <header><div><h2 id="advanced-title">{eq ? label : 'Limiteur / Compresseur'}</h2></div><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
     <main><fieldset className="atz-effect-body" disabled={applying} inert={applying}>
@@ -89,6 +90,7 @@ export function AdvancedEffects(props: Props) {
           <div className="atz-control-group" role="group" aria-label="Niveau"><span>NIVEAU</span>{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{control('ceiling','Plafond',CEILING_RANGE.min,CEILING_RANGE.max,.5,.1,1,'dBFS')}{params.mode==='compressor'&&control('threshold','Seuil',-60,0,.5,.1,1,'dBFS')}</div>
           {params.mode === 'compressor' && <div className="atz-control-group" role="group" aria-label="Compression"><span>COMPRESSION</span>{control('ratio', 'Ratio', 1, 20, .5, .1, 1, ':1')}{control('knee', 'Coude', 0, 24, .5, .1, 1, 'dB')}{control('makeup', 'Compens.', -24, 24, .5, .1, 1, 'dB')}</div>}
           <div className="atz-control-group" role="group" aria-label="Enveloppe"><span>ENVELOPPE</span>{control('attack', 'Attaque', 0, 100, 1, .1, 1, 'ms')}{control('release', 'Relâch.', 10, 2000, 20, 1, 0, 'ms')}</div>
+          <div className="atz-control-group" role="group" aria-label="Défilement"><span>AFFICHAGE</span><EffectParameter label="Défilement" value={scroll} initial={0} spec={{min:-3,max:3,step:.25,fine:.05,digits:2}} onChange={setScroll}/></div>
         </div><p className="atz-hint">Sortie : clair → orange pour les niveaux forts · Réduction de gain : violet · Ligne verte : seuil/plafond en direct · Limiteur sur crêtes d’échantillons, pas true peak</p>
       </>}
     </fieldset>{error && <p role="alert">{error}</p>}</main>
