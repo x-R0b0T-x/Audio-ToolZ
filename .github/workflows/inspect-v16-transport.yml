@@ -1,0 +1,57 @@
+name: Inspect v1.6 transport before final UI changes
+on:
+  push:
+    branches: [v1.6-dev]
+    paths: ['.github/workflows/inspect-v16-transport.yml']
+permissions:
+  contents: write
+concurrency:
+  group: inspect-v16-transport
+  cancel-in-progress: true
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/v1.6-dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract transport callbacks without modifying application sources
+        shell: python
+        run: |
+          from pathlib import Path
+          import os, re
+          if os.environ.get('GITHUB_REF') != 'refs/heads/v1.6-dev':
+              raise SystemExit('Restricted branch')
+          source = Path('src/App.tsx').read_text(encoding='utf-8')
+          lines = source.splitlines(keepends=True)
+          starts = [i for i, line in enumerate(lines) if re.match(r'^  (?:const |useEffect\(|return[ (])', line)]
+          sections = []
+          for pos, start in enumerate(starts):
+              match = re.match(r'^  const ([A-Za-z0-9_]+)', lines[start])
+              if match and re.search(r'play|pause|loop|preview|selection|seek|stop', match.group(1), re.I):
+                  end = starts[pos + 1] if pos + 1 < len(starts) else len(lines)
+                  sections.append(f'\n--- App.tsx lines {start+1}-{end} ---\n' + ''.join(lines[start:end]))
+          for i, line in enumerate(lines):
+              if any(key in line for key in ['onStartPreview=', 'onSelectionChange=', 'onSelectionCommit=', '<InfoModal', 'snap-kicks-toggle']):
+                  sections.append(f'\n--- JSX binding near line {i+1} ---\n' + ''.join(lines[max(0,i-5):min(len(lines),i+12)]))
+          report = ''.join(sections)
+          if not sections or len(report) > 56000:
+              raise SystemExit('Unexpected source layout; application left unchanged')
+          folder = Path('.github/diagnostics')
+          folder.mkdir(parents=True, exist_ok=True)
+          for i in range(4):
+              (folder / f'v16-transport-{i+1}.txt').write_text(report[i*14000:(i+1)*14000], encoding='utf-8', newline='\n')
+          print(f'Inspected {len(lines)} lines; extracted {len(report)} characters. No application source changed.')
+      - name: Save inspection report on development branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- .github/diagnostics/v16-transport-1.txt .github/diagnostics/v16-transport-2.txt .github/diagnostics/v16-transport-3.txt .github/diagnostics/v16-transport-4.txt
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Record transport source inspection for v1.6 development'
+            git push origin HEAD:refs/heads/v1.6-dev
+          fi
