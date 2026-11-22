@@ -1,4 +1,4 @@
-import {useEffect,useRef} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {RefObject} from 'react';
 import type {AudioDocument} from '../audio/types';
 import {overviewRange,overviewZoom} from './workspaceMath.mjs';
@@ -6,16 +6,19 @@ export {overviewRange,kickPulseAt} from './workspaceMath.mjs';
 type Options={canvas:RefObject<HTMLCanvasElement|null>;doc:AudioDocument|null;isRecording:boolean;isLooping?:boolean;onViewRangeChange:(start:number,end:number)=>void};
 export function useOverviewNavigation(options:Options){
  const latest=useRef(options);latest.current=options;
- const handle=useRef<[number,number]>([options.doc?.viewStartSample??0,options.doc?.viewEndSample??0]);
- const state=useRef<{id:string|null;valid:boolean;manual:boolean}>({id:null,valid:false,manual:false});
- useEffect(()=>{
+ const [range,setRange]=useState<[number,number]>([options.doc?.viewStartSample??0,options.doc?.viewEndSample??0]);
+ const handle=useRef<[number,number]>(range);handle.current=range;
+ const previousDoc=useRef<string|null>(null);
+ useLayoutEffect(()=>{
   const d=options.doc;if(!d)return;
-  const s=d.selection,valid=s.endSample>s.startSample,total=d.channels[0]?.length??0;
-  const changed=state.current.id!==d.id;
-  if(changed){state.current={id:d.id,valid:false,manual:false};handle.current=[d.viewStartSample,d.viewEndSample];}
-  if(!valid)state.current.manual=false;
-  if(valid&&(!state.current.valid||!state.current.manual))handle.current=overviewRange(total,s.startSample,s.endSample-s.startSample);
-  state.current.valid=valid;
+  const selected=d.selection,total=d.channels[0]?.length??0;
+  if(selected.endSample>selected.startSample){
+   const next=overviewRange(total,selected.startSample,selected.endSample-selected.startSample);
+   handle.current=next;setRange(old=>old[0]===next[0]&&old[1]===next[1]?old:next);
+  }else if(previousDoc.current!==d.id){
+   const next:[number,number]=[d.viewStartSample,d.viewEndSample];handle.current=next;setRange(next);
+  }
+  previousDoc.current=d.id;
  },[options.doc?.id,options.doc?.selection.startSample,options.doc?.selection.endSample]);
  useEffect(()=>{
   const canvas=latest.current.canvas.current;
@@ -27,7 +30,7 @@ export function useOverviewNavigation(options:Options){
    const [start,end]=handle.current,left=start/total*r.width;
    return x>=r.left+left&&x<=r.left+Math.min(r.width,Math.max(left+3,end/total*r.width));
   };
-  const publish=(range:[number,number])=>{state.current.manual=true;handle.current=range;latest.current.onViewRangeChange(...range);};
+  const publish=(next:[number,number])=>{handle.current=next;setRange(next);latest.current.onViewRangeChange(...next);};
   const stop=()=>{const old=drag;drag=null;if(old&&canvas.hasPointerCapture(old.id))canvas.releasePointerCapture(old.id);canvas.style.cursor='grab';};
   const down=(e:PointerEvent)=>{
    e.preventDefault();e.stopImmediatePropagation();
@@ -40,13 +43,11 @@ export function useOverviewNavigation(options:Options){
   const move=(e:PointerEvent)=>{
    if(!drag){canvas.style.cursor=hit(e.clientX,e.clientY)?'grab':'default';return;}
    if(e.pointerId!==drag.id)return;
-   e.preventDefault();e.stopImmediatePropagation();
-   publish(overviewRange(drag.total,drag.start+(e.clientX-drag.x)*drag.total/drag.width,drag.length));
+   e.preventDefault();e.stopImmediatePropagation();publish(overviewRange(drag.total,drag.start+(e.clientX-drag.x)*drag.total/drag.width,drag.length));
   };
   const up=(e:PointerEvent)=>{if(drag&&e.pointerId===drag.id){move(e);e.preventDefault();e.stopImmediatePropagation();stop();}};
   const wheel=(e:WheelEvent)=>{
-   e.preventDefault();e.stopImmediatePropagation();
-   if(drag||!hit(e.clientX,e.clientY)||!e.deltaY)return;
+   e.preventDefault();e.stopImmediatePropagation();if(drag||!hit(e.clientX,e.clientY)||!e.deltaY)return;
    const total=latest.current.doc?.channels[0]?.length??0;if(!total)return;
    const [start,end]=handle.current,unit=e.deltaMode===1?32:e.deltaMode===2?240:1;
    publish(overviewZoom(total,start,end,e.deltaY*unit));

@@ -34,6 +34,8 @@ jobs:
         run: python .github/scripts/presentation-final.py
       - name: Revise loop handle, effect controls and auxiliary animation
         run: python .github/scripts/revision-controls.py
+      - name: Refresh loop handle drawing and right align scrolling control
+        run: python .github/scripts/refresh-loop-ui.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -54,7 +56,7 @@ jobs:
       - name: Preview, gesture, click and native loop tests
         run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/q7m4n2/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
       - name: DSP, ceiling and UI regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
@@ -91,7 +93,7 @@ jobs:
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Validate loop handle and control layout revisions'
+            git commit -m 'Validate loop redraw and right aligned scroll control'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
