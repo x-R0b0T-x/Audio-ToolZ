@@ -30,6 +30,8 @@ jobs:
         run: python .github/scripts/finish-v16-ui.py
       - name: Connect independent navigation and kick synchronization
         run: python .github/scripts/navigation-kicks.py
+      - name: Apply final presentation and neutral feature paths
+        run: python .github/scripts/presentation-final.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -48,7 +50,7 @@ jobs:
       - name: Verify About ring against the actual PNG
         run: python .github/scripts/verify-about-ring.py
       - name: Preview, gesture, click and native loop tests
-        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
+        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/q7m4n2/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
       - name: DSP, ceiling and UI regression tests
         run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts
       - name: TypeScript check
@@ -58,7 +60,7 @@ jobs:
       - name: Verify PNG and OGG are included unchanged
         shell: pwsh
         run: |
-          $media = @(@{source='src/features/easter-egg/333.png';pattern='333-*.png'},@{source='src/features/easter-egg/assets/music.ogg';pattern='music-*.ogg'})
+          $media = @(@{source='src/features/q7m4n2/333.png';pattern='333-*.png'},@{source='src/features/q7m4n2/assets/music.ogg';pattern='music-*.ogg'})
           foreach ($item in $media) {
             $bundled = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like $item.pattern })
             if ($bundled.Count -ne 1) { throw "Bundled media unavailable: $($item.source)" }
@@ -87,7 +89,7 @@ jobs:
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Polish effect defaults, shared controls and maximized startup'
+            git commit -m 'Validate final presentation and effect layout corrections'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
