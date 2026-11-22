@@ -4,7 +4,7 @@ import { findTrackAtSample } from '../audio/cueSheet';
 import { computeWaveformPeaks, formatTimecode } from '../audio/dsp';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import { BrandLogo } from './BrandLogo';
-import {SecretHost} from './SecretParty';
+import {EasterEggHost} from '../features/easter-egg/EasterEgg';
 import { useWaveformInteractions } from '../utils/useWaveformInteractions';
 
 export type SelectionChangeReason =
@@ -1197,4 +1197,4 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
   );
 };
 
-export const WaveformView:React.FC<WaveformViewProps>=p=><SecretHost enabled={p.documents.length===0&&!p.isRecording}><WaveformContent {...p}/></SecretHost>;
+export const WaveformView:React.FC<WaveformViewProps>=p=><EasterEggHost enabled={p.documents.length===0&&!p.isRecording}><WaveformContent {...p}/></EasterEggHost>;

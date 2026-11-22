@@ -5,7 +5,7 @@ import { SourceSpectrum } from './effectUiMath';
 import { EffectParameter } from './EffectParameter';
 import { EffectWaveHistory } from './effectWaveHistory';
 import {hasGain} from '../audio/effectsModel.mjs';
-import {widthFromWheel,canDragBand} from './easterPolicy.mjs';
+import {widthFromWheel,canDragBand} from '../utils/eqGestures.mjs';
 type Props = { eq: boolean; bands: Band[]; source: Float32Array[]; output: Float32Array[] | null; rate: number; params: Dynamics; trace: Trace | null; onBandChange: (i: number, patch: Partial<Band>) => void };
 /* Le graphique de l'égaliseur est dessiné en pixels réels (aucune déformation) :
    les points restent ronds et les textes gardent leurs proportions à toute taille de fenêtre. */
