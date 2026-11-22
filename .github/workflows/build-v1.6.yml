@@ -24,6 +24,8 @@ jobs:
         run: python .github/scripts/integrate-effects.py
       - name: Apply guarded effect UI polish
         run: python .github/scripts/polish-effects.py
+      - name: Apply final EQ gestures and animated secret
+        run: python .github/scripts/finalize-ui.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -39,8 +41,8 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Preview and filter tests
-        run: node --test src/audio/effectsIntegration.test.mjs
+      - name: Preview, filter and secret interaction tests
+        run: node --test src/audio/effectsIntegration.test.mjs src/components/easterPolicy.test.mjs
       - name: DSP and effect UI regression tests
         run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
@@ -56,15 +58,15 @@ jobs:
           Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
           $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
           "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
-      - name: Commit only validated effect sources to v1.6-dev
+      - name: Commit only validated sources to v1.6-dev
         shell: pwsh
         run: |
-          git add -- src .github/effects-integration.applied .github/effects-polish.applied
+          git add -- src src-tauri/src/main.rs .github/effects-integration.applied .github/effects-polish.applied .github/last-ui.applied
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Polish validated Windows effect interfaces'
+            git commit -m 'Finish EQ gestures, grid text and animated secret'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch changed; refusing to overwrite it' }
