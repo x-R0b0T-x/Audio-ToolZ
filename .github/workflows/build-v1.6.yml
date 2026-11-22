@@ -2,7 +2,7 @@ name: Audio ToolZ v1.6 dev - Windows portable
 on:
   push:
     branches: [v1.6-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/**', '.github/workflows/build-v1.6.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.gitattributes', '.github/scripts/**', '.github/workflows/build-v1.6.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -20,12 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply guarded effects integration
-        run: python .github/scripts/integrate-effects.py
-      - name: Apply guarded effect UI polish
-        run: python .github/scripts/polish-effects.py
-      - name: Apply final EQ gestures and animated secret
-        run: python .github/scripts/finalize-ui.py
+      - name: Organize and connect original Easter egg media
+        run: python .github/scripts/organize-easter-egg.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -41,14 +37,24 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Preview, filter and secret interaction tests
-        run: node --test src/audio/effectsIntegration.test.mjs src/components/easterPolicy.test.mjs
+      - name: Preview, gesture, click and media lifecycle tests
+        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/features/easter-egg/mediaPlayback.test.mjs
       - name: DSP and effect UI regression tests
         run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
         run: npx tauri build --no-bundle
+      - name: Verify original media are included in the frontend bundle
+        shell: pwsh
+        run: |
+          foreach ($item in @(@('robot','mp4'),@('music','ogg'))) {
+            $name = $item[0]; $ext = $item[1]
+            $source = "src/features/easter-egg/assets/$name.$ext"
+            $bundled = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like "$name-*.$ext" })
+            if ($bundled.Count -ne 1) { throw "Bundled media unavailable: $name" }
+            if ((Get-FileHash $source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw "Bundled media changed: $name" }
+          }
       - name: Prepare test executable
         shell: pwsh
         run: |
@@ -58,15 +64,24 @@ jobs:
           Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
           $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
           "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
-      - name: Commit only validated sources to v1.6-dev
+      - name: Commit only validated organized sources and media
         shell: pwsh
         run: |
-          git add -- src src-tauri/src/main.rs .github/effects-integration.applied .github/effects-polish.applied .github/last-ui.applied
+          git add -A -- src .github .gitattributes
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to stage organized sources' }
+          foreach ($name in @('x.mp4','x.ogg')) {
+            $tracked = git ls-files -- $name
+            if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect source media' }
+            if ($tracked) {
+              git add -u -- $name
+              if ($LASTEXITCODE -ne 0) { throw 'Unable to stage media relocation' }
+            }
+          }
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Finish EQ gestures, grid text and animated secret'
+            git commit -m 'Organize Easter egg feature and integrate original video and OGG'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch changed; refusing to overwrite it' }
