@@ -1,3 +1,4 @@
+import './livePreviewRelay.test';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -29,19 +30,20 @@ test('normal playback accepts a live buffer replacement without enabling a loop'
   ctx.currentTime=.7;assert.ok(engine.getCurrentSample()>before);engine.stop();assert.equal(engine.replacePreviewAudio([source],1000),false);
  }finally{(globalThis as any).window=prior;}
 });
-test('Delay restores visible musical times and centered pan without a synchronization toggle',()=>{
+test('Delay restores the compact row, vertical mode switch and in-panel BPM detection',()=>{
  const modal=readFileSync('src/components/EffectModal.tsx','utf8');
  for(const label of ['Temps','Répétitions','Volume de l’effet','Panoramique de départ'])assert.ok(modal.includes(`label="${label}"`));
- assert.ok(modal.includes('wet:0,pan:0'));
- assert.ok(modal.includes("['mono','stereo','ping-pong','off']"));
- assert.ok(!modal.includes('Synchronisation BPM'));assert.ok(!modal.includes('delayMs'));assert.ok(!modal.includes('c.sync'));
+ assert.ok(modal.includes('wet:0,pan:0'));assert.ok(modal.includes('<DelayModeSwitch'));
+ assert.ok(modal.includes('Détection BPM'));assert.ok(modal.includes('delayBpm.worker.ts'));assert.ok(modal.includes('blocked,bpm]'));
+ assert.ok(!modal.includes('Ctrl+B'));assert.ok(!modal.includes('delayMs'));assert.ok(!modal.includes('c.sync'));
  assert.ok(modal.includes('bpm,c.division,c.mode,c.repetitions,c.wet,c.pan)'));
+ const detection=modal.slice(modal.indexOf('const detectBpm='),modal.indexOf('const change='));
+ assert.ok(!detection.includes('change('));assert.ok(!detection.includes('set(c'));assert.ok(!detection.includes('audioEngine.stop'));
  const app=readFileSync('src/App.tsx','utf8');assert.ok(app.includes('if(!audioEngine.isPlaying){setIsPreviewPlaying(false);return;}'));
 });
 test('Delay reuses Audio ToolZ knob states with scoped violet and green styles',()=>{
  const controls=readFileSync('src/components/EffectControls.tsx','utf8'),states=readFileSync('src/components/knobStates.css','utf8'),css=readFileSync('src/components/delayPanel.css','utf8');
- assert.ok(controls.includes("import './knobStates.css'"));
- assert.ok(states.includes('.atz-knob:hover'));assert.ok(states.includes('.atz-knob.is-adjusting'));
- assert.ok(css.includes('background:#3d2466'));assert.ok(css.includes('color:#39ff14'));
- assert.ok(css.includes('.atz-delay-panel .atz-knob output'));assert.ok(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));
+ assert.ok(controls.includes("import './knobStates.css'"));assert.ok(states.includes('.atz-knob:hover'));assert.ok(states.includes('.atz-knob.is-adjusting'));
+ assert.ok(css.includes('background:#3d2466'));assert.ok(css.includes('color:#39ff14'));assert.ok(css.includes('.atz-delay-panel .atz-knob output'));
+ assert.ok(css.includes('.atz-delay-row{display:flex'));assert.ok(!css.includes('grid-template-columns'));
 });
