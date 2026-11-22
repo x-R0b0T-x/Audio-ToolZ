@@ -20,8 +20,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Organize and connect original Easter egg media
-        run: python .github/scripts/organize-easter-egg.py
+      - name: Install PNG validator
+        run: python -m pip install Pillow==12.0.0
+      - name: Finalize native audio, artwork, limiter and knob states
+        run: python .github/scripts/finalize-v16.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -37,23 +39,22 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Preview, gesture, click and media lifecycle tests
-        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/features/easter-egg/mediaPlayback.test.mjs
-      - name: DSP and effect UI regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
+      - name: Preview, gesture, click and native loop tests
+        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/audio/bufferLoop.test.mjs
+      - name: DSP, ceiling and UI regression tests
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
         run: npx tauri build --no-bundle
-      - name: Verify original media are included in the frontend bundle
+      - name: Verify PNG and OGG are included unchanged
         shell: pwsh
         run: |
-          foreach ($item in @(@('robot','mp4'),@('music','ogg'))) {
-            $name = $item[0]; $ext = $item[1]
-            $source = "src/features/easter-egg/assets/$name.$ext"
-            $bundled = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like "$name-*.$ext" })
-            if ($bundled.Count -ne 1) { throw "Bundled media unavailable: $name" }
-            if ((Get-FileHash $source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw "Bundled media changed: $name" }
+          $media = @(@{source='src/features/easter-egg/333.png';pattern='333-*.png'},@{source='src/features/easter-egg/assets/music.ogg';pattern='music-*.ogg'})
+          foreach ($item in $media) {
+            $bundled = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like $item.pattern })
+            if ($bundled.Count -ne 1) { throw "Bundled media unavailable: $($item.source)" }
+            if ((Get-FileHash $item.source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw 'Bundled media changed' }
           }
       - name: Prepare test executable
         shell: pwsh
@@ -64,30 +65,22 @@ jobs:
           Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
           $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
           "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
-      - name: Commit only validated organized sources and media
-        shell: pwsh
-        run: |
-          git add -A -- src .github .gitattributes
-          if ($LASTEXITCODE -ne 0) { throw 'Unable to stage organized sources' }
-          foreach ($name in @('x.mp4','x.ogg')) {
-            $tracked = git ls-files -- $name
-            if ($LASTEXITCODE -ne 0) { throw 'Unable to inspect source media' }
-            if ($tracked) {
-              git add -u -- $name
-              if ($LASTEXITCODE -ne 0) { throw 'Unable to stage media relocation' }
-            }
-          }
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 1) {
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Organize Easter egg feature and integrate original video and OGG'
-            if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
-            git push origin HEAD:refs/heads/v1.6-dev
-            if ($LASTEXITCODE -ne 0) { throw 'Branch changed; refusing to overwrite it' }
-          } elseif ($LASTEXITCODE -ne 0) { throw 'Unable to check staged changes' }
       - uses: actions/upload-artifact@v5
         with:
           name: Audio-ToolZ-v1.6-dev-Windows-x64
           path: release-output/*
           if-no-files-found: error
+      - name: Commit only validated finalized sources
+        shell: pwsh
+        run: |
+          git add -A -- src .github/scripts .github
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to stage sources' }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 1) {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Finalize robot illustration, native OGG loop, +12 dB ceiling and violet knobs'
+            if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
+            git push origin HEAD:refs/heads/v1.6-dev
+            if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
+          } elseif ($LASTEXITCODE -ne 0) { throw 'Unable to check staged sources' }
