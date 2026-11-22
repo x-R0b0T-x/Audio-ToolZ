@@ -1,8 +1,7 @@
 @layer atz-header-motion {
-button:is(.atz-toolbar-action,.atz-menu-trigger){transform:none!important;color:#fff!important;box-shadow:none!important;--icon-stroke:#fff;--icon-highlight:#fff;--icon-accent:#fff;transition:color 160ms ease-out,box-shadow 160ms ease-out,background-color 160ms ease-out!important}
-button.atz-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,[aria-pressed=true]){color:#39ff14!important;--icon-stroke:#39ff14;--icon-highlight:#39ff14;--icon-accent:#39ff14}
-button:is(.atz-toolbar-action,.atz-menu-trigger):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){box-shadow:inset 0 0 0 1px #39ff14bf,inset 0 0 4px #39ff1426,0 0 5px #39ff1470!important}
-button.atz-menu-trigger:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){color:#39ff14!important}
-button.atz-menu-trigger[aria-expanded=true]{background:var(--bg-hover);color:#39ff14!important}
+button:is(.atz-toolbar-action,.atz-menu-trigger){transform:none!important;color:#fff!important;box-shadow:none!important;--icon-stroke:#fff;--icon-highlight:#fff;--icon-accent:#fff;--icon-fill:rgba(255,255,255,.08);transition:box-shadow 160ms ease-out,background-color 160ms ease-out!important}
+button:is(.atz-toolbar-action,.atz-menu-trigger):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){box-shadow:inset 0 0 0 1px #39ff14bf,0 0 5px #39ff1470!important}
+button.atz-toolbar-action svg{color:#fff!important;filter:none!important;--icon-stroke:#fff!important;--icon-highlight:#fff!important;--icon-accent:#fff!important}
+button.atz-menu-trigger[aria-expanded=true]{background:var(--bg-hover)}
 @media(prefers-reduced-motion:reduce){button:is(.atz-toolbar-action,.atz-menu-trigger){transition:none!important}}
 }

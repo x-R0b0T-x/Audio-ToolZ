@@ -2,7 +2,8 @@
 .atz-about-robot{position:relative;isolation:isolate;width:184px;height:184px;flex:none}
 .atz-about-robot>img,.atz-about-robot>canvas{position:absolute;left:12px;top:12px;display:block;width:160px;height:160px;pointer-events:none}
 .atz-about-robot>img{object-fit:contain;z-index:1}
-.atz-about-robot>canvas{z-index:0}
+.atz-about-robot>canvas{z-index:2}
+.atz-about-robot>canvas.atz-about-glow{z-index:0}
 .atz-about-title>span:nth-child(1){color:#fff!important}
 .atz-about-title>span:nth-child(2){color:#39ff14!important}
 .atz-about-title>span:nth-child(3){color:#b34dff!important}

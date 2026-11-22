@@ -41,8 +41,10 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
+      - name: Verify About ring against the actual PNG
+        run: python .github/scripts/verify-about-ring.py
       - name: Preview, gesture, click and native loop tests
-        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/audio/bufferLoop.test.mjs
+        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs
       - name: DSP, ceiling and UI regression tests
         run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
@@ -64,9 +66,9 @@ jobs:
           New-Item -ItemType Directory -Force release-output | Out-Null
           $exe = Get-ChildItem src-tauri/target/release/*.exe | Where-Object { $_.Name -match 'audio.?toolz' } | Select-Object -First 1
           if (-not $exe) { throw 'Executable unavailable' }
-          Copy-Item $exe.FullName 'release-output/Audio ToolZ 1.6 dev.exe'
-          $hash = (Get-FileHash 'release-output/Audio ToolZ 1.6 dev.exe' -Algorithm SHA256).Hash.ToLower()
-          "$hash  Audio ToolZ 1.6 dev.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
+          Copy-Item $exe.FullName 'release-output/v1.6.exe'
+          $hash = (Get-FileHash 'release-output/v1.6.exe' -Algorithm SHA256).Hash.ToLower()
+          "$hash  v1.6.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
       - uses: actions/upload-artifact@v5
         with:
           name: Audio-ToolZ-v1.6-dev-Windows-x64
