@@ -1,3 +1,4 @@
+import {startDecodedLoop} from './bufferLoop.mjs';
 import { computeChannelMuteGains, computePlaybackSamplePosition, dbToLinear, reverseChannelsRange } from './dsp';
 export interface PreviewBand { type: BiquadFilterType; frequency: number; gainDb?: number; q?: number; }
 export interface MeterLevels { leftPeak: number; rightPeak: number; leftRms: number; rightRms: number; }
@@ -339,6 +340,12 @@ export class AudioEngine {
     if (this.freqBufR.length !== this.analyserRight.frequencyBinCount) this.freqBufR = new Uint8Array(this.analyserRight.frequencyBinCount);
     this.analyserLeft.getByteFrequencyData(this.freqBufL); this.analyserRight.getByteFrequencyData(this.freqBufR);
     return { left: this.freqBufL, right: this.freqBufR };
+  }
+  async playAuxiliaryLoop(data:ArrayBuffer,options:{volume?:number;signal?:AbortSignal}={}):Promise<()=>void>{
+    const ctx=this.ensureContext(),buffer=await ctx.decodeAudioData(data.slice(0));
+    if(options.signal?.aborted)throw new DOMException('Aborted','AbortError');
+    if(ctx.state==='suspended')await ctx.resume();
+    return startDecodedLoop(ctx,buffer,options);
   }
   async decodeFile(arrayBuffer: ArrayBuffer): Promise<{ channels: Float32Array[]; sampleRate: number }> {
     const ctx = this.ensureContext(), audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));

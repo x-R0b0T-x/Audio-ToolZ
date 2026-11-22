@@ -7,6 +7,7 @@ export const bandsDefault = (rate:number):Band[] => frequencies.map(f=>({frequen
 export function coefficients(b:Band,rate:number){return sections(b,rate)[0]??[1,0,0,0,0];}
 export function response(bands:Band[],rate:number,f:number){return bandResponse(bands,rate,f);}
 export function equalize(source:Float32Array[],rate:number,bands:Band[]){return filterAudio(source,rate,bands);}
+export const CEILING_RANGE={min:-18,max:12} as const;
 export type Dynamics = { mode:'limiter'|'compressor';input:number;ceiling:number;threshold:number;ratio:number;knee:number;attack:number;release:number;makeup:number };
 export const dynamicsDefault = (mode:Dynamics['mode']='limiter'):Dynamics => ({mode,input:0,ceiling:-1,threshold:-18,ratio:4,knee:6,attack:1,release:120,makeup:0});
 export type Trace = { input:Float32Array;output:Float32Array;reduction:Float32Array;hop:number };
@@ -15,7 +16,7 @@ export function dynamics(source:Float32Array[],rate:number,p:Dynamics) {
  if(!Number.isFinite(rate)||rate<1||source.some(ch=>ch.length!==n)||Object.entries(p).some(([k,v])=>k!=='mode'&&!Number.isFinite(v)))throw new Error('Paramètres audio invalides');
  const out=source.map(()=>new Float32Array(n)),peak=new Float32Array(n),hop=256;
  const trace:Trace={input:new Float32Array(Math.ceil(n/hop)),output:new Float32Array(Math.ceil(n/hop)),reduction:new Float32Array(Math.ceil(n/hop)),hop};
- const input=10**(clamp(p.input,-24,24)/20),makeup=p.mode==='compressor'?10**(clamp(p.makeup,-24,24)/20):1,ceiling=10**(clamp(p.ceiling,-18,0)/20);
+ const input=10**(clamp(p.input,-24,24)/20),makeup=p.mode==='compressor'?10**(clamp(p.makeup,-24,24)/20):1,ceiling=10**(clamp(p.ceiling,CEILING_RANGE.min,CEILING_RANGE.max)/20);
  for(let i=0;i<n;i++)for(const ch of source)peak[i]=Math.max(peak[i],Math.abs(ch[i]*input));
  const ahead=p.mode==='limiter'?Math.ceil(rate*.005):0,q=new Int32Array(ahead+2),size=q.length;
  let head=0,tail=0,next=0,dbGain=0;

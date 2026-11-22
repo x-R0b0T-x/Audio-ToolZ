@@ -1,11 +1,13 @@
-import {useCallback,useEffect,useRef,useState,type RefObject} from 'react';
-import robotUrl from './assets/robot.mp4?url';
+import {useEffect,useState} from 'react';
+import {audioEngine} from '../../audio/engine';
+import robotUrl from './333.png?url';
 import musicUrl from './assets/music.ogg?url';
-import {playEasterMedia,stopEasterMedia} from './mediaPlayback.mjs';
-export const EASTER_MEDIA={video:robotUrl,audio:musicUrl};
-export function useEasterMedia(video:RefObject<HTMLVideoElement|null>,audio:RefObject<HTMLAudioElement|null>){
- const active=useRef(false),[problem,setProblem]=useState('');
- const retry=useCallback(()=>{const v=video.current,a=audio.current;if(!v||!a)return;setProblem('');void playEasterMedia(v,a).catch(()=>{if(active.current)setProblem('Lecture du média indisponible. Réessayez ou fermez la fenêtre.');});},[video,audio]);
- useEffect(()=>{active.current=true;const v=video.current,a=audio.current;retry();return()=>{active.current=false;if(v)stopEasterMedia(v);if(a)stopEasterMedia(a);};},[video,audio,retry]);
- return {problem,retry,reportError:setProblem};
+export const EASTER_MEDIA={robot:robotUrl,audio:musicUrl};
+export function useEasterMedia(){
+ const [attempt,setAttempt]=useState(0),[problem,setProblem]=useState('');
+ useEffect(()=>{const controller=new AbortController();let stop:(()=>void)|undefined;setProblem('');
+  void(async()=>{const response=await fetch(musicUrl,{signal:controller.signal});if(!response.ok)throw new Error('OGG unavailable');const end=await audioEngine.playAuxiliaryLoop(await response.arrayBuffer(),{signal:controller.signal});if(controller.signal.aborted)end();else stop=end;})().catch(()=>{if(!controller.signal.aborted)setProblem('Lecture du son indisponible. Réessayez.');});
+  return()=>{controller.abort();stop?.();};
+ },[attempt]);
+ return {problem,retry:()=>setAttempt(n=>n+1),reportError:setProblem};
 }

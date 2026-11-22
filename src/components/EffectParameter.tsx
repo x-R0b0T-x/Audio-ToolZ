@@ -1,13 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
+import {useControlActivity as useActivity} from '../utils/useControlActivity';
+import './knobStates.css';
 import { parameterValue, stepParameter, type ParameterSpec } from './effectUiMath';
 import {NumericValue} from './NumericValue';
 type Props = { label: string; value: number; initial: number; spec: ParameterSpec; unit?: string; onChange: (v: number) => void; compact?: boolean };
-function useActivity() {
-  const [active, setActive] = useState(false), timer = useRef<ReturnType<typeof setTimeout> | null>(null), held = useRef(false);
-  const clear = () => { if (timer.current !== null) clearTimeout(timer.current); };
-  useEffect(() => () => clear(), []);
-  return { active, begin: () => { clear(); held.current = true; setActive(true); }, end: () => { held.current = false; clear(); setActive(false); }, pulse: () => { clear(); setActive(true); if (!held.current) timer.current = setTimeout(() => setActive(false), 180); } };
-}
 function useWheel(ref: React.RefObject<HTMLDivElement | null>, action: (direction: number, fine: boolean) => void) {
   const callback = useRef(action); callback.current = action;
   useEffect(() => {

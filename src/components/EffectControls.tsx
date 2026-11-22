@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import {useControlActivity} from '../utils/useControlActivity';
+import './knobStates.css';
 import { audioEngine } from '../audio/engine';
 import type { DelayMode } from '../audio/musicalDelay';
 
@@ -64,23 +66,24 @@ export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col 
 interface KnobProps { label: string; value: number; min?: number; max: number; step?: number; ticks?: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
 export const Knob: React.FC<KnobProps> = (p) => {
   const drag = useRef<{ x: number; y: number; value: number } | null>(null);
+  const activity=useControlActivity();
   const min = p.min ?? 0;
   const range = Math.max(1, p.max - min);
-  const set = (v: number) => { if (!p.disabled) p.onChange(Math.round(Math.max(min, Math.min(p.max, v)))); };
+  const set = (v: number) => { if (!p.disabled) { activity.pulse(); p.onChange(Math.round(Math.max(min, Math.min(p.max, v)))); } };
   const fraction = (p.value - min) / range;
   const angle = -135 + fraction * 270;
   const tickCount = p.ticks ?? (Math.min(20, range) + 1);
   const bipolar = min < 0 && p.max > 0;
   const keyStep = p.step ?? 1;
   const pixelsPerUnit = Math.max(0.65, 110 / range);
-  return <div className="atz-knob flex flex-col items-center gap-2 min-w-0" style={{ opacity: p.disabled ? 0.4 : 1 }}
+  return <div className={`atz-knob flex flex-col items-center gap-2 min-w-0${activity.active ? ' is-adjusting' : ''}`} style={{ opacity: p.disabled ? 0.4 : 1 }}
     onDoubleClick={() => set(p.defaultValue)}>
     <span className="text-xs font-semibold">{p.label}</span>
     <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
       title="Glisser ou molette pour régler ; double-clic : valeur par défaut" style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
-      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; }}
+      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; activity.begin(); }}
       onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / pixelsPerUnit); }}
-      onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}
+      onPointerUp={() => { drag.current = null; activity.end(); }} onPointerCancel={() => { drag.current = null; activity.end(); }} onLostPointerCapture={() => { drag.current = null; activity.end(); }}
       onKeyDown={(e) => {
         if (['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Home', 'End'].includes(e.key)) {
           e.preventDefault();

@@ -1,5 +1,0 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {playEasterMedia,stopEasterMedia} from './mediaPlayback.mjs';
-const fake=()=>({muted:false,loop:false,volume:1,starts:0,pauses:0,loads:0,removed:[],play(){this.starts++;return Promise.resolve();},pause(){this.pauses++;},removeAttribute(name){this.removed.push(name);},load(){this.loads++;}});
-test('video is muted and OGG loops independently',async()=>{const video=fake(),audio=fake();await playEasterMedia(video,audio);assert.equal(video.muted,true);assert.equal(video.loop,true);assert.equal(audio.loop,true);assert.equal(audio.volume,.4);assert.equal(video.starts,1);assert.equal(audio.starts,1);});
-test('closing releases both media sources',()=>{const video=fake(),audio=fake();stopEasterMedia(video,audio);for(const media of [video,audio]){assert.equal(media.pauses,1);assert.equal(media.loads,1);assert.deepEqual(media.removed,['src']);}});
-test('playback errors reach the UI',async()=>{const video=fake(),audio=fake();audio.play=()=>Promise.reject(new Error('blocked'));await assert.rejects(playEasterMedia(video,audio),/blocked/);});

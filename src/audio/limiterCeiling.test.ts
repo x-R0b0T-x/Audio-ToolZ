@@ -1,0 +1,10 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {dynamics,dynamicsDefault} from './advancedDsp';
+const render=(ceiling:number,value:number)=>dynamics([new Float32Array(512).fill(value)],48000,{...dynamicsDefault(),ceiling,attack:0}).channels[0];
+const peak=(data:Float32Array)=>Math.max(...Array.from(data,Math.abs));
+test('+12 preserves a signal above zero dBFS',()=>assert.equal(render(12,2)[0],2));
+test('+12 limits overdriven samples',()=>assert.ok(Math.abs(peak(render(12,8))-10**(12/20))<1e-5));
+test('+6 remains above zero dBFS',()=>assert.ok(Math.abs(peak(render(6,8))-10**(6/20))<1e-5));
+test('zero ceiling remains unity',()=>assert.equal(peak(render(0,8)),1));
+test('negative ceiling still works',()=>assert.ok(Math.abs(peak(render(-6,8))-10**(-6/20))<1e-5));
+test('values beyond +12 are clamped',()=>assert.deepEqual(render(24,8),render(12,8)));
+test('default ceiling remains minus one',()=>assert.equal(dynamicsDefault().ceiling,-1));
