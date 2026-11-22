@@ -1,0 +1,14 @@
+{
+  "source": "src/features/easter-egg/333.png",
+  "git_blob": "738be5b65e73616554503e423914d9f3e571389a",
+  "width": 848,
+  "height": 1264,
+  "has_transparency": false,
+  "alpha_bbox": [
+    0,
+    0,
+    848,
+    1264
+  ],
+  "original_unchanged": true
+}
