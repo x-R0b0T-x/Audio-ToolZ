@@ -31,9 +31,19 @@ test('boom pulses have a fast attack, gradual return and bounded scale on every 
  }
  for(const args of [[0,0,rate],[NaN,120,rate],[0,120,0],[0,Infinity,rate]])assert.equal(robotBeatPulse(...args),0);
 });
-test('About reserves the maximum artwork size and keeps small windows scrollable',()=>{
+test('About keeps two columns at every width and fits the complete robot pulse in its slot',()=>{
  const css=readFileSync('src/components/aboutLayout.css','utf8');
- assert.ok(css.includes('width:calc(var(--atz-art-size)*1.7 + 16px)'));
- assert.ok(css.includes('height:calc(var(--atz-art-size)*1.7 + 16px)'));
- assert.ok(css.includes('@container (max-width:620px)'));assert.ok(css.includes('overflow-y:auto'));
+ assert.ok(css.includes('grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)'));
+ assert.ok(!css.includes('@container'));assert.ok(!/grid-template-columns:minmax\(0,1fr\)[;}]/.test(css));
+ assert.ok(css.includes('--atz-art-size:calc((100cqw - 16px)/1.7)'));
+ assert.ok(css.includes('aspect-ratio:1'));assert.ok(css.includes('overflow-y:auto'));
+ for(const slot of [100,140,180,240,322]){const art=(slot-16)/1.7;assert.ok(Math.abs(art*1.7+16-slot)<1e-9);}
+});
+test('About link halos use the main title neon strengths and preserve reduced motion',()=>{
+ const css=readFileSync('src/components/aboutLayout.css','utf8');
+ assert.ok(css.includes('drop-shadow(0 0 7px rgba(57,255,20,.85))'));
+ assert.ok(css.includes('drop-shadow(0 0 9px rgba(179,77,255,.88))'));
+ assert.ok(css.includes('drop-shadow(0 0 18px rgba(57,255,20,.42))'));
+ assert.ok(css.includes('atz-about-bright-halo 4s linear infinite'));assert.ok(css.includes('pointer-events:none'));
+ assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));assert.ok(css.includes('.atz-about-actions>a::before{animation:none}'));
 });
