@@ -12,7 +12,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     const bridge=(window as unknown as {__TAURI_INTERNALS__?:{invoke:(command:string,args:Record<string,unknown>)=>Promise<unknown>}}).__TAURI_INTERNALS__;
     if(!bridge)return;
     event.preventDefault();setCommunityError('');
-    void bridge.invoke('open_community_url',{url:'https://t.me/Audio_ToolZ'}).catch(()=>setCommunityError("Impossible d’ouvrir Telegram dans le navigateur."));
+    void bridge.invoke('open_community_url',{url:event.currentTarget.href}).catch(()=>setCommunityError("Impossible d’ouvrir le lien dans le navigateur."));
   };
   const [box, setBox] = useState({ x: 0, y: 0, w: 640, h: 680 });
   const drag = useRef<{ x: number; y: number } | null>(null);
@@ -61,13 +61,16 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     </div>
     <div className="atz-about-body">
       <div className="atz-about-brand">
-        <AboutRobot src={robotUrl}/>
         <h3 className="atz-about-title text-2xl font-display font-bold"><span>Audio </span><span>Tool</span><span>Z</span></h3>
+        <div className="atz-about-hero"><AboutRobot src={robotUrl}/><div className="atz-about-actions">
         <a className="atz-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
+        <a className="atz-about-link" href="https://github.com/x-R0b0T-x/Audio-ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Visiter le dépôt GitHub</a>
+        <a className="atz-about-link" href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Faire un don</a>
+        </div></div>
         {communityError&&<p className="atz-about-community-error" role="alert">{communityError}</p>}
       </div>
       <section aria-labelledby="about-changelog-title" className="atz-about-changes">
-        <h3 id="about-changelog-title" className="text-sm font-semibold">Changelog depuis la version 1.5</h3>
+        <h3 id="about-changelog-title" className="text-sm font-bold">Changelog depuis la version 1.5</h3>
         <div className="atz-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
           {[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}
         </div>

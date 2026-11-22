@@ -206,7 +206,7 @@ async fn pick_audio_files(
 #[tauri::command]
 fn open_community_url(app: tauri::AppHandle, url: String) -> Result<(), String> {
     let target = url.trim_end_matches('/');
-    if target != COMMUNITY_URL && target != "https://www.youtube.com/@AldenMagiX" {
+    if target != COMMUNITY_URL && target != "https://www.youtube.com/@AldenMagiX" && target != "https://github.com/x-R0b0T-x/Audio-ToolZ" && target != "https://www.paypal.com/ncp/payment/GAUJE54VM28T8" {
         return Err("URL externe non autorisée.".to_string());
     }
     app.opener()

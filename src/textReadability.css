@@ -6,4 +6,6 @@
 #root [data-testid="header-brand-title"]>span:nth-child(2),#root .atz-about-title>span:nth-child(2){color:#39ff14!important}
 #root [data-testid="header-brand-title"]>span:nth-child(3),#root .atz-about-title>span:nth-child(3){color:#b34dff!important}
 /* Explicit green exceptions, stronger than the global white text rule. */
-#root aside[aria-label="Fenêtre de contrôle flottante"] span.font-mono-tabular.justify-self-center,#root #about-changelog-title,#root .atz-about-scroll h4{color:#39ff14!important}
+#root aside[aria-label="Fenêtre de contrôle flottante"] span.font-mono-tabular.justify-self-center,#root .atz-about-scroll h4{color:#39ff14!important}
+
+#root #about-changelog-title{color:#fff!important;font-weight:700!important}

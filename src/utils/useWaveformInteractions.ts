@@ -1,3 +1,4 @@
+import {loopSelection} from './finalUiMath.mjs';
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { AudioDocument, AudioSelection } from '../audio/types';
@@ -5,6 +6,7 @@ import type { SelectionChangeReason } from '../components/WaveformView';
 import { dragFrame } from './waveformNavigation.mjs';
 type Edge = 'resize-start' | 'resize-end' | 'cursor';
 interface Options {
+  isLooping?: boolean;
   canvas: RefObject<HTMLCanvasElement | null>; doc: AudioDocument | null; isRecording: boolean;
   onSelectionChange: (selection: AudioSelection, reason: SelectionChangeReason) => void;
   onSelectionCommit?: (selection: AudioSelection, reason: SelectionChangeReason) => void;
@@ -71,6 +73,13 @@ export function useWaveformInteractions(options: Options) {
       const selection = doc.selection;
       if (event.button === 2) {
         begin('resize-end', 2, event, selection); return;
+      }
+      if(latest.current.isLooping){
+        const frame=dragFrame(doc.viewStartSample,doc.viewEndSample,total,left,width,event.clientX,0);
+        const point=Math.min(total-1,snap(frame.sample,width,length,event.altKey));
+        const next=loopSelection(point,selection.endSample);
+        if(selection.endSample>selection.startSample&&next.endSample>next.startSample){begin('resize-start',0,event,selection);return;}
+        latest.current.onSelectionChange(next,'cursor-drag');begin('cursor',0,event,next);return;
       }
       if (selection.endSample > selection.startSample) {
         const x0 = left + (selection.startSample - doc.viewStartSample) * width / length;

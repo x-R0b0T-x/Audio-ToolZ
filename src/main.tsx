@@ -1,3 +1,4 @@
+import {installDescriptions} from './utils/finalUi';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {installControlGestures} from './utils/controlGestures';
@@ -10,3 +11,5 @@ const root = document.getElementById('root')!;
 createRoot(root).render(<App />);
 installControlGestures(root);
 installTextExceptions(root);
+
+installDescriptions(root);

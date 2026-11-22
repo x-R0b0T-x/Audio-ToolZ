@@ -15,6 +15,7 @@ export type SelectionChangeReason =
   | 'cursor-drag';
 
 interface WaveformViewProps {
+  isLooping?: boolean;
   documents: AudioDocument[];
   activeDocId: string | null;
   isPlaying: boolean;
@@ -43,6 +44,7 @@ interface WaveformViewProps {
 
 const WaveformContent: React.FC<WaveformViewProps> = ({
   documents,
+  isLooping,
   activeDocId,
   isPlaying,
   isRecording,
@@ -86,7 +88,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
     null
   );
 
-  useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording,
+  useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording, isLooping,
     onSelectionChange, onSelectionCommit, onViewRangeChange });
 
   const readCssVar = (name: string, fallback: string): string => {

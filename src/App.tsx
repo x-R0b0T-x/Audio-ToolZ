@@ -1,3 +1,4 @@
+import {useBeatSync} from './utils/finalUi';
 import { installMenuHover } from './utils/uiPolish';
 import './polish.css';
 import { decodeAudioFallback } from './utils/desktop';
@@ -131,6 +132,7 @@ export default function App() {
   const toastTimerRef = useRef<number | null>(null);
 
   const activeDoc = documents.find((d) => d.id === activeDocId) ?? null;
+  useBeatSync(activeDoc);
 
   const showToast = useCallback((text: string, isError = false) => {
     setToast({ text, isError });
@@ -1221,7 +1223,7 @@ export default function App() {
         onOpenInfo={() => setInfoOpen(true)}
       />
 
-      <WaveformView
+      <WaveformView isLooping={isPlaying&&isLooping&&playMode==='loop'}
         documents={documents}
         activeDocId={activeDocId}
         isPlaying={isPlaying}
@@ -1268,10 +1270,14 @@ export default function App() {
             return;
           }
           if (isPlaying && isLooping && sel.endSample > sel.startSample) {
-            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
+            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, playMode === 'loop' && reason === 'resize-start');
           }
         }}
         onSelectionCommit={(sel, reason) => {
+          if(reason==='cursor'&&isLooping&&isPlaying&&playMode==='loop'&&sel.endSample<=sel.startSample){
+            audioEngine.stop(true);setIsPlaying(false);setIsPaused(false);setIsLooping(false);setPlayMode('idle');
+            updateActiveDoc(doc=>({...doc,selection:sel}));return;
+          }
           if (reason === 'cursor') {
             setIsPaused(false);
             setIsLooping(false);
@@ -1286,7 +1292,7 @@ export default function App() {
             return;
           }
           if (isPlaying && isLooping && sel.endSample > sel.startSample) {
-            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, false);
+            audioEngine.updateLoopRegion(sel.startSample, sel.endSample, playMode === 'loop' && reason === 'resize-start');
           }
         }}
         onViewRangeChange={(viewStartSample, viewEndSample) =>
@@ -1421,6 +1427,7 @@ export default function App() {
               const {start,end}=targetRange(activeDoc.selection,activeDoc.channels[0].length),old=engine.effectPreviewSession,loop=old?.docId===activeDoc.id?old.originalLoop:isLooping;
               const full=splicePreview(activeDoc.channels,segment,start,end,enabledChannels),segmentLength=segment[0].length,total=full[0].length,position=getDocumentPosition(),cursor=Math.min(total-1,Math.max(0,toPreview(position,start,end,segmentLength)));
               engine.effectPreviewSession={docId:activeDoc.id,start,end,originalLoop:loop,previewLength:total,segmentLength,previewChannels:full,originalChannels:activeDoc.channels};
+              if(!audioEngine.isPlaying){setIsPreviewPlaying(false);return;}
               if(!audioEngine.replacePreviewAudio(full,sampleRate,{position:cursor,loop,loopStart:start,loopEnd:start+segmentLength,volumeDb})){
                 audioEngine.play(full,sampleRate,0,total,{loop,offsetSamples:cursor,volumeDb,balance,speedRatio,enabledChannels,onEnded:finishPlayback});
                 if(loop)audioEngine.updateLoopRegion(start,start+segmentLength,false);

@@ -3,7 +3,7 @@
 .atz-about-brand{display:flex;flex:none;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .atz-about-robot{--atz-art-size:clamp(64px,26cqh,160px);position:relative;isolation:isolate;width:calc(var(--atz-art-size) + 24px);height:calc(var(--atz-art-size) + 24px);flex:none}
 .atz-about-robot>img{position:absolute;left:12px;top:12px;display:block;width:var(--atz-art-size);height:var(--atz-art-size);pointer-events:none;object-fit:contain;z-index:1;transform-origin:center;animation:atz-robot-pulse 1.8s ease-in-out infinite}
-@keyframes atz-robot-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+@keyframes atz-robot-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
 .atz-about-title>span:nth-child(1){color:#fff!important}
 .atz-about-title>span:nth-child(2){color:#39ff14!important}
 .atz-about-title>span:nth-child(3){color:#b34dff!important}
@@ -18,3 +18,9 @@
 .atz-about-scroll>section+section{margin-top:16px}
 .atz-about-scroll:focus-visible{outline:2px solid #39ff14;outline-offset:-2px}
 @media(prefers-reduced-motion:reduce){.atz-about-robot>img{animation:none;transform:none}.atz-about-community::before{animation:none}.atz-about-community{transition:none}}
+
+.atz-about-hero{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,2fr);gap:18px;align-items:center;width:100%;padding:4px 8px;container-type:inline-size}
+.atz-about-hero .atz-about-robot{--atz-art-size:clamp(64px,20cqw,150px);justify-self:center}
+.atz-about-actions{display:flex;flex-direction:column;gap:12px;min-width:0;width:100%}
+.atz-about-actions>a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:38px;width:100%;padding:8px 12px;border-radius:7px;border:1px solid #b34dff55;background:#b34dff12;text-decoration:none;white-space:normal;font-size:12px}
+.atz-about-link:hover,.atz-about-link:focus-visible{border-color:#39ff14;box-shadow:inset 0 0 0 1px #39ff1480,0 0 7px #39ff1466;outline:none}
