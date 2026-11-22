@@ -9,7 +9,7 @@ export function response(bands:Band[],rate:number,f:number){return bandResponse(
 export function equalize(source:Float32Array[],rate:number,bands:Band[]){return filterAudio(source,rate,bands);}
 export const CEILING_RANGE={min:-18,max:12} as const;
 export type Dynamics = { mode:'limiter'|'compressor';input:number;ceiling:number;threshold:number;ratio:number;knee:number;attack:number;release:number;makeup:number };
-export const dynamicsDefault = (mode:Dynamics['mode']='limiter'):Dynamics => ({mode,input:0,ceiling:-1,threshold:-18,ratio:4,knee:6,attack:1,release:120,makeup:0});
+export const dynamicsDefault = (mode:Dynamics['mode']='limiter'):Dynamics => ({mode,input:0,ceiling:0,threshold:-6,ratio:4,knee:6,attack:1,release:120,makeup:0});
 export type Trace = { input:Float32Array;output:Float32Array;reduction:Float32Array;hop:number };
 export function dynamics(source:Float32Array[],rate:number,p:Dynamics) {
  const n=source[0]?.length??0;

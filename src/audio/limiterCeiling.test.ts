@@ -7,4 +7,4 @@ test('+6 remains above zero dBFS',()=>assert.ok(Math.abs(peak(render(6,8))-10**(
 test('zero ceiling remains unity',()=>assert.equal(peak(render(0,8)),1));
 test('negative ceiling still works',()=>assert.ok(Math.abs(peak(render(-6,8))-10**(-6/20))<1e-5));
 test('values beyond +12 are clamped',()=>assert.deepEqual(render(24,8),render(12,8)));
-test('default ceiling remains minus one',()=>assert.equal(dynamicsDefault().ceiling,-1));
+test('default ceiling is zero',()=>assert.equal(dynamicsDefault().ceiling,0));

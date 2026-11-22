@@ -1,0 +1,8 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {dynamicsDefault,CEILING_RANGE} from './advancedDsp';
+test('compressor opens with zero gain, zero ceiling and minus six threshold',()=>{const p=dynamicsDefault('compressor');assert.deepEqual([p.input,p.ceiling,p.threshold],[0,0,-6]);assert.equal(p.mode,'compressor');});
+test('limiter opens with zero gain and ceiling',()=>{const p=dynamicsDefault('limiter');assert.deepEqual([p.input,p.ceiling],[0,0]);assert.equal(p.mode,'limiter');});
+test('positive ceiling range remains twelve',()=>assert.equal(CEILING_RANGE.max,12));
+test('default objects do not share mutable state',()=>{const p=dynamicsDefault();p.input=12;assert.equal(dynamicsDefault().input,0);});
+test('startup is maximized, not fullscreen',()=>{const p=JSON.parse(readFileSync('src-tauri/tauri.conf.json','utf8')).app.windows[0];assert.equal(p.maximized,true);assert.equal(p.fullscreen,false);});
+test('all knob graduations remain green and moving indicators can glow',()=>{const css=readFileSync('src/components/knobStates.css','utf8');assert.ok(css.includes('stroke:#39ff14!important'));assert.ok(css.includes('--atz-pointer-ink:#39ff14'));assert.ok(css.includes('stroke:var(--atz-pointer-ink)!important'));});
+test('filter icons use the band color and headers respect reduced motion',()=>{assert.ok(readFileSync('src/components/FilterShape.tsx','utf8').includes('stroke={colors[p.index]}'));const css=readFileSync('src/components/headerMotion.css','utf8');assert.ok(css.includes('prefers-reduced-motion:reduce'));assert.ok(css.includes('scale(1.04)'));assert.ok(css.includes('scale(1.02)'));});
