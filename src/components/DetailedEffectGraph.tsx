@@ -5,6 +5,7 @@ import { SourceSpectrum } from './effectUiMath';
 import { EffectParameter } from './EffectParameter';
 import { EffectWaveHistory } from './effectWaveHistory';
 import {hasGain} from '../audio/effectsModel.mjs';
+import {widthFromWheel,canDragBand} from './easterPolicy.mjs';
 type Props = { eq: boolean; bands: Band[]; source: Float32Array[]; output: Float32Array[] | null; rate: number; params: Dynamics; trace: Trace | null; onBandChange: (i: number, patch: Partial<Band>) => void };
 /* Le graphique de l'égaliseur est dessiné en pixels réels (aucune déformation) :
    les points restent ronds et les textes gardent leurs proportions à toute taille de fenêtre. */
@@ -25,7 +26,9 @@ const GRID_FREQUENCIES = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 const spectrumShade = (level: number) => `hsl(278 98% ${(8 + 86 * Math.pow(clamp(level,0,1),1.6)).toFixed(1)}%)`;
 export function DetailedEffectGraph(props: Props) {
   const host = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null), latest = useRef(props); latest.current = props;
-  const selectedBand=useRef<number|null>(null);
+  const selectedBand=useRef<number|null>(null),dragging=useRef<{pointer:number;band:number}|null>(null);
+  const endDrag=(e:React.PointerEvent<HTMLButtonElement>)=>{dragging.current=null;if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);};
+  useEffect(()=>{const end=()=>{dragging.current=null;};window.addEventListener('pointerup',end,true);window.addEventListener('pointercancel',end,true);window.addEventListener('blur',end);return()=>{window.removeEventListener('pointerup',end,true);window.removeEventListener('pointercancel',end,true);window.removeEventListener('blur',end);};},[]);
   const [scroll, setScroll] = useState(0), speed = useRef(0); speed.current = scroll;
   const [size, setSize] = useState<Size>({ w: 780, h: 270 }), sizeRef = useRef(size); sizeRef.current = size;
   const max = Math.min(20000, props.rate * .45), geo = geometry(size, max);
@@ -44,7 +47,7 @@ export function DetailedEffectGraph(props: Props) {
       if(!latest.current.eq||!host.current||e.ctrlKey||e.metaKey||e.altKey||host.current.closest('fieldset:disabled,[inert]'))return;
       if(point&&!host.current.contains(point))return;
       const p=latest.current,i=point?Number(point.getAttribute('data-eq-band')):selectedBand.current;if(i===null||!e.deltaY||!p.bands[i])return;
-      e.preventDefault();e.stopPropagation(); p.onBandChange(i, { q: Number(clamp(p.bands[i].q * (e.shiftKey ? 1.025 : 1.15) ** (e.deltaY < 0 ? -1 : 1), .1, 24).toFixed(3)) });
+      e.preventDefault();e.stopPropagation(); p.onBandChange(i, { q: widthFromWheel(p.bands[i].q,e.deltaY,e.shiftKey) });
     };
     const node = host.current; node?.addEventListener('wheel', wheel, { passive: false, capture: true }); return () => node?.removeEventListener('wheel', wheel, true);
   }, []);
@@ -109,9 +112,10 @@ export function DetailedEffectGraph(props: Props) {
   }, []);
   return <div className="atz-graph-block"><div ref={host} className="atz-graph detailed"><canvas ref={canvas} aria-hidden="true"/>
     {props.eq ? <svg width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} aria-label="Spectre et réponse de l’égaliseur">{[-18,-12,-6,0,6,12,18].map(db => <g key={db}><line x1={geo.l} x2={geo.l+geo.w} y1={geo.gy(db)} y2={geo.gy(db)} stroke={db===0?'#ffffff40':'#ffffff22'}/><text x={geo.l-9} y={geo.gy(db)+4.5} textAnchor="end">{db}</text></g>)}{GRID_FREQUENCIES.filter(f=>f<=max).map(f=><g key={f}><line x1={geo.fx(f)} x2={geo.fx(f)} y1={geo.t} y2={geo.t+geo.h} stroke="#ffffff15"/><text x={geo.fx(f)} y={geo.t+geo.h+21} textAnchor="middle">{f>=1000?`${f/1000}k`:f}</text></g>)}<path d={curve} fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round"/></svg> : <span className="atz-graph-caption">{props.params.mode === 'limiter' ? 'Plafond' : 'Seuil'} {(props.params.mode === 'limiter' ? props.params.ceiling : props.params.threshold).toFixed(1)} dBFS</span>}
-    {props.eq && props.bands.map((b,i)=><button type="button" key={i} data-eq-band={i} onFocus={()=>{selectedBand.current=i;}} className="atz-eq-point" style={{left:geo.fx(b.frequency),top:geo.gy(hasGain(b)?b.gainDb:0),borderColor:colors[i]}} role="slider" aria-label={`Bande ${i+1}, gain`} aria-valuemin={-18} aria-valuemax={18} aria-valuenow={b.gainDb}
-      onPointerDown={e=>{if(e.button===0){e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);}}}
-      onPointerMove={e=>{if(e.buttons!==1||!e.currentTarget.hasPointerCapture(e.pointerId))return;const node=host.current!,r=node.getBoundingClientRect(),g=geometry(sizeRef.current,max);props.onBandChange(i,{frequency:Math.round(clamp(g.freqAt(e.clientX-r.left-node.clientLeft),20,max)),gainDb:hasGain(b)?Number(clamp(g.dbAt(e.clientY-r.top-node.clientTop),-18,18).toFixed(1)):b.gainDb});}}
-      onKeyDown={e=>{if(e.key==='Home'){e.preventDefault();props.onBandChange(i,bandsDefault(props.rate)[i]);}else if(['ArrowUp','ArrowDown'].includes(e.key)&&hasGain(b)){e.preventDefault();props.onBandChange(i,{gainDb:Number(clamp(b.gainDb+(e.key==='ArrowUp'?1:-1)*(e.shiftKey ? .1 : .5),-18,18).toFixed(1))});}else if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();props.onBandChange(i,{frequency:Math.round(clamp(b.frequency*(e.key==='ArrowRight'?1.02:1/1.02),20,max))});}}}>{i+1}</button>)}
+    {props.eq && props.bands.map((b,i)=><button type="button" key={i} data-eq-band={i} onFocus={()=>{selectedBand.current=i;}} className="atz-eq-point" style={{left:geo.fx(b.frequency),top:geo.gy(hasGain(b)?b.gainDb:0),borderColor:colors[i]}} aria-label={`Bande ${i+1}, ${Math.round(b.frequency)} Hz, ${b.gainDb.toFixed(1)} dB, largeur Q ${b.q}`}
+      onPointerDown={e=>{if(e.button===0){e.preventDefault();selectedBand.current=i;dragging.current={pointer:e.pointerId,band:i};e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);}}}
+      onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={endDrag}
+      onPointerMove={e=>{if(dragging.current?.band!==i||!canDragBand(e.pointerId,dragging.current?.pointer??null,e.buttons,e.currentTarget.hasPointerCapture(e.pointerId)))return;const node=host.current!,r=node.getBoundingClientRect(),g=geometry(sizeRef.current,max);props.onBandChange(i,{frequency:Math.round(clamp(g.freqAt(e.clientX-r.left-node.clientLeft),20,max)),gainDb:hasGain(b)?Number(clamp(g.dbAt(e.clientY-r.top-node.clientTop),-18,18).toFixed(1)):b.gainDb});}}
+      onKeyDown={e=>{if(!e.isTrusted){e.preventDefault();e.stopPropagation();return;}if(e.key==='Home'){e.preventDefault();props.onBandChange(i,bandsDefault(props.rate)[i]);}else if(['ArrowUp','ArrowDown'].includes(e.key)&&hasGain(b)){e.preventDefault();props.onBandChange(i,{gainDb:Number(clamp(b.gainDb+(e.key==='ArrowUp'?1:-1)*(e.shiftKey ? .1 : .5),-18,18).toFixed(1))});}else if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();props.onBandChange(i,{frequency:Math.round(clamp(b.frequency*(e.key==='ArrowRight'?1.02:1/1.02),20,max))});}}}>{i+1}</button>)}
     </div>{!props.eq&&<div className="atz-scroll-toolbar"><EffectParameter label="Défilement" value={scroll} initial={0} spec={{min:-3,max:3,step:.25,fine:.05,digits:2}} onChange={setScroll}/><p>Graves : violet sombre · Médiums : violet · Aigus : lilas clair<br/>Sortie : vue unique · Orange : gain relatif (dB) · Vert : plafond (dBFS) · Cyan : réduction<br/>0 : défilement de référence · Molette · Double-clic : remise à zéro</p></div>}</div>;
 }
