@@ -1,0 +1,40 @@
+.atz-about-dialog .atz-about-hero {
+  grid-template-columns: minmax(116px, 2fr) minmax(0, 3fr);
+  gap: 12px;
+}
+
+.atz-about-dialog .atz-about-hero .atz-about-robot {
+  --atz-art-size: clamp(94px, 28cqw, 148px);
+  align-self: center;
+  justify-self: center;
+}
+
+.atz-about-resize {
+  color: #39ff14;
+  opacity: .8;
+  transition: opacity 140ms ease, filter 140ms ease;
+}
+
+.atz-about-resize::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+.atz-about-resize:hover {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px #39ff14);
+}
+
+.atz-about-resize:active,
+.atz-about-resize[data-resizing='true'] {
+  opacity: 1;
+  filter: drop-shadow(0 0 7px #39ff14) brightness(1.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atz-about-resize { transition: none; }
+}
