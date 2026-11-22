@@ -6,11 +6,15 @@ marker=Path('.github/workspace-final-v2.applied')
 if marker.exists():
     raise SystemExit(0)
 pending={}
+def canonical(name):
+    return Path(str(name).replace('\\','/')).as_posix()
 def read(name):
+    name=canonical(name)
     if name not in pending:
         pending[name]=Path(name).read_text(encoding='utf-8')
     return pending[name]
 def patch(name,old,new):
+    name=canonical(name)
     text=read(name)
     if text.count(old)!=1:
         raise SystemExit('Ambiguous or changed source: '+name+' '+old[:90])
@@ -80,8 +84,9 @@ patch(name,'</span></div><div className="flex justify-end">','</span><div id="at
 
 owners=[]
 for path in Path('src').rglob('*.tsx'):
-    if 'data-testid="snap-kicks-toggle"' in read(str(path)):
-        owners.append(str(path))
+    name=path.as_posix()
+    if 'data-testid="snap-kicks-toggle"' in read(name):
+        owners.append(name)
 if len(owners)!=1:
     raise SystemExit('Expected one kick indicator owner: '+str(owners))
 name=owners[0]
@@ -111,6 +116,11 @@ pending[name]=read(name)+'''
 #atz-header-kick-slot [data-testid="snap-kicks-toggle"]{position:static!important;margin:0!important;transform:none!important;white-space:nowrap;font-size:10px;line-height:1.3;padding:2px 9px;border-radius:6px;color:#39ff14!important}
 '''
 
+if 'id="atz-header-kick-slot"' not in read('src/components/TopMenuBar.tsx'):
+    raise SystemExit('Kick indicator target lost before write')
+resolved=[str(Path(name).resolve()).casefold() for name in pending]
+if len(resolved)!=len(set(resolved)):
+    raise SystemExit('Duplicate destination paths')
 for name,text in pending.items():
     Path(name).write_text(text,encoding='utf-8',newline='\n')
 marker.write_text('workspace-final-v2\n',encoding='utf-8')
