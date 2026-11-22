@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import robotUrl from '../features/easter-egg/333.png?url';
 import { RELEASE_ADDITIONS, RELEASE_FIXES } from '../releaseNotes';
+import './aboutPresentation.css';
 interface InfoModalProps { open: boolean; onClose: () => void; }
 export const APP_VERSION = 'v1.6 dev';
 export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
@@ -51,8 +52,8 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
       <button type="button" aria-label="Fermer" onClick={onClose}><X size={18} /></button>
     </div>
     <div className="p-4 flex-1 min-h-0 overflow-y-auto text-xs space-y-4">
-      <div className="flex flex-col items-center gap-2 text-center"><img src={robotUrl} alt="Robot violet aux yeux verts" className="h-28 w-28 object-contain" /><h3 className="text-2xl font-display font-bold">Audio ToolZ</h3></div>
-      <section aria-labelledby="about-changelog-title" className="space-y-4"><h3 id="about-changelog-title" className="text-sm font-semibold">Changelog</h3>{[['Nouveautés et allègement', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}</section>
+      <div className="atz-about-brand"><div className="atz-about-robot"><img src={robotUrl} alt="Robot violet aux yeux verts" /></div><h3 className="text-2xl font-display font-bold">Audio ToolZ</h3></div>
+      <section aria-labelledby="about-changelog-title" className="space-y-4"><h3 id="about-changelog-title" className="text-sm font-semibold">Changelog depuis la version 1.5</h3>{[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}</section>
     </div>
     <div aria-label="Redimensionner la fenêtre À propos" title="Glisser pour redimensionner" onMouseDown={(e) => { if (e.button !== 0) return; e.preventDefault(); resize.current = { x: e.clientX, y: e.clientY, w: box.w, h: box.h }; }} className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize" style={{ background: 'linear-gradient(135deg, transparent 50%, var(--accent-primary) 50%)', opacity: 0.7 }} />
   </div>;

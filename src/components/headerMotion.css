@@ -1,7 +1,7 @@
 @layer atz-header-motion {
-button:is(.atz-toolbar-action,.atz-menu-trigger){transform:scale(1)!important;transform-origin:center;transition:transform 160ms ease-out,box-shadow 160ms ease-out,background-color 160ms ease-out!important}
-button.atz-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){transform:scale(1.04)!important;box-shadow:0 0 4px #39ff1440!important}
-button.atz-menu-trigger:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){transform:scale(1.02)!important;box-shadow:inset 0 0 0 1px #39ff1440!important}
-button.atz-menu-trigger[aria-expanded=true]{background:var(--bg-hover)}
-@media(prefers-reduced-motion:reduce){button:is(.atz-toolbar-action,.atz-menu-trigger),button:is(.atz-toolbar-action,.atz-menu-trigger):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){transform:none!important;transition:none!important}}
+button:is(.atz-toolbar-action,.atz-menu-trigger){transform:none!important;color:#fff!important;--icon-stroke:#fff;--icon-highlight:#fff;--icon-accent:#fff;transition:color 160ms ease-out,box-shadow 160ms ease-out,background-color 160ms ease-out!important}
+button.atz-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,[aria-pressed=true]){color:#39ff14!important;--icon-stroke:#39ff14;--icon-highlight:#39ff14;--icon-accent:#39ff14;box-shadow:0 0 4px #39ff1440!important}
+button.atz-menu-trigger:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){color:#39ff14!important;box-shadow:inset 0 0 0 1px #39ff1440!important}
+button.atz-menu-trigger[aria-expanded=true]{background:var(--bg-hover);color:#39ff14!important}
+@media(prefers-reduced-motion:reduce){button:is(.atz-toolbar-action,.atz-menu-trigger){transition:none!important}}
 }

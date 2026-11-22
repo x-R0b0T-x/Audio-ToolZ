@@ -3,5 +3,12 @@ button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[
 button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x))>svg{color:inherit!important;stroke:currentColor!important;filter:none!important}
 button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,:active){color:#39ff14!important;text-shadow:0 0 5px #39ff1499!important}
 button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,:active)>svg{filter:drop-shadow(0 0 3px #39ff14)!important}
-@media(prefers-reduced-motion:reduce){button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)){transition:none!important}}
+.atz-advanced header>button[aria-label="Fermer"]{font-size:28px!important;line-height:1!important;width:36px;height:36px;min-width:36px;min-height:36px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;flex:none}
+aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]){color:#fff!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important;filter:none!important;transition:color 140ms ease!important}
+aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"])>svg{color:inherit!important;stroke:currentColor!important;filter:none!important}
+aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]):not(:disabled):is(:hover,:focus-visible){color:#39ff14!important}
+aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]):not(:disabled):is(:hover,:focus-visible)>svg{filter:drop-shadow(0 0 3px #39ff14)!important}
+.atz-advanced footer button{color:#fff!important}
+.atz-advanced footer button:not(:disabled):is(:hover,:focus-visible){color:#39ff14!important}
+@media(prefers-reduced-motion:reduce){button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)),aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]){transition:none!important}}
 }
