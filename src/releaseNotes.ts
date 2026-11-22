@@ -15,6 +15,8 @@ export const RELEASE_ADDITIONS = [
  "Distribution Windows portable sous le nom Audio ToolZ.exe, accompagnée d’une empreinte SHA-256."
 ];
 export const RELEASE_FIXES = [
+ "Delay utilisable en millisecondes sans analyse BPM ; synchronisation musicale disponible en option.",
+ "Préécoute en lecture normale sans activation obligatoire de la boucle ni de la détection du tempo.",
  "Affichage des crêtes d’entrée et de sortie en temps réel, réduction de gain et repère de seuil distinct dans le compresseur.",
  "Effets utilisables sans boucle : traitement de la sélection ou du morceau entier lorsqu’aucune sélection n’est définie.",
  "Clic après la fin d’une boucle dans la forme d’onde principale : désactivation de la boucle et reprise immédiate de la lecture au point choisi, sans changer le cadrage.",

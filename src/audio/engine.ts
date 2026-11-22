@@ -344,11 +344,12 @@ export class AudioEngine {
     this.analyserLeft.getByteFrequencyData(this.freqBufL); this.analyserRight.getByteFrequencyData(this.freqBufR);
     return { left: this.freqBufL, right: this.freqBufR };
   }
-  async playAuxiliaryLoop(data:ArrayBuffer,options:{volume?:number;signal?:AbortSignal;onPulse?:(value:number)=>void}={}):Promise<()=>void>{
+  async playAuxiliaryLoop(data:ArrayBuffer,options:{volume?:number;signal?:AbortSignal;onPulse?:(value:number)=>void;onWaveform?:(samples:Float32Array)=>void}={}):Promise<()=>void>{
     const ctx=this.ensureContext(),buffer=await ctx.decodeAudioData(data.slice(0));
     if(options.signal?.aborted)throw new DOMException('Aborted','AbortError');
     if(ctx.state==='suspended')await ctx.resume();
-    if(!options.onPulse)return startDecodedLoop(ctx,buffer,options);
+    if(!options.onPulse&&!options.onWaveform)return startDecodedLoop(ctx,buffer,options);
+    const waveform=new Float32Array(512);
     const channels=Array.from({length:buffer.numberOfChannels},(_,i)=>buffer.getChannelData(i));
     const detected=detectBpmAndBeats(channels,buffer.sampleRate);
     const targets=detected.kickSamples.length?detected.kickSamples:detected.beatSamples;
@@ -362,6 +363,10 @@ export class AudioEngine {
       const sample=((ctx.currentTime-started)%buffer.duration)*buffer.sampleRate;
       const desired=ctx.state==='running'?kickPulseAt(sample,buffer.sampleRate,targets):0;
       level=smoothPulse(level,desired,elapsed);options.onPulse?.(level);
+      if(options.onWaveform){
+        for(let i=0;i<waveform.length;i++){const at=((Math.floor(sample)-waveform.length+i)%buffer.length+buffer.length)%buffer.length;waveform[i]=ctx.state==='running'?(channels[0][at]??0):0;}
+        options.onWaveform(waveform);
+      }
       frame=requestAnimationFrame(tick);
     };
     options.signal?.addEventListener('abort',stop,{once:true});

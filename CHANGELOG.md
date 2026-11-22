@@ -118,3 +118,8 @@ Cette préparation ne crée pas automatiquement de tag ni de publication GitHub.
 - Effets utilisables sans boucle, sur la sélection ou le morceau entier.
 - Nouveau départ en lecture normale après un clic au-delà de la boucle, sans changement de cadrage.
 - Effet renommé Delay et texte explicatif simplifié.
+
+
+### Tempo facultatif
+
+Le Delay dispose d’une durée libre de 1 à 4 000 ms. La synchronisation BPM reste optionnelle. Les effets sont utilisables pendant la lecture normale, sans boucle imposée.

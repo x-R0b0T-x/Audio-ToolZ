@@ -6,14 +6,16 @@ export const DELAY_DIVISIONS = [32,16,8,4,2,1].flatMap(denominator => [
 ]).sort((a,b)=>a.beats-b.beats);
 export const DEFAULT_DIVISION=DELAY_DIVISIONS.length-1;
 export const DELAY_REPEAT_DECAY=.85;
-export function applyMusicalDelay(channels:Float32Array[],sampleRate:number,bpm:number,division:number,mode:DelayMode,repetitions:number,wetPercent=0,panPercent=0):Float32Array[]{
+export function applyMusicalDelay(channels:Float32Array[],sampleRate:number,bpm:number,division:number,mode:DelayMode,repetitions:number,wetPercent=0,panPercent=0,delayMs?:number):Float32Array[]{
  const out=channels.map(c=>new Float32Array(c));
  if(!Number.isFinite(repetitions)||!Number.isFinite(wetPercent)||!Number.isFinite(panPercent))throw new Error('Paramètre de délai invalide.');
  const count=Math.max(0,Math.min(16,Math.round(repetitions))),wet=Math.max(0,Math.min(100,wetPercent))/100,pan=Math.max(-1,Math.min(1,panPercent/100));
  if(!count||!wet||mode==='off'||!channels.length)return out;
- if(!Number.isFinite(bpm)||bpm<=0||!Number.isFinite(sampleRate)||sampleRate<=0)throw new Error('Un BPM détecté et une fréquence audio valides sont nécessaires.');
- const step=DELAY_DIVISIONS[division];if(!step)throw new Error('Division musicale invalide.');
- const delay=Math.max(1,Math.round(sampleRate*60/bpm*step.beats)),length=channels[0].length;
+ if((delayMs===undefined&&(!Number.isFinite(bpm)||bpm<=0))||!Number.isFinite(sampleRate)||sampleRate<=0)throw new Error('Un BPM détecté et une fréquence audio valides sont nécessaires.');
+ const step=DELAY_DIVISIONS[division];if(delayMs===undefined&&!step)throw new Error('Division musicale invalide.');
+ if(delayMs!==undefined&&(!Number.isFinite(delayMs)||delayMs<=0||delayMs>4000))throw new Error('Durée de délai invalide.');
+ const seconds=delayMs===undefined?60/bpm*step.beats:delayMs/1000;
+ const delay=Math.max(1,Math.round(sampleRate*seconds)),length=channels[0].length;
  if(channels.some(c=>c.length!==length))throw new Error('Canaux de longueurs différentes.');
  if((mode==='ping-pong'||Math.abs(pan)>1e-4)&&out.length===1)out.push(new Float32Array(channels[0]));
  const stereo=channels.length>=2,leftPan=pan<=0?1:1-pan,rightPan=pan>=0?1:1+pan;

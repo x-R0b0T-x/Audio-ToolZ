@@ -1,3 +1,4 @@
+import {NeonWave} from './NeonWave';
 import React,{useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {desktop} from '../../utils/desktop';
@@ -26,7 +27,7 @@ function EasterEgg(p:{onClose:()=>void}){
 
  return createPortal(<div ref={dialog} tabIndex={-1} className="atz-party" role="dialog" aria-modal="true" aria-labelledby="atz-party-title">
   <ParticleField/>
-  <svg className="atz-party-wave" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120H90L110 105L125 140L140 65L160 190L180 80L200 155L220 110L250 120H390L420 80L440 165L460 30L485 220L510 65L535 160L560 110L590 120H760L790 80L810 170L830 40L850 195L875 70L900 155L930 120H1200"/></svg>
+  <NeonWave samples={media.samples} pulse={media.pulse}/>
   <button ref={close} className="atz-party-close" type="button" aria-label="Fermer" onClick={()=>callback.current()}>×</button>
   <div className="atz-party-content"><h1 id="atz-party-title"><svg className="atz-party-bravo" viewBox="0 0 900 185" role="img" aria-label="Bravo !!!"><text x="450" y="145" fill="white" stroke="#a347ff" strokeWidth="11" paintOrder="stroke fill">Bravo !!!</text><text x="450" y="145" fill="none" stroke="#39ff14" strokeWidth="8" className="atz-party-streak" aria-hidden="true">Bravo !!!</text><text x="450" y="145" fill="white" aria-hidden="true">Bravo !!!</text></svg><span>Tu as découvert un Easter egg !</span></h1>
    <img ref={media.robot} className="atz-party-media" src={EASTER_MEDIA.robot} alt="Robot violet aux yeux verts" onError={()=>media.reportError('Illustration indisponible.')}/>
