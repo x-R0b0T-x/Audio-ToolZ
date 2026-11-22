@@ -1,138 +1,59 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/e5677deb-fe21-4d32-9495-dfe60b4ffe69" alt="Logo Audio-ToolZ" width="160" height="160" />
-  <h1>Audio-ToolZ</h1>
-  <p>Éditeur audio léger (Windows Tauri v2 & navigateur) : découpez, transformez et assemblez vos sons.</p>
-  <p>Édition audio · Détection BPM · Sélections sur les kicks · Enregistrement · Assemblage et CUE · Export multiformat</p>
-  <p><a href="#fonctionnalités">Fonctionnalités</a> · <a href="#formats-et-export">Formats</a> · <a href="#prise-en-main">Prise en main</a></p>
+  <h1>Audio-ToolZ 1.6</h1>
+  <p>Éditeur audio léger à interface française — Windows portable sous Tauri v2 et navigateur.</p>
 </div>
-
----
 
 ## Présentation
 
-Audio-ToolZ est un éditeur audio à interface française conçu pour travailler sur des fichiers sonores dans le navigateur : préparer un échantillon, isoler un passage, créer une boucle, ajuster un niveau ou assembler plusieurs morceaux en un seul fichier.
+Audio-ToolZ permet de préparer des échantillons, découper un passage, travailler en boucle, appliquer des effets et assembler plusieurs fichiers. Les documents s’ouvrent en onglets ; la fenêtre Contrôle regroupe transport, niveaux et visualisations stéréo.
 
-Son espace de travail associe une édition sur forme d’onde, des documents ouverts en onglets et une fenêtre de contrôle flottante avec visualisations stéréo. Pour les musiques rythmiques, la détection du tempo et l’aimantation sur les kicks facilitent le placement des sélections.
+## Version 1.6
 
-Les traitements et l’encodage audio sont réalisés côté navigateur. L’export ne nécessite pas d’envoyer le contenu audio à un service d’encodage distant.
+- Égaliseur paramétrique sept bandes avec formes de filtre, largeur Q et courbe de réponse.
+- Limiteur / Compresseur avec graphique de sortie et réduction de gain.
+- Effets en préécoute pendant une lecture normale, sans boucle obligatoire. Ils ciblent la sélection ou tout le morceau lorsqu’aucune sélection n’existe.
+- Delay musical : temps, répétitions, volume d’effet, panoramique et modes Mono / Stéréo / Ping-pong / Off. Détection BPM accessible dans son panneau.
+- Navigation dans l’aperçu indépendante de la boucle audio.
+- À propos : robot à côté des liens, pulsation synchronisée au tempo avec détection automatique, halos vert/violet.
 
-## Aperçu
+Les détails et limites figurent dans [les notes de la 1.6](RELEASE_NOTES_1.6.md) et le [changelog](CHANGELOG.md). Les anciennes fenêtres autonomes Volume/Gain et Normalisation ne sont plus présentes ; le volume général et les gains intégrés restent disponibles.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/e1e65796-d3d2-409c-bdcf-fe649f2b3a93" alt="Interface d’Audio-ToolZ : espace d’édition audio et fenêtre de contrôle" width="1000" />
-</p>
+## Fonctionnalités conservées
 
-## Fonctionnalités
-
-### Édition sur forme d’onde
-
-- Ouvrir plusieurs fichiers audio et passer de l’un à l’autre grâce aux onglets.
-- Créer un document audio vierge.
-- Sélectionner une zone pour préparer une découpe ou appliquer un traitement.
-- Couper, copier et coller des passages, y compris entre documents ouverts.
-- Rogner le fichier pour ne conserver que la sélection.
-- Mettre une zone en silence sans supprimer sa durée.
-- Sélectionner l’ensemble du document.
-- Annuler et rétablir les modifications grâce à un historique par document.
-- Agrandir ou réduire la vue, zoomer sur la sélection et revenir à la vue d’ensemble.
-
-### Tempo, kicks et boucles
-
-- Détecter automatiquement un tempo en BPM et repérer des kicks.
-- Afficher ou masquer la grille rythmique.
-- Activer ou désactiver l’aimantation des sélections sur les kicks détectés.
-- Écouter la sélection en boucle, ou le fichier entier lorsqu’aucune zone n’est sélectionnée.
-
-Ces outils sont utiles pour isoler une séquence rythmique ou préparer un échantillon destiné à un travail de production ou de DJ. La détection reste une estimation : sa pertinence dépend du contenu et de la régularité du rythme.
-
-### Effets et transformations
-
-Les effets s’appliquent à une sélection active et disposent d’une préécoute avant validation.
-
-| Traitement | Réglages proposés |
-| --- | --- |
-| Volume | Gain de −36 à +24 dB |
-| Normalisation | Niveau de crête cible de −12 à 0 dBFS |
-| Fondus d’entrée et de sortie | Courbes linéaire, exponentielle ou en S, avec aperçu graphique |
-| Vitesse | Rapport de 0,5× à 2× |
-| Hauteur | Transposition de −12 à +12 demi-tons |
-| Conservation de la hauteur | Option WSOLA lors d’un changement de vitesse |
-| Égaliseur 3 bandes | Graves (120 Hz), Médiums (1,2 kHz), Aigus (6,5 kHz) ±12 dB |
-| Filtre fréquentiel | Passe-haut, passe-bas, coupe-bande (30 Hz – 16 kHz) |
-| Compresseur & Auto-Gain | Seuil (−40 à −2 dBFS), ratio (1,2:1 à 10:1) |
-| Réduction de bruit spectrale | Capture de profil et atténuation jusqu’à 36 dB |
-| Délai musical synchronisé BPM | Divisions 1/32 à 1/1, Mono / Stéréo / Ping-pong G↔D |
-| Traitement par lots & Auto-Cue | Chaînes d’effets multi-fichiers et découpe automatique sur silences |
-
-La normalisation repose sur les crêtes du signal ; elle ne correspond pas à une normalisation de sonie en LUFS.
-
-### Lecture et contrôle
-
-- Lecture, pause et arrêt.
-- Lecture en boucle, lecture inversée et avance accélérée.
-- Réglage du volume d’écoute, de la balance et de la vitesse.
-- Activation ou désactivation des canaux gauche et droit.
-- Fenêtre de contrôle flottante, déplaçable et repliable.
-- Affichage temporel et vumètres stéréo avec maintien des crêtes.
-- Trois visualisations : oscilloscope, spectre et forme d’onde colorée selon le niveau.
-
-### Enregistrement et périphériques audio
-
-- Enregistrer depuis un microphone ou une entrée audio accessible au navigateur.
-- Choisir le périphérique d’entrée et actualiser la liste des appareils.
-- Sélectionner une sortie audio lorsque le navigateur le permet.
-- Configurer l’annulation d’écho, la réduction de bruit et le contrôle automatique du gain à l’enregistrement.
-- Ouvrir automatiquement l’enregistrement terminé dans un nouvel onglet.
-- Mémoriser des préférences d’interface, de périphériques et d’enregistrement dans le navigateur.
-
-L’accès aux entrées audio nécessite une autorisation. Les périphériques disponibles et les traitements effectivement pris en charge dépendent du navigateur et du système.
-
-### Assemblage de fichiers et feuilles CUE
-
-- Ajouter plusieurs fichiers audio ou reprendre les documents déjà ouverts.
-- Déposer des fichiers dans la fenêtre d’assemblage.
-- Réorganiser les pistes et retirer celles qui ne sont plus nécessaires.
-- Renseigner le titre du mix, l’artiste ou le DJ, ainsi que les titres et interprètes des pistes.
-- Assembler les morceaux à la suite dans un nouveau document audio.
-- Prévisualiser et télécharger une feuille `.cue` contenant les positions de début des pistes.
-- Choisir une référence audio WAV ou MP3 dans la feuille CUE générée.
-- Importer une feuille `.cue` sur un document audio ouvert et réexporter ses repères.
-
-L’assemblage consiste à juxtaposer les pistes : il ne doit pas être confondu avec un mixage multipiste à superposition ou un enchaînement automatique avec fondus croisés. Le fichier audio assemblé s’exporte depuis la fenêtre d’export ; la feuille CUE se télécharge séparément.
+- Édition sur forme d’onde : sélection, couper/copier/coller, mixage au collage, silence, rognage, annuler/rétablir et zoom.
+- Lecture normale, pause, arrêt, boucle et lecture inversée ; volume, balance, vitesse et activation des canaux.
+- Fondus, vitesse et hauteur, réduction de bruit spectrale, égalisation, dynamique et Delay.
+- Détection BPM, repères rythmiques et aimantation des sélections.
+- Enregistrement depuis une entrée audio autorisée et sélection des périphériques selon les possibilités du système.
+- Assemblage de fichiers, import et export CUE, Auto-Cue, découpe WAV et traitement par lots. L’assemblage juxtapose les pistes : ce n’est pas un séquenceur multipiste.
+- Oscilloscope, spectre et forme d’onde colorée.
 
 ## Formats et export
 
-### Ouverture
+La version Windows utilise WebView2 et le décodeur de secours Symphonia, notamment pour AAC, ALAC, FLAC, MP3, PCM et Vorbis dans les conteneurs compatibles. La compatibilité dépend du fichier et du décodeur disponible.
 
-La version bureau Windows (Tauri v2) embarque un décodeur de secours **Symphonia** (AAC, ALAC, FLAC, MP3, PCM, Vorbis dans WAV, AIFF, CAF, MP4, Matroska et Ogg) en complément du décodeur WebView2.
-
-### Export
-
-| Format | Options disponibles |
+| Export | Options |
 | --- | --- |
-| WAV | PCM 16 bits, PCM 24 bits ou flottant 32 bits |
-| MP3 | Débits de 128, 192, 256 ou 320 kbit/s |
-| FLAC | Compression sans perte, niveaux proposés : 0, 2 et 5 |
-| OGG Vorbis | Qualité réglable de 1 à 10 |
+| WAV | PCM 16 bits, PCM 24 bits, flottant 32 bits |
+| MP3 | 128, 192, 256 ou 320 kbit/s |
+| FLAC | Niveaux 0, 2 ou 5 |
+| OGG Vorbis | Qualité 1 à 10 |
 
-La fenêtre d’export permet de renommer le fichier, de choisir entre le document entier et la sélection active, et de consulter la durée ainsi qu’une estimation de la taille de sortie.
-
-Lorsque le navigateur le prend en charge, une boîte de dialogue native permet de choisir l’emplacement d’enregistrement. Sinon, l’application utilise le téléchargement classique du navigateur.
+Les traitements et l’encodage sont réalisés localement. L’accès aux entrées audio requiert une autorisation ; le choix des périphériques et les dialogues d’enregistrement varient selon le navigateur et le système.
 
 ## Prise en main
 
-1. Ouvrez un ou plusieurs fichiers audio.
-2. Sélectionnez une zone sur la forme d’onde et zoomez pour affiner votre travail.
-3. Pour une piste rythmique, activez la détection BPM puis l’aimantation sur les kicks si nécessaire.
-4. Écoutez votre passage en boucle, découpez-le ou appliquez un effet après préécoute.
-5. Exportez le document ou uniquement la sélection dans le format souhaité.
+1. Ouvrez un fichier et lancez sa lecture.
+2. Sélectionnez un passage si nécessaire ; sinon les effets ciblent le morceau entier.
+3. Ouvrez un effet et ajustez ses réglages pendant la lecture.
+4. Pour le Delay musical, utilisez Détection BPM si le tempo est inconnu, choisissez un mode actif, des répétitions et un volume d’effet supérieur à zéro. Aucune boucle n’est requise.
+5. Appliquez le traitement puis exportez le document ou la sélection.
 
-Pour créer une compilation continue, utilisez la fenêtre d’assemblage, ajustez l’ordre et les informations des pistes, puis exportez l’audio et sa feuille CUE.
+La détection du tempo est une estimation. La mémorisation de l’interface ne sauvegarde pas vos documents : exportez votre travail avant de fermer l’application. Les fichiers longs et l’historique d’édition peuvent consommer beaucoup de mémoire.
 
-## À savoir
+## Distribution et licence
 
-- La compatibilité des codecs, le choix de sortie audio et les dialogues de fichiers varient selon le navigateur.
-- L’enregistrement requiert l’autorisation d’accès au microphone ou à l’entrée audio.
-- Les fichiers décodés et l’historique d’édition occupent de la mémoire : les longs enregistrements peuvent être exigeants.
-- La mémorisation des préférences ne constitue pas une sauvegarde des documents audio. Exportez votre travail avant de fermer ou de recharger la page.
-- Cette présentation décrit les fonctions identifiées dans le code ; elle ne constitue pas une validation de fonctionnement sur tous les navigateurs.
+Les versions publiées se trouvent dans [GitHub Releases](https://github.com/x-R0b0T-x/Audio-ToolZ/releases). Le paquet Windows x64 portable contient Audio ToolZ.exe et SHA256SUMS.txt. Les artifacts de développement Actions ne constituent pas une publication officielle.
+
+Projet sous licence GPL v3 : voir les fichiers de licence du dépôt. Communauté : [Telegram](https://t.me/Audio_ToolZ).

@@ -1,78 +1,35 @@
 # Audio ToolZ v1.6
 
-## Ce qui change depuis la version 1.5
+Version validée par le mainteneur le 22 novembre 2026, après essais de l’exécutable Windows issu du workflow du commit 414ae3f. Cette validation précède la fusion et la publication officielles.
 
-La version 1.6 améliore principalement l’égalisation, le contrôle de la dynamique, la navigation dans les boucles et l’ergonomie des effets. Tauri v2, la distribution Windows portable, le décodage de secours Symphonia, les formats d’export, les fichiers CUE et le traitement par lots existaient déjà dans la 1.5 : ils restent disponibles et ne constituent pas des nouveautés de cette version.
+## Nouveautés et améliorations depuis la 1.5
 
-## Égaliseur paramétrique sept bandes
+- Égaliseur paramétrique à sept bandes indépendantes : fréquence, gain, largeur Q, formes et pentes de filtre compatibles, spectre et courbe de réponse.
+- Fenêtre Limiteur / Compresseur avec modes LIMIT et COMP, gain d’entrée, plafond, enveloppe et réduction de gain. Le plafond porte sur les crêtes d’échantillons ; ce n’est pas un limiteur true peak suréchantillonné.
+- Navigation dans l’aperçu de la forme d’onde indépendante de la boucle, avec poignée de sélection et réglage de largeur à la molette.
+- Préécoute et application des effets pendant une lecture normale, sans boucle obligatoire. Traitement de la sélection, ou du morceau entier en l’absence de sélection.
+- Reprise du dernier réglage de préécoute quand la lecture démarre après l’ouverture d’un effet. Ouvrir un effet ne lance pas automatiquement la lecture.
 
-- Remplacement de l’égaliseur trois bandes par sept bandes indépendantes.
-- Fréquence, gain et largeur Q réglables ; formes de filtre : cloche, plateaux grave et aigu, coupe-bas, coupe-haut, passe-bande, réjecteur et désactivation.
-- Pentes sélectionnables pour les formes compatibles.
-- Courbe de réponse globale, spectre d’entrée stéréo et repères de bande distincts.
-- Glissement des points pour régler fréquence et gain ; molette pour la largeur Q ; Maj pour les réglages fins.
-- Sélecteurs graphiques plus contrastés, commandes arrondies et affichage explicite des gains positifs.
+## Delay musical
 
-## Limiteur / compresseur
+- Temps musicaux directement visibles, répétitions, volume de l’effet et panoramique de départ à 0 au centre.
+- Sélecteur vertical Mono / Stéréo / Ping-pong / Off et disposition compacte des potards.
+- Bouton Détection BPM dans le panneau : analyse en arrière-plan sans fermer la fenêtre ni modifier les réglages. Le BPM est nécessaire au calcul des temps musicaux du Delay, pas aux autres effets.
+- Valeurs initiales : Off, zéro répétition et volume d’effet à zéro ; la détection ne change pas ces valeurs.
+- L’interface ne propose pas de durée libre en millisecondes.
+- Le ping-pong conserve son routage existant : panoramique décentré pour choisir le premier côté ; au centre, répétitions mono identiques sur les deux canaux. Il ne revendique pas une permutation stéréo identique à Fruity Delay 3.
 
-- Nouvelle fenêtre de dynamique avec choix LIMIT ou COMP à la place de l’ancien panneau de filtre.
-- Gain d’entrée, plafond, attaque et relâchement ; seuil, ratio, coude et compensation en mode compresseur.
-- Plafond disponible de −18 à +12 dBFS. Il s’agit d’une limitation des crêtes d’échantillons et non d’une garantie true peak suréchantillonnée.
-- Graphique de sortie détaillé, indication de réduction de gain et repères distincts de gain et de plafond.
-- Défilement graphique réglable sans modifier la vitesse de lecture du son ; commande placée à droite des autres potards et de mêmes dimensions.
-- Retrait des intitulés de groupe Niveau, Enveloppe et Affichage pour alléger la présentation.
-- Commandes rapprochées du graphique et suppression de leur barre de défilement ; adaptation de disposition si la largeur manque pour conserver l’accès aux réglages.
-- Valeurs initiales : gain et plafond à 0 dB ; seuil du compresseur à −6 dBFS.
+## Présentation
 
-## Navigation et boucles
+- Esthétique Audio ToolZ violette et verte : potards gradués, indicateurs verts et illumination au survol et au réglage.
+- À propos : robot à gauche, liens à droite, halos vert/violet renforcés et historique défilant.
+- Détection automatique du tempo à l’ouverture d’À propos si nécessaire ; pulsation du robot jusqu’à 170 %, calée sur le tempo et non sur les basses ou le volume. Respect de la réduction des animations.
+- En l’absence de tempo exploitable ou lorsque la lecture est arrêtée, le robot reste immobile. La détection reste une estimation du tempo régulier du morceau.
 
-- Poignée verte dans l’aperçu inférieur, redessinée sur la sélection de boucle.
-- Déplacement au clic gauche maintenu ; main ouverte au survol et main fermée pendant le glissement.
-- Molette vers le haut : élargissement de la portion examinée ; vers le bas : rétrécissement.
-- Repositionnement de la poignée sans zoom automatique du grand graphique ; exploration indépendante de la boucle audio en lecture.
-- Conservation du cadrage lors des changements de mode de lecture, notamment au retour de la lecture arrière vers la lecture en boucle.
+## Nettoyage et compatibilité
 
-## Écho / délai et contrôle stéréo
+Les fenêtres autonomes Volume/Gain et Normalisation ont été retirées ; le volume général, les gains internes et les traitements par lots sont conservés. Tauri v2, Symphonia 0.5, les formats audio, l’enregistrement, les fichiers CUE et l’assemblage existaient déjà en 1.5 et restent disponibles.
 
-- Correction du ping-pong : les répétitions alternent entre les deux canaux au lieu d’être supprimées d’un côté par le panoramique.
-- Panoramique à gauche : première répétition à gauche ; à droite : première répétition à droite ; au centre : répétitions mono identiques sur les deux canaux.
-- Conservation du son original, des divisions musicales, du nombre de répétitions et du niveau d’effet.
-- Balance du panneau Contrôle fondée sur l’atténuation du canal opposé, sans sommation stéréo susceptible d’augmenter le niveau.
+## Distribution
 
-## Ergonomie et présentation
-
-- Ouverture des effets sans lancement automatique de la lecture lorsque le morceau est arrêté.
-- Préécoute et application fondées sur un modèle commun ; calculs dépassés ignorés.
-- Potards gradués, valeurs numériques modifiables et affichage du signe + pour les dB positifs.
-- Retrait des infobulles des potards pour ne plus masquer le réglage en cours.
-- Boutons légèrement arrondis, couleurs de bandes renforcées et fenêtres d’effets redimensionnables.
-- Flèches de la fenêtre Contrôle et croix internes vertes au survol sans cadre lumineux gênant.
-- Indicateur d’aimant en bas : vert fixe à l’arrêt ou en pause, halo rythmé pendant la lecture.
-- Fenêtre À propos plus compacte, robot plus grand et animé, trois liens communautaires et changelog défilant.
-
-## Nettoyage et fonctions conservées
-
-- Retrait des fenêtres autonomes Volume/Gain et Normalisation ainsi que de leurs accès devenus inutiles.
-- Conservation du volume général, des gains des autres effets et des traitements encore nécessaires aux chaînes par lots.
-- Retrait des éléments graphiques inutilisés et des migrations appliquées qui ne sont plus référencées par les autres flux.
-- Conservation des tests et des fichiers de licence ; ils ne sont pas ajoutés à l’exécutable par le processus de livraison.
-- Conservation des formats audio et de Symphonia 0.5 ; aucune migration de décodeur n’est introduite dans cette finalisation.
-
-## Distribution et validation
-
-Le paquet Windows contient Audio ToolZ.exe et SHA256SUMS.txt. La compilation doit réussir les tests audio, les tests de commandes et de préécoute, le contrôle TypeScript et les vérifications des médias intégrés. Une réussite de compilation ne remplace pas les essais visuels et audio dans l’application.
-
-Cette préparation ne crée pas automatiquement de tag ni de publication GitHub.
-
-
-### Dernières améliorations de lecture et de visualisation
-
-- Crêtes d’entrée et de sortie, réduction de gain et marqueur de seuil distinct actualisés pendant la lecture.
-- Effets utilisables sans boucle, sur la sélection ou le morceau entier.
-- Nouveau départ en lecture normale après un clic au-delà de la boucle, sans changement de cadrage.
-- Effet renommé Delay et texte explicatif simplifié.
-
-
-### Tempo facultatif
-
-Le Delay dispose d’une durée libre de 1 à 4 000 ms. La synchronisation BPM reste optionnelle. Les effets sont utilisables pendant la lecture normale, sans boucle imposée.
+Windows x64 portable : Audio ToolZ.exe et SHA256SUMS.txt. La chaîne vérifie les tests audio/UI, TypeScript et l’intégrité des médias avant de produire l’exécutable. Un artifact Actions n’est pas une release GitHub officielle : la fusion, le tag v1.6 et la publication sont des étapes distinctes.
