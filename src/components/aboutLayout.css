@@ -38,3 +38,8 @@
 @media (prefers-reduced-motion: reduce) {
   .atz-about-resize { transition: none; }
 }
+
+/* Bright resize grip: shared neon green, no resting transparency. */
+#root .atz-about-resize{color:#39ff14;opacity:1;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 6px #39ff1499)}
+#root .atz-about-resize:hover{filter:drop-shadow(0 0 5px #39ff14) drop-shadow(0 0 9px #39ff14)}
+#root .atz-about-resize:active,#root .atz-about-resize[data-resizing='true']{filter:drop-shadow(0 0 7px #39ff14) drop-shadow(0 0 12px #39ff14) brightness(1.2)}

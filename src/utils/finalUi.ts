@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import type {AudioDocument} from '../audio/types';
 import {audioEngine} from '../audio/engine';
 import {beatPulse} from './finalUiMath.mjs';
+import {kickPulseAt} from './useOverviewNavigation';
 export function useBeatSync(doc:AudioDocument|null){
  useEffect(()=>{
   const bpm=doc?.bpmInfo?.bpm??0,rate=doc?.sampleRate??44100,origin=doc?.bpmInfo?.beatSamples[0]??0;
@@ -13,7 +14,20 @@ export function useBeatSync(doc:AudioDocument|null){
    const target=document.querySelector<HTMLElement>('[data-testid="snap-kicks-toggle"]');if(target!==snap){resetSnap();snap=target;}
    const valid=Number.isFinite(bpm)&&bpm>0,playing=audioEngine.isPlaying;
    const pulse=beatPulse(playing?audioEngine.getCurrentSample():now*rate/1000,bpm,rate,playing?origin:0);
-   if(image&&valid&&playing&&!reduced.matches){image.style.animation='none';image.style.transform=`scale(${1+.16*pulse})`;}else resetImage();
+   if(image){
+    image.style.animation='none';
+    const kicks=doc?.bpmInfo?.kickSamples??[];
+    let robotPulse=0;
+    if(playing&&!reduced.matches){
+     if(kicks.length){robotPulse=kickPulseAt(audioEngine.getCurrentSample(),rate,kicks);}
+     else{
+      const spectrum=audioEngine.readSpectrumSnapshot();
+      const bass=Math.max(spectrum[1]??0,spectrum[2]??0,spectrum[3]??0)/255;
+      robotPulse=Math.max(0,Math.min(1,(bass-.45)/.55));
+     }
+    }
+    image.style.transform=`scale(${1+.16*robotPulse})`;
+   }
    if(snap&&valid&&doc?.showBeatGrid&&snap.getAttribute('aria-pressed')==='true'&&!reduced.matches){snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1499,0 0 ${4+8*pulse}px #39ff14cc,0 0 ${8+14*pulse}px #39ff1466`,'important');}else resetSnap();
    frame=requestAnimationFrame(tick);
   };

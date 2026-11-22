@@ -6,6 +6,7 @@ import type { AudioDocument, AudioSelection } from '../audio/types';
 import { BrandLogo } from './BrandLogo';
 import {EasterEggHost} from '../features/easter-egg/EasterEgg';
 import { useWaveformInteractions } from '../utils/useWaveformInteractions';
+import {useOverviewNavigation} from '../utils/useOverviewNavigation';
 
 export type SelectionChangeReason =
   | 'new'
@@ -90,6 +91,8 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
 
   useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording, isLooping,
     onSelectionChange, onSelectionCommit, onViewRangeChange });
+
+  useOverviewNavigation({canvas:overviewCanvasRef,doc:activeDoc,isRecording,isLooping,onViewRangeChange});
 
   const readCssVar = (name: string, fallback: string): string => {
     if (typeof window === 'undefined') return fallback;
@@ -598,8 +601,10 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
             }
             const vx0 = activeDoc.viewStartSample / total * w, vx1 = activeDoc.viewEndSample / total * w;
             ctx.fillStyle = selBg; ctx.fillRect(vx0, 0, Math.max(3, vx1 - vx0), h);
-            ctx.strokeStyle = selBorder; ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#39ff14'; ctx.lineWidth = 2;
+            ctx.shadowColor = '#39ff14'; ctx.shadowBlur = 7;
             ctx.strokeRect(vx0 + 0.5, 0.5, Math.max(3, vx1 - vx0) - 1, h - 1);
+            ctx.shadowBlur = 0;
             ctx.font = 'bold 9px monospace'; ctx.textBaseline = 'top';
             for (let ch = 0; ch < lanes; ch++) {
               const top = ch * laneH;
