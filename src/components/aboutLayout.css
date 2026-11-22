@@ -54,3 +54,11 @@
 #atz-header-kick-slot{min-height:32px;align-items:center;padding:0 5px}
 #atz-header-kick-slot [data-testid="snap-kicks-toggle"]{font-size:11px;min-height:28px;padding:4px 10px;flex:none}
 @container (max-width:430px){#root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:clamp(100px,31cqw,130px)}}
+
+/* Reserve the complete 170 percent pulse, including a safety margin. */
+#root .atz-about-dialog .atz-about-body{overflow-y:auto}
+#root .atz-about-dialog .atz-about-changes{flex:1 0 140px;min-height:140px}
+#root .atz-about-dialog .atz-about-hero{grid-template-columns:minmax(322px,1fr) minmax(0,1.05fr);min-height:0}
+#root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:clamp(100px,36cqw,180px);width:calc(var(--atz-art-size)*1.7 + 16px);height:calc(var(--atz-art-size)*1.7 + 16px);overflow:visible}
+#root .atz-about-dialog .atz-about-hero .atz-about-robot>img{left:calc(var(--atz-art-size)*.35 + 8px);top:calc(var(--atz-art-size)*.35 + 8px)}
+@container (max-width:620px){#root .atz-about-dialog .atz-about-hero{grid-template-columns:minmax(0,1fr)}}

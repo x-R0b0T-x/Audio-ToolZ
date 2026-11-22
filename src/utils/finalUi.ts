@@ -2,23 +2,48 @@ import {useEffect} from 'react';
 import type {AudioDocument} from '../audio/types';
 import {audioEngine} from '../audio/engine';
 import {kickPulseAt,smoothPulse} from './workspaceMath.mjs';
+import {robotBeatPulse} from './finalUiMath.mjs';
+type RobotTempo={bpm:number;origin:number;rate:number};
+const robotTempoCache=new WeakMap<Float32Array[],RobotTempo>();
 export function useBeatSync(doc:AudioDocument|null){
  useEffect(()=>{
   const rate=doc?.sampleRate??44100,bpm=doc?.bpmInfo?.bpm??0;
   const kicks=doc?.bpmInfo?.kickSamples??[],beats=doc?.bpmInfo?.beatSamples??[];
   const targets=kicks.length?kicks:beats;
+  const cached=doc?robotTempoCache.get(doc.channels):undefined;
+  let robotTempo:RobotTempo|null=Number.isFinite(bpm)&&bpm>0?{bpm,origin:beats[0]??0,rate}:cached?.rate===rate?cached:null;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   let frame=0,last=0,level=0,image:HTMLImageElement|null=null,snap:HTMLElement|null=null;
+  let worker:Worker|null=null,attempted=false,disposed=false,tempoError='';
+  const stopDetection=()=>{worker?.terminate();worker=null;};
   const resetImage=()=>{image?.style.removeProperty('animation');image?.style.removeProperty('transform');};
   const resetSnap=()=>{snap?.style.removeProperty('box-shadow');};
+  const detectRobotTempo=()=>{
+   if(!doc||!doc.channels[0]?.length||worker||attempted||robotTempo)return;
+   attempted=true;tempoError='';
+   try{
+    const current=new Worker(new URL('../audio/aboutTempo.worker.ts',import.meta.url),{type:'module'});worker=current;
+    current.onmessage=(event:MessageEvent<{bpm?:number;origin?:number;error?:string}>)=>{
+     if(disposed||worker!==current)return;
+     const value=event.data.bpm,origin=event.data.origin;
+     if(typeof value==='number'&&Number.isFinite(value)&&value>0&&typeof origin==='number'&&Number.isFinite(origin)){
+      robotTempo={bpm:value,origin,rate};robotTempoCache.set(doc.channels,robotTempo);
+     }else tempoError=event.data.error??'Tempo non détecté : synchronisation indisponible.';
+     stopDetection();
+    };
+    current.onerror=()=>{if(disposed||worker!==current)return;tempoError='Échec de la détection du tempo.';stopDetection();};
+    current.postMessage({channels:doc.channels,sampleRate:rate});
+   }catch{tempoError='Détection du tempo indisponible.';stopDetection();}
+  };
   const tick=(now:number)=>{
    const elapsed=last?(now-last)/1000:1/60;last=now;
-   const next=document.querySelector<HTMLImageElement>('.atz-about-robot>img');if(next!==image){resetImage();image=next;}
+   const next=document.querySelector<HTMLImageElement>('.atz-about-robot>img');
+   if(next!==image){resetImage();image=next;if(!image){stopDetection();attempted=false;tempoError='';}}
+   if(image)detectRobotTempo();
    const target=document.querySelector<HTMLElement>('[data-testid="snap-kicks-toggle"]');if(target!==snap){resetSnap();snap=target;}
-   const playing=audioEngine.isPlaying;
+   const playing=audioEngine.isPlaying,sample=playing?audioEngine.getCurrentSample():0;
    let desired=0;
    if(playing&&!reduced.matches){
-    const sample=audioEngine.getCurrentSample();
     if(targets.length)desired=kickPulseAt(sample,rate,targets);
     else if(bpm>0){
      const period=rate*60/bpm,phase=((sample%period)+period)%period;
@@ -29,7 +54,12 @@ export function useBeatSync(doc:AudioDocument|null){
     }
    }
    level=playing&&!reduced.matches?smoothPulse(level,desired,elapsed):0;
-   if(image){image.style.animation='none';image.style.transform=`scale(${1+.30*level})`;}
+   const robotPulse=playing&&!reduced.matches&&robotTempo?robotBeatPulse(sample,robotTempo.bpm,rate,robotTempo.origin):0;
+   if(image){
+    image.style.animation='none';image.style.transform=`scale(${1+.70*robotPulse})`;
+    image.setAttribute('data-tempo-status',worker?'detecting':robotTempo?'ready':tempoError?'unavailable':'idle');
+    image.setAttribute('aria-description',worker?'Détection automatique du tempo en cours.':robotTempo?`Pulsation synchronisée à ${robotTempo.bpm.toFixed(1)} BPM.`:tempoError||'Aucun tempo disponible.');
+   }
    const rebound=level*(1+.28*Math.sin((1-level)*Math.PI*3));
    if(snap&&snap.getAttribute('aria-pressed')==='true'){
     snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1466,0 0 ${2+18*rebound}px rgba(57,255,20,${.2+.65*Math.min(1,rebound)}),0 0 ${4+26*rebound}px rgba(57,255,20,${.1+.5*Math.min(1,rebound)})`,'important');
@@ -37,8 +67,8 @@ export function useBeatSync(doc:AudioDocument|null){
    frame=requestAnimationFrame(tick);
   };
   frame=requestAnimationFrame(tick);
-  return()=>{cancelAnimationFrame(frame);resetImage();resetSnap();};
- },[doc?.id,doc?.bpmInfo,doc?.sampleRate]);
+  return()=>{disposed=true;stopDetection();cancelAnimationFrame(frame);resetImage();resetSnap();};
+ },[doc?.id,doc?.channels,doc?.bpmInfo,doc?.sampleRate]);
 }
 export function installDescriptions(root:HTMLElement){
  const tip=document.createElement('div');tip.id='atz-description';tip.setAttribute('role','tooltip');
