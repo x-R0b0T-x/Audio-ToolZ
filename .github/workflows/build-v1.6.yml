@@ -22,6 +22,8 @@ jobs:
           python-version: '3.12'
       - name: Prepare clean 1.6 candidate from finalized sources
         run: python .github/scripts/prepare-clean-16.py
+      - name: Integrate live peaks and explicit playback restart
+        run: python .github/scripts/finishing-playback.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -44,7 +46,7 @@ jobs:
       - name: Preview, gesture, click and native loop tests
         run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/q7m4n2/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
       - name: DSP, navigation, routing and final cleanup tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts src/utils/finalCleanup.test.ts
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts src/utils/finalCleanup.test.ts src/utils/playbackFinal.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
@@ -84,7 +86,7 @@ jobs:
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Validate clean Audio ToolZ 1.6 candidate'
+            git commit -m 'Validate real-time peak display and playback restart'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
