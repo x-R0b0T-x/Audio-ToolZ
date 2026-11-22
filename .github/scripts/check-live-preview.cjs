@@ -1,4 +1,4 @@
-const fs=require('node:fs'),ts=require('typescript');
+const fs=require('node:fs'),ts=require('typescript-compiler-api');
 const path='src/App.tsx',source=fs.readFileSync(path,'utf8'),file=ts.createSourceFile(path,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX),edits=[];
 const printer=ts.createPrinter();let callbacks=0;
 function named(node,name){return ts.isIdentifier(node)&&node.text===name;}
