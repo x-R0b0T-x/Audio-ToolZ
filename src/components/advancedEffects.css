@@ -143,3 +143,5 @@
 #root .atz-dynamics-controls>.atz-control-group{flex:none;gap:6px;padding-left:7px;padding-right:7px}
 
 #root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"] .atz-parameter>button{width:54px;height:54px}
+
+#root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"]{margin-left:auto;border-right:0;padding-right:0;order:99}

@@ -619,6 +619,8 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
       }
     }
   }, [
+    overviewRangeRef.current[0],
+    overviewRangeRef.current[1],
     activeDoc,
     enabledChannels,
     getPlayheadSample,
