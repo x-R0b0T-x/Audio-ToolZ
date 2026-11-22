@@ -24,6 +24,8 @@ jobs:
         run: python -m pip install Pillow==12.0.0
       - name: Finalize native audio, artwork, limiter and knob states
         run: python .github/scripts/finalize-v16.py
+      - name: Apply guarded control polish
+        run: python .github/scripts/polish-controls.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -42,7 +44,7 @@ jobs:
       - name: Preview, gesture, click and native loop tests
         run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/easter-egg/clickCounter.test.mjs src/audio/bufferLoop.test.mjs
       - name: DSP, ceiling and UI regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
@@ -73,13 +75,13 @@ jobs:
       - name: Commit only validated finalized sources
         shell: pwsh
         run: |
-          git add -A -- src .github/scripts .github
+          git add -A -- src src-tauri/tauri.conf.json .github/scripts .github
           if ($LASTEXITCODE -ne 0) { throw 'Unable to stage sources' }
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Finalize robot illustration, native OGG loop, +12 dB ceiling and violet knobs'
+            git commit -m 'Polish effect defaults, shared controls and maximized startup'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
