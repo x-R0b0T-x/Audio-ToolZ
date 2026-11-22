@@ -46,3 +46,11 @@
 
 #root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:clamp(104px,30cqw,154px)}
 #atz-header-kick-slot [data-testid="snap-kicks-toggle"]{position:static!important;margin:0!important;transform:none!important;white-space:nowrap;font-size:10px;line-height:1.3;padding:2px 9px;border-radius:6px;color:#39ff14!important}
+
+/* Larger resting artwork with room for its kick expansion. */
+#root .atz-about-dialog .atz-about-hero{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;min-height:252px}
+#root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:clamp(112px,36cqw,180px);width:calc(var(--atz-art-size) + 48px);height:calc(var(--atz-art-size) + 64px)}
+#root .atz-about-dialog .atz-about-hero .atz-about-robot>img{left:24px;top:32px;will-change:transform}
+#atz-header-kick-slot{min-height:32px;align-items:center;padding:0 5px}
+#atz-header-kick-slot [data-testid="snap-kicks-toggle"]{font-size:11px;min-height:28px;padding:4px 10px;flex:none}
+@container (max-width:430px){#root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:clamp(100px,31cqw,130px)}}

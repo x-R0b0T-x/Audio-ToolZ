@@ -1,3 +1,4 @@
+import {signedDb} from '../utils/presentationFormat';
 import React, { useEffect, useRef } from 'react';
 import {useControlActivity as useActivity} from '../utils/useControlActivity';
 import './knobStates.css';
@@ -23,7 +24,7 @@ export function EffectParameter(p: Props) {
   const end = () => { drag.current = null; activity.end(); };
   useWheel(ref, (direction, fine) => { activity.pulse(); p.onChange(stepParameter(p.value, direction, fine, s)); });
   return <div ref={ref} className={`atz-parameter${p.compact ? ' compact' : ''}${activity.active ? ' is-adjusting' : ''}`}>
-    <span>{p.label}</span><button type="button" onDoubleClick={()=>p.onChange(p.initial)} role="slider" aria-label={p.label} aria-valuemin={s.min} aria-valuemax={s.max} aria-valuenow={p.value} aria-valuetext={`${p.value} ${p.unit ?? ''}`} title="Glisser ou molette · Maj : réglage fin · Double-clic : valeur initiale"
+    <span>{p.label}</span><button type="button" onDoubleClick={()=>p.onChange(p.initial)} role="slider" aria-label={p.label} aria-valuemin={s.min} aria-valuemax={s.max} aria-valuenow={p.value} aria-valuetext={`${p.value} ${p.unit ?? ''}`}
       onPointerDown={e => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, fraction: fraction(p.value) }; activity.begin(); }}
       onPointerMove={e => { const d = drag.current; if (d) setFraction(d.fraction + (d.y - e.clientY + e.clientX - d.x) / (e.shiftKey ? 1600 : 160)); }}
       onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end}
@@ -35,7 +36,7 @@ export function EffectParameter(p: Props) {
         <circle cx="32" cy="32" r="21" fill="#533271" stroke="currentColor" strokeWidth="2"/>
         <line x1="32" y1="19" x2="32" y2="11" stroke="#fff" strokeWidth="3" transform={`rotate(${-135 + fraction(p.value) * 270} 32 32)`}/>
       </svg></button>
-    <NumericValue label={p.label} value={p.value} min={s.min} max={s.max} digits={s.digits} onCommit={v=>{activity.pulse();p.onChange(parameterValue(v,s));}}/>
+    <NumericValue label={p.label} value={p.value} min={s.min} max={s.max} digits={s.digits} signed={p.unit?.startsWith('dB')} onCommit={v=>{activity.pulse();p.onChange(parameterValue(v,s));}}/>
   </div>;
 }
 export function EffectGain({ label, value, onChange, disabled=false }: { label: string; value: number; onChange: (v: number) => void; disabled?:boolean }) {
@@ -43,6 +44,6 @@ export function EffectGain({ label, value, onChange, disabled=false }: { label: 
   useWheel(ref, (direction, fine) => { if(disabled)return; activity.pulse(); onChange(stepParameter(value, direction, fine, { min: -18, max: 18, step: .5, fine: .1, digits: 1 })); });
   return <div ref={ref} className={`atz-gain${activity.active ? ' is-adjusting' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
     <div className="atz-fader-track"><div className="atz-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
-    <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.1} value={value} style={{ '--atz-f': (value + 18) / 36 } as React.CSSProperties} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); activity.begin(); }} onPointerUp={activity.end} onPointerCancel={activity.end} onLostPointerCapture={activity.end} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{value.toFixed(1)}</output>
+    <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.1} value={value} style={{ '--atz-f': (value + 18) / 36 } as React.CSSProperties} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); activity.begin(); }} onPointerUp={activity.end} onPointerCancel={activity.end} onLostPointerCapture={activity.end} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{signedDb(value,1)}</output>
   </div>;
 }

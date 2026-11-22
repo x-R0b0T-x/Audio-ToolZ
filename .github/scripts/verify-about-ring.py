@@ -1,7 +1,7 @@
 import base64, hashlib, io, json, subprocess
 from pathlib import Path
 from PIL import Image, ImageOps
-source=Path('src/features/easter-egg/333.png')
+source=Path('src/features/q7m4n2/333.png')
 original=source.read_bytes()
 with Image.open(source) as image:
     thumb=ImageOps.contain(image.convert('RGBA'),(320,320),Image.Resampling.LANCZOS)

@@ -128,3 +128,16 @@
 .atz-advanced .atz-shape-options button{padding:2px!important;display:flex;align-items:center;justify-content:center}
 .atz-shape-options button[aria-pressed=true]{color:#39ff14;border-color:#39ff14}
 .atz-band:nth-last-child(-n+3) .atz-shape-options{left:auto;right:0}
+
+/* Final visual polish: retain each band's identity and circular controls. */
+#root .atz-band{position:relative;border-top-color:transparent!important}
+#root .atz-band::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:var(--atz-control-color);filter:saturate(1.5) brightness(1.25);box-shadow:0 0 5px var(--atz-control-color);pointer-events:none}
+#root .atz-filter-shape summary svg,#root .atz-shape-options svg{filter:saturate(1.5) brightness(1.3);stroke-width:2}
+#root .atz-filter-shape summary,#root .atz-filter-type select,#root .atz-shape-options{border-radius:7px}
+#root .atz-advanced button:not(.atz-eq-point):not([role="slider"]){border-radius:8px}
+#root .atz-dynamics .atz-graph-block{position:relative;min-height:230px}
+#root .atz-dynamics .atz-scroll-toolbar{position:absolute;right:10px;bottom:5px;padding:0;z-index:2;background:var(--wave-bg,#080a14);border-radius:8px}
+#root .atz-dynamics .atz-scroll-toolbar .atz-parameter{font-size:11px;gap:5px}
+#root .atz-dynamics .atz-scroll-toolbar .atz-parameter>button{width:32px;height:32px}
+#root .atz-dynamics-controls{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding-top:8px}
+#root .atz-dynamics-controls>.atz-control-group{flex:none;gap:6px;padding-left:7px;padding-right:7px}

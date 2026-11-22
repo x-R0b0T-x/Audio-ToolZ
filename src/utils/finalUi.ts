@@ -29,9 +29,10 @@ export function useBeatSync(doc:AudioDocument|null){
     }
    }
    level=playing&&!reduced.matches?smoothPulse(level,desired,elapsed):0;
-   if(image){image.style.animation='none';image.style.transform=`scale(${1+.14*level})`;}
+   if(image){image.style.animation='none';image.style.transform=`scale(${1+.30*level})`;}
+   const rebound=level*(1+.28*Math.sin((1-level)*Math.PI*3));
    if(snap&&snap.getAttribute('aria-pressed')==='true'){
-    snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1466,0 0 ${2+10*level}px rgba(57,255,20,${.2+.65*level}),0 0 ${4+16*level}px rgba(57,255,20,${.1+.45*level})`,'important');
+    snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1466,0 0 ${2+18*rebound}px rgba(57,255,20,${.2+.65*Math.min(1,rebound)}),0 0 ${4+26*rebound}px rgba(57,255,20,${.1+.5*Math.min(1,rebound)})`,'important');
    }else resetSnap();
    frame=requestAnimationFrame(tick);
   };
@@ -45,6 +46,7 @@ export function installDescriptions(root:HTMLElement){
  let current:HTMLElement|null=null,title:string|null=null,described:string|null=null,timer=0;
  const hide=()=>{window.clearTimeout(timer);tip.remove();if(current){if(title!==null)current.setAttribute('title',title);if(described===null)current.removeAttribute('aria-describedby');else current.setAttribute('aria-describedby',described);}current=null;};
  const show=(event:Event)=>{
+  if(event.target instanceof Element&&event.target.closest('.atz-knob,.atz-parameter')){hide();return;}
   if(!(event.target instanceof Element)||current?.contains(event.target))return;
   const node=event.target.closest<HTMLElement>('[title]');if(!node||!root.contains(node))return;
   hide();current=node;title=node.getAttribute('title');described=node.getAttribute('aria-describedby');node.removeAttribute('title');

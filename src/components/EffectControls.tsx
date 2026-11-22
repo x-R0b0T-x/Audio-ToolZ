@@ -1,3 +1,4 @@
+import {signedDbLabel} from '../utils/presentationFormat';
 import React, { useEffect, useRef } from 'react';
 import {useControlActivity} from '../utils/useControlActivity';
 import './knobStates.css';
@@ -61,7 +62,7 @@ export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col 
       onChange={(e) => p.onChange(Number(e.target.value))} className="studio-fader-vertical cursor-pointer"
       style={{ writingMode: 'vertical-lr', direction: 'rtl', height: 144, width: 28, accentColor: '#45f882' }} />
     <EffectMeter />
-  </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{p.display}</output>
+  </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
 </div>;
 interface KnobProps { label: string; value: number; min?: number; max: number; step?: number; ticks?: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
 export const Knob: React.FC<KnobProps> = (p) => {
@@ -80,7 +81,7 @@ export const Knob: React.FC<KnobProps> = (p) => {
     onDoubleClick={() => set(p.defaultValue)}>
     <span className="text-xs font-semibold">{p.label}</span>
     <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
-      title="Glisser ou molette pour régler ; double-clic : valeur par défaut" style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
+      style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
       onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; activity.begin(); }}
       onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / pixelsPerUnit); }}
       onPointerUp={() => { drag.current = null; activity.end(); }} onPointerCancel={() => { drag.current = null; activity.end(); }} onLostPointerCapture={() => { drag.current = null; activity.end(); }}
@@ -105,7 +106,7 @@ export const Knob: React.FC<KnobProps> = (p) => {
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />
         <line x1="50" y1="29" x2="50" y2="22" stroke="#45f882" strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${angle} 50 50)`} />
       </svg>
-    </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{p.display}</output>
+    </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
   </div>;
 };
 const modes: DelayMode[] = ['mono', 'stereo', 'ping-pong', 'off'];

@@ -5,7 +5,7 @@ import { findTrackAtSample } from '../audio/cueSheet';
 import { computeWaveformPeaks, formatTimecode } from '../audio/dsp';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import { BrandLogo } from './BrandLogo';
-import {EasterEggHost} from '../features/easter-egg/EasterEgg';
+import {EasterEggHost} from '../features/q7m4n2/EasterEgg';
 import { useWaveformInteractions } from '../utils/useWaveformInteractions';
 import {useOverviewNavigation} from '../utils/useOverviewNavigation';
 

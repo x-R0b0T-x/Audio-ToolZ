@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import robotUrl from '../features/easter-egg/333.png?url';
+import robotUrl from '../features/q7m4n2/333.png?url';
 import { RELEASE_ADDITIONS, RELEASE_FIXES } from '../releaseNotes';
 import { AboutRobot } from './AboutRobot';
 import './aboutPresentation.css';
