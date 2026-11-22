@@ -110,3 +110,11 @@ Cette préparation ne crée pas automatiquement de tag ni de publication GitHub.
 - Paquet portable pour Windows 64 bits, avec icône intégrée et moteur configuré en français.
 - Licences Electron et Chromium regroupées dans `resources/licenses`. Somme de contrôle SHA-256 fournie séparément.
 - README enrichi avec les fonctions audio, les formats et la prise en main.
+
+
+### Dernières améliorations de lecture et de visualisation
+
+- Crêtes d’entrée et de sortie, réduction de gain et marqueur de seuil distinct actualisés pendant la lecture.
+- Effets utilisables sans boucle, sur la sélection ou le morceau entier.
+- Nouveau départ en lecture normale après un clic au-delà de la boucle, sans changement de cadrage.
+- Effet renommé Delay et texte explicatif simplifié.

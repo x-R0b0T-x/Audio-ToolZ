@@ -15,6 +15,10 @@ export const RELEASE_ADDITIONS = [
  "Distribution Windows portable sous le nom Audio ToolZ.exe, accompagnée d’une empreinte SHA-256."
 ];
 export const RELEASE_FIXES = [
+ "Affichage des crêtes d’entrée et de sortie en temps réel, réduction de gain et repère de seuil distinct dans le compresseur.",
+ "Effets utilisables sans boucle : traitement de la sélection ou du morceau entier lorsqu’aucune sélection n’est définie.",
+ "Clic après la fin d’une boucle dans la forme d’onde principale : désactivation de la boucle et reprise immédiate de la lecture au point choisi, sans changer le cadrage.",
+ "Effet renommé Delay et suppression de son paragraphe explicatif superflu.",
  "Ouverture d’un effet sur un morceau arrêté sans démarrage automatique de la lecture.",
  "Préécoute et application des effets fondées sur un traitement commun ; résultats de calcul obsolètes écartés.",
  "Traitement limité à la sélection lorsqu’elle existe, avec conservation des échantillons extérieurs.",

@@ -1223,7 +1223,15 @@ export default function App() {
         onOpenInfo={() => setInfoOpen(true)}
       />
 
-      <WaveformView isLooping={isPlaying&&isLooping&&playMode==='loop'}
+      <WaveformView onRestartPlayback={(sample)=>{
+          if(!activeDoc||isRecording)return;
+          const total=activeDoc.channels[0]?.length??0;if(!total)return;
+          const start=Math.max(0,Math.min(total-1,Math.floor(sample)));
+          updateActiveDoc(doc=>({...doc,selection:{startSample:start,endSample:start}}));
+          delete (audioEngine as typeof audioEngine&{effectPreviewSession?:unknown}).effectPreviewSession;
+          audioEngine.play(activeDoc.channels,activeDoc.sampleRate,start,total,{loop:false,volumeDb,balance,speedRatio,enabledChannels,onEnded:()=>{setIsPlaying(false);setIsPaused(false);setIsLooping(false);setPlayMode('idle');}});
+          setIsPreviewPlaying(false);setIsPlaying(true);setIsPaused(false);setIsLooping(false);setPlayMode('play');
+        }} isLooping={isPlaying&&isLooping&&playMode==='loop'}
         documents={documents}
         activeDocId={activeDocId}
         isPlaying={isPlaying}

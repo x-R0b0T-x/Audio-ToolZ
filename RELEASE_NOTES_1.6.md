@@ -63,3 +63,11 @@ La version 1.6 améliore principalement l’égalisation, le contrôle de la dyn
 Le paquet Windows contient Audio ToolZ.exe et SHA256SUMS.txt. La compilation doit réussir les tests audio, les tests de commandes et de préécoute, le contrôle TypeScript et les vérifications des médias intégrés. Une réussite de compilation ne remplace pas les essais visuels et audio dans l’application.
 
 Cette préparation ne crée pas automatiquement de tag ni de publication GitHub.
+
+
+### Dernières améliorations de lecture et de visualisation
+
+- Crêtes d’entrée et de sortie, réduction de gain et marqueur de seuil distinct actualisés pendant la lecture.
+- Effets utilisables sans boucle, sur la sélection ou le morceau entier.
+- Nouveau départ en lecture normale après un clic au-delà de la boucle, sans changement de cadrage.
+- Effet renommé Delay et texte explicatif simplifié.
