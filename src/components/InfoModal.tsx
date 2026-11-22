@@ -7,6 +7,13 @@ import './aboutPresentation.css';
 interface InfoModalProps { open: boolean; onClose: () => void; }
 export const APP_VERSION = 'v1.6 dev';
 export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
+  const [communityError,setCommunityError]=useState('');
+  const openCommunity=(event:React.MouseEvent<HTMLAnchorElement>)=>{
+    const bridge=(window as unknown as {__TAURI_INTERNALS__?:{invoke:(command:string,args:Record<string,unknown>)=>Promise<unknown>}}).__TAURI_INTERNALS__;
+    if(!bridge)return;
+    event.preventDefault();setCommunityError('');
+    void bridge.invoke('open_community_url',{url:'https://t.me/Audio_ToolZ'}).catch(()=>setCommunityError("Impossible d’ouvrir Telegram dans le navigateur."));
+  };
   const [box, setBox] = useState({ x: 0, y: 0, w: 640, h: 680 });
   const drag = useRef<{ x: number; y: number } | null>(null);
   const resize = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -47,14 +54,24 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     };
   }, [open, onClose]);
   if (!open) return null;
-  return <div role="dialog" aria-modal="true" aria-labelledby="about-title" className="fixed z-50 rounded-xl border border-[var(--border-strong)] shadow-2xl flex flex-col overflow-hidden bg-[var(--bg-surface)] text-[var(--text-primary)]" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
+  return <div role="dialog" aria-modal="true" aria-labelledby="about-title" className="atz-about-dialog fixed z-50 rounded-xl border border-[var(--border-strong)] shadow-2xl flex flex-col overflow-hidden bg-[var(--bg-surface)] text-[var(--text-primary)]" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
     <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] cursor-grab select-none" onMouseDown={(e) => { if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return; drag.current = { x: e.clientX - box.x, y: e.clientY - box.y }; }}>
       <h2 id="about-title" className="text-sm font-semibold">À propos · {APP_VERSION}</h2>
       <button type="button" aria-label="Fermer" onClick={onClose}><X size={18} /></button>
     </div>
-    <div className="p-4 flex-1 min-h-0 overflow-y-auto text-xs space-y-4">
-      <div className="atz-about-brand"><AboutRobot src={robotUrl}/><h3 className="atz-about-title text-2xl font-display font-bold"><span>Audio </span><span>Tool</span><span>Z</span></h3></div>
-      <section aria-labelledby="about-changelog-title" className="space-y-4"><h3 id="about-changelog-title" className="text-sm font-semibold">Changelog depuis la version 1.5</h3>{[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}</section>
+    <div className="atz-about-body">
+      <div className="atz-about-brand">
+        <AboutRobot src={robotUrl}/>
+        <h3 className="atz-about-title text-2xl font-display font-bold"><span>Audio </span><span>Tool</span><span>Z</span></h3>
+        <a className="atz-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
+        {communityError&&<p className="atz-about-community-error" role="alert">{communityError}</p>}
+      </div>
+      <section aria-labelledby="about-changelog-title" className="atz-about-changes">
+        <h3 id="about-changelog-title" className="text-sm font-semibold">Changelog depuis la version 1.5</h3>
+        <div className="atz-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
+          {[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}
+        </div>
+      </section>
     </div>
     <div aria-label="Redimensionner la fenêtre À propos" title="Glisser pour redimensionner" onMouseDown={(e) => { if (e.button !== 0) return; e.preventDefault(); resize.current = { x: e.clientX, y: e.clientY, w: box.w, h: box.h }; }} className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize" style={{ background: 'linear-gradient(135deg, transparent 50%, var(--accent-primary) 50%)', opacity: 0.7 }} />
   </div>;
