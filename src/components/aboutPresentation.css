@@ -2,18 +2,14 @@
 .atz-about-body{padding:16px;display:flex;flex-direction:column;flex:1;min-height:0;gap:12px;overflow:hidden;font-size:12px}
 .atz-about-brand{display:flex;flex:none;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .atz-about-robot{--atz-art-size:clamp(64px,26cqh,160px);position:relative;isolation:isolate;width:calc(var(--atz-art-size) + 24px);height:calc(var(--atz-art-size) + 24px);flex:none}
-.atz-about-robot>img,.atz-about-robot>.atz-about-ring,.atz-about-glow{position:absolute;left:12px;top:12px;display:block;width:var(--atz-art-size);height:var(--atz-art-size);pointer-events:none}
-.atz-about-robot>img{object-fit:contain;z-index:1}
-.atz-about-ring{display:block;overflow:hidden;mask-image:var(--atz-ring-mask);-webkit-mask-image:var(--atz-ring-mask);mask-size:100% 100%;-webkit-mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;mask-mode:alpha}
-.atz-about-robot>.atz-about-ring{z-index:2}
-.atz-about-glow{z-index:0;filter:blur(3px)}
-.atz-about-glow>.atz-about-ring{position:absolute;inset:0}
-.atz-about-sweep{position:absolute;left:var(--atz-ring-x);top:var(--atz-ring-y);width:300%;height:300%;background:conic-gradient(#aeff95,#39ff14 6%,transparent 22%,#b34dff 44%,#e0b8ff 48%,#b34dff 52%,transparent 72%,#aeff95);transform:translate(-50%,-50%);animation:atz-ring-travel 5s linear infinite}
-@keyframes atz-ring-travel{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.atz-about-robot>img{position:absolute;left:12px;top:12px;display:block;width:var(--atz-art-size);height:var(--atz-art-size);pointer-events:none;object-fit:contain;z-index:1;transform-origin:center;animation:atz-robot-pulse 1.8s ease-in-out infinite}
+@keyframes atz-robot-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
 .atz-about-title>span:nth-child(1){color:#fff!important}
 .atz-about-title>span:nth-child(2){color:#39ff14!important}
 .atz-about-title>span:nth-child(3){color:#b34dff!important}
-.atz-about-community{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid #b34dff55;border-radius:7px;background:#b34dff12;color:var(--text-primary);text-decoration:none;transform:none!important;transition:box-shadow 160ms ease,border-color 160ms ease}
+.atz-about-community{position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border:1px solid #b34dff55;border-radius:7px;background:#b34dff12;color:var(--text-primary);text-decoration:none;transform:none!important;transition:box-shadow 160ms ease,border-color 160ms ease}
+.atz-about-community::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99;animation:atz-community-halo 4s linear infinite}
+@keyframes atz-community-halo{0%,100%{box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}25%{box-shadow:0 -4px 9px 1px #39ff1480,0 4px 9px 1px #b34dff99}50%{box-shadow:4px 0 9px 1px #39ff1480,-4px 0 9px 1px #b34dff99}75%{box-shadow:0 4px 9px 1px #39ff1480,0 -4px 9px 1px #b34dff99}}
 .atz-about-community:hover,.atz-about-community:focus-visible{border-color:#39ff14;box-shadow:inset 0 0 0 1px #39ff1480,0 0 7px #39ff1466;outline:none;transform:none!important}
 .atz-about-community-error{color:#ff9f9f;font-size:11px}
 .atz-about-changes{display:flex;flex-direction:column;flex:1;min-height:0;gap:10px}
@@ -21,4 +17,4 @@
 .atz-about-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;border:1px solid var(--border-strong);border-radius:8px;padding:12px;background:var(--bg-input)}
 .atz-about-scroll>section+section{margin-top:16px}
 .atz-about-scroll:focus-visible{outline:2px solid #39ff14;outline-offset:-2px}
-@media(prefers-reduced-motion:reduce){.atz-about-sweep{animation:none}.atz-about-community{transition:none}}
+@media(prefers-reduced-motion:reduce){.atz-about-robot>img{animation:none;transform:none}.atz-about-community::before{animation:none}.atz-about-community{transition:none}}
