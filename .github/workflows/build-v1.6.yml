@@ -1,8 +1,8 @@
-name: Audio ToolZ v1.6 dev - Windows portable
+name: Audio ToolZ v1.6 - Windows portable
 on:
   push:
-    branches: [v1.6-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.gitattributes', '.github/scripts/**', '.github/workflows/build-v1.6.yml', 'RELEASE_NOTES_1.6.md']
+    branches: [v1.6-dev, main]
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/**', '.github/workflows/build-v1.6.yml', 'RELEASE_NOTES_1.6.md']
   workflow_dispatch:
 permissions:
   contents: write
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   windows:
-    if: github.ref == 'refs/heads/v1.6-dev'
+    if: github.ref == 'refs/heads/v1.6-dev' || github.ref == 'refs/heads/main'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
@@ -20,10 +20,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Prepare clean 1.6 candidate from finalized sources
+      - name: Prepare clean candidate
+        if: github.ref == 'refs/heads/v1.6-dev'
         run: python .github/scripts/prepare-clean-16.py
-      - name: Integrate live peaks and explicit playback restart
+      - name: Integrate live peaks and playback restart
+        if: github.ref == 'refs/heads/v1.6-dev'
         run: python .github/scripts/finishing-playback.py
+      - name: Integrate optional tempo and reactive artwork
+        if: github.ref == 'refs/heads/v1.6-dev'
+        run: python .github/scripts/optional-bpm.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -41,12 +46,14 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Validate artwork without generating unused sources
+      - name: Verify live preview has no loop-only guards
+        run: node .github/scripts/check-live-preview.cjs
+      - name: Validate artwork
         run: python .github/scripts/verify-about-ring.py
-      - name: Preview, gesture, click and native loop tests
+      - name: Preview and native loop tests
         run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/q7m4n2/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
-      - name: DSP, navigation, routing and final cleanup tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts src/utils/finalCleanup.test.ts src/utils/playbackFinal.test.ts
+      - name: Audio and UI regression tests
+        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts src/utils/finalCleanup.test.ts src/utils/playbackFinal.test.ts src/audio/optionalBpm.test.ts
       - name: TypeScript check
         run: npm run lint
       - name: Build portable application
@@ -62,7 +69,7 @@ jobs:
             if ($bundled.Count -ne 1) { throw "Bundled media unavailable: $($item.source)" }
             if ((Get-FileHash $item.source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw 'Bundled media changed' }
           }
-      - name: Prepare candidate executable
+      - name: Prepare executable
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release-output | Out-Null
@@ -74,10 +81,11 @@ jobs:
           Write-Output "Executable size: $($exe.Length) bytes"
       - uses: actions/upload-artifact@v5
         with:
-          name: Audio-ToolZ-v1.6-Windows-x64-candidate
+          name: Audio-ToolZ-v1.6-Windows-x64-${{ github.ref_name }}
           path: release-output/*
           if-no-files-found: error
-      - name: Commit only validated cleaned sources and release metadata
+      - name: Record validated development sources
+        if: github.ref == 'refs/heads/v1.6-dev'
         shell: pwsh
         run: |
           git add -A -- src src-tauri package.json CHANGELOG.md RELEASE_NOTES_1.6.md .github
@@ -86,7 +94,7 @@ jobs:
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Validate real-time peak display and playback restart'
+            git commit -m 'Validate optional BPM and live preview release sources'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
