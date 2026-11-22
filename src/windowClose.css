@@ -1,0 +1,7 @@
+@layer atz-window-controls {
+button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)){color:#fff!important;background:transparent!important;border-color:transparent!important;box-shadow:none!important;outline:none!important;filter:none!important;text-shadow:none!important;transform:none!important;transition:color 140ms ease,text-shadow 140ms ease!important}
+button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x))>svg{color:inherit!important;stroke:currentColor!important;filter:none!important}
+button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,:active){color:#39ff14!important;text-shadow:0 0 5px #39ff1499!important}
+button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)):not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible,:active)>svg{filter:drop-shadow(0 0 3px #39ff14)!important}
+@media(prefers-reduced-motion:reduce){button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.atz-party-close,:has(>svg.lucide-x)){transition:none!important}}
+}
