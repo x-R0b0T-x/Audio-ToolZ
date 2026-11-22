@@ -72,10 +72,6 @@
 .atz-control-group{position:relative;display:flex;gap:8px;align-items:flex-start;padding:18px 9px 5px;border-right:1px solid var(--border-subtle)}
 .atz-control-group>span{position:absolute;top:0;left:9px;font-size:12px;color:#fff;letter-spacing:.7px}
 .atz-mode{flex-direction:column;justify-content:center;gap:5px}
-.atz-scroll-toolbar{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-top:4px}
-.atz-scroll-toolbar .atz-parameter{flex-direction:row;gap:6px}
-.atz-scroll-toolbar .atz-parameter>button{width:38px;height:38px}
-.atz-scroll-toolbar p{font:12px/1.4 system-ui,sans-serif;color:#fff;margin:0}
 .atz-dynamics .atz-hint{display:none}
 
 /* Fenêtres d'effets simples (volume, fondus, écho…) */
@@ -110,7 +106,6 @@
 
 
 .atz-gain input:hover:not(:disabled)::-webkit-slider-thumb,.atz-gain.is-adjusting input:not(:disabled)::-webkit-slider-thumb,.atz-gain input:focus-visible:not(:disabled)::-webkit-slider-thumb{border-color:#baff9c;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14,0 0 24px #39ff14b3}
-.atz-dynamics .atz-scroll-toolbar p,.atz-dynamics .atz-hint{display:none!important}
 .atz-control-group.atz-mode{display:grid;grid-template-columns:1fr;align-content:center;justify-items:stretch;min-width:88px;padding:0 10px 5px;gap:6px}
 .atz-control-group.atz-mode>span{position:static;text-align:center;align-self:center;letter-spacing:.7px}
 .atz-control-group.atz-mode>button{width:100%;text-align:center;margin:0}
@@ -136,12 +131,14 @@
 #root .atz-filter-shape summary,#root .atz-filter-type select,#root .atz-shape-options{border-radius:7px}
 #root .atz-advanced button:not(.atz-eq-point):not([role="slider"]){border-radius:8px}
 #root .atz-dynamics .atz-graph-block{position:relative;min-height:230px}
-#root .atz-dynamics .atz-scroll-toolbar{position:absolute;right:10px;bottom:5px;padding:0;z-index:2;background:var(--wave-bg,#080a14);border-radius:8px}
-#root .atz-dynamics .atz-scroll-toolbar .atz-parameter{font-size:11px;gap:5px}
-#root .atz-dynamics .atz-scroll-toolbar .atz-parameter>button{width:32px;height:32px}
 #root .atz-dynamics-controls{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding-top:8px}
 #root .atz-dynamics-controls>.atz-control-group{flex:none;gap:6px;padding-left:7px;padding-right:7px}
 
 #root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"] .atz-parameter>button{width:54px;height:54px}
 
 #root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"]{margin-left:auto;border-right:0;padding-right:0;order:99}
+
+/* Controls remain accessible without a horizontal scrollbar. */
+#root .atz-dynamics-controls{overflow:visible!important;flex-wrap:wrap!important;row-gap:8px;align-items:flex-start}
+#root .atz-dynamics-controls .atz-control-group:not(:has(>span)){padding-top:0}
+#root .atz-dynamics-controls .atz-control-group[aria-label="Défilement"]{margin-left:auto;order:99;border-right:0;padding-right:0}

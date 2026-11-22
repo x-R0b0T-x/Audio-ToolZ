@@ -7,7 +7,7 @@ import './aboutPresentation.css';
 import './aboutLayout.css';
 
 interface InfoModalProps { open: boolean; onClose: () => void; }
-export const APP_VERSION = 'v1.6 dev';
+export const APP_VERSION = 'v1.6';
 const DEFAULT_WIDTH = 500;
 
 export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {

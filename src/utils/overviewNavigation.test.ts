@@ -33,7 +33,7 @@ test('overview gestures never change selection or automatically fit a loop',()=>
  assert.ok(code.includes('e.button!==0'));assert.ok(code.includes("'grabbing'"));assert.ok(code.includes("'grab'"));assert.ok(code.includes('setPointerCapture'));
  assert.ok(!code.includes('doc.selection'));assert.ok(!code.includes('options.isLooping,'));assert.ok(!code.includes('audioEngine'));assert.ok(!code.includes('onSelectionChange'));
  assert.ok(readFileSync('src/components/WaveformView.tsx','utf8').includes('useOverviewNavigation({canvas:overviewCanvasRef'));
- const indicator=readFileSync('src/components/SnapIndicatorPortal.tsx','utf8');assert.ok(indicator.includes('return <>{children}</>'));
+ const indicator=readFileSync('src/components/WaveformView.tsx','utf8');assert.ok(indicator.includes('data-testid="snap-kicks-toggle"'));assert.ok(!indicator.includes('SnapIndicatorPortal'));
  assert.ok(readFileSync('src/components/WaveformView.tsx','utf8').includes('overviewRangeRef.current[0]'));
  const sync=readFileSync('src/utils/finalUi.ts','utf8');assert.ok(sync.includes('smoothPulse(level,desired,elapsed)'));assert.ok(sync.includes(':0;'));assert.ok(!sync.includes('now*rate/1000'));
 });

@@ -1,4 +1,3 @@
-import {SnapIndicatorPortal} from './SnapIndicatorPortal';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { FileAudio, FolderOpen, Mic, Plus, X } from 'lucide-react';
 import { findTrackAtSample } from '../audio/cueSheet';
@@ -1147,7 +1146,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
               >
                 {activeDoc.bpmInfo.bpm.toFixed(1)} BPM
               </span>
-              <SnapIndicatorPortal><button
+              <button
                 type="button"
                 data-testid="snap-kicks-toggle"
                 aria-pressed={Boolean(activeDoc.snapToBeats)}
@@ -1167,7 +1166,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
                 }}
               >
                 Aimant kicks {activeDoc.snapToBeats ? 'actif' : 'inactif'}
-              </button></SnapIndicatorPortal>
+              </button>
             </>
           )}
           {currentCueTrack && (

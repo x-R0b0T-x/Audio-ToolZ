@@ -63,7 +63,7 @@ function makeDocId(): string {
 export default function App() {
   useEffect(() => {
     const root = document.getElementById('root');
-    document.title = 'Audio ToolZ v1.5';
+    document.title = 'Audio ToolZ v1.6';
     return root ? installMenuHover(root) : undefined;
   }, []);
   const [documents, setDocuments] = useState<AudioDocument[]>([]);
