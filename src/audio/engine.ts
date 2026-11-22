@@ -1,4 +1,5 @@
 import {startDecodedLoop} from './bufferLoop.mjs';
+import {balanceGains} from '../utils/workspaceMath.mjs';
 import { computeChannelMuteGains, computePlaybackSamplePosition, dbToLinear, reverseChannelsRange } from './dsp';
 export interface PreviewBand { type: BiquadFilterType; frequency: number; gainDb?: number; q?: number; }
 export interface MeterLevels { leftPeak: number; rightPeak: number; leftRms: number; rightRms: number; }
@@ -93,9 +94,10 @@ export class AudioEngine {
   setEnabledChannels(enabledChannels: [boolean, boolean], channelCount = this.currentChannelCount): void {
     this.enabledChannels = [enabledChannels[0], enabledChannels[1]]; this.currentChannelCount = channelCount;
     const [gL, gR] = computeChannelMuteGains(channelCount, this.enabledChannels);
+    const [bL,bR]=balanceGains(this.balance);
     if (this.ctx && this.leftMuteGain && this.rightMuteGain) {
-      this.leftMuteGain.gain.setTargetAtTime(gL, this.ctx.currentTime, 0.01);
-      this.rightMuteGain.gain.setTargetAtTime(gR, this.ctx.currentTime, 0.01);
+      this.leftMuteGain.gain.setTargetAtTime(gL*bL, this.ctx.currentTime, 0.01);
+      this.rightMuteGain.gain.setTargetAtTime(gR*bR, this.ctx.currentTime, 0.01);
     }
   }
   play(channels: Float32Array[], sampleRate: number, startSample: number, endSample: number,
@@ -125,10 +127,11 @@ export class AudioEngine {
     if (options.enabledChannels) this.enabledChannels = [options.enabledChannels[0], options.enabledChannels[1]];
     src.playbackRate.value = this.speedRatio;
     const [gL, gR] = computeChannelMuteGains(channels.length, this.enabledChannels);
+    const [bL,bR]=balanceGains(this.balance);
     if (this.leftMuteGain && this.rightMuteGain) {
-      this.leftMuteGain.gain.setValueAtTime(gL, ctx.currentTime); this.rightMuteGain.gain.setValueAtTime(gR, ctx.currentTime);
+      this.leftMuteGain.gain.setValueAtTime(gL*bL, ctx.currentTime); this.rightMuteGain.gain.setValueAtTime(gR*bR, ctx.currentTime);
     }
-    this.pannerNode?.pan.setValueAtTime(this.balance, ctx.currentTime);
+    this.pannerNode?.pan.setValueAtTime(0, ctx.currentTime);
     this.gainNode?.gain.setValueAtTime(dbToLinear(this.volumeDb), ctx.currentTime);
     this.currentDocSampleRate = sampleRate;
     if (this.preSplitGain) {
@@ -232,7 +235,7 @@ export class AudioEngine {
     bands.forEach((band, i) => this.setPreviewBand(ctx, this.previewNodes[i], band, false)); return true;
   }
   setVolumeDb(db: number): void { this.volumeDb = db; if (this.ctx && this.gainNode) this.gainNode.gain.setTargetAtTime(dbToLinear(db), this.ctx.currentTime, 0.015); }
-  setBalance(pan: number): void { this.balance = Math.max(-1, Math.min(1, pan)); if (this.ctx && this.pannerNode) this.pannerNode.pan.setTargetAtTime(this.balance, this.ctx.currentTime, 0.015); }
+  setBalance(pan: number): void { this.balance = Number.isFinite(pan)?Math.max(-1,Math.min(1,pan)):0; this.setEnabledChannels(this.enabledChannels); if(this.ctx&&this.pannerNode)this.pannerNode.pan.setValueAtTime(0,this.ctx.currentTime); }
   setSpeedRatio(ratio: number): void {
     const clamped = Math.max(0.25, Math.min(4, ratio));
     if (this.ctx && this.isPlayingState && this.sourceNode) {

@@ -563,6 +563,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
+            data-atz-control-size
             aria-label={collapsed ? 'Déplier la fenêtre de contrôle' : 'Réduire la fenêtre de contrôle'}
             title={collapsed ? 'Déplier' : 'Réduire'}
             className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"

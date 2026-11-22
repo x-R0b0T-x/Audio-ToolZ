@@ -1,38 +1,43 @@
 import {useEffect} from 'react';
 import type {AudioDocument} from '../audio/types';
 import {audioEngine} from '../audio/engine';
-import {beatPulse} from './finalUiMath.mjs';
-import {kickPulseAt} from './useOverviewNavigation';
+import {kickPulseAt,smoothPulse} from './workspaceMath.mjs';
 export function useBeatSync(doc:AudioDocument|null){
  useEffect(()=>{
-  const bpm=doc?.bpmInfo?.bpm??0,rate=doc?.sampleRate??44100,origin=doc?.bpmInfo?.beatSamples[0]??0;
-  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');let frame=0,image:HTMLImageElement|null=null,snap:HTMLElement|null=null;
-  const resetImage=()=>{if(image){image.style.removeProperty('animation');image.style.removeProperty('transform');}};
-  const resetSnap=()=>{if(snap)snap.style.removeProperty('box-shadow');};
+  const rate=doc?.sampleRate??44100,bpm=doc?.bpmInfo?.bpm??0;
+  const kicks=doc?.bpmInfo?.kickSamples??[],beats=doc?.bpmInfo?.beatSamples??[];
+  const targets=kicks.length?kicks:beats;
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+  let frame=0,last=0,level=0,image:HTMLImageElement|null=null,snap:HTMLElement|null=null;
+  const resetImage=()=>{image?.style.removeProperty('animation');image?.style.removeProperty('transform');};
+  const resetSnap=()=>{snap?.style.removeProperty('box-shadow');};
   const tick=(now:number)=>{
+   const elapsed=last?(now-last)/1000:1/60;last=now;
    const next=document.querySelector<HTMLImageElement>('.atz-about-robot>img');if(next!==image){resetImage();image=next;}
    const target=document.querySelector<HTMLElement>('[data-testid="snap-kicks-toggle"]');if(target!==snap){resetSnap();snap=target;}
-   const valid=Number.isFinite(bpm)&&bpm>0,playing=audioEngine.isPlaying;
-   const pulse=beatPulse(playing?audioEngine.getCurrentSample():now*rate/1000,bpm,rate,playing?origin:0);
-   if(image){
-    image.style.animation='none';
-    const kicks=doc?.bpmInfo?.kickSamples??[];
-    let robotPulse=0;
-    if(playing&&!reduced.matches){
-     if(kicks.length){robotPulse=kickPulseAt(audioEngine.getCurrentSample(),rate,kicks);}
-     else{
-      const spectrum=audioEngine.readSpectrumSnapshot();
-      const bass=Math.max(spectrum[1]??0,spectrum[2]??0,spectrum[3]??0)/255;
-      robotPulse=Math.max(0,Math.min(1,(bass-.45)/.55));
-     }
+   const playing=audioEngine.isPlaying;
+   let desired=0;
+   if(playing&&!reduced.matches){
+    const sample=audioEngine.getCurrentSample();
+    if(targets.length)desired=kickPulseAt(sample,rate,targets);
+    else if(bpm>0){
+     const period=rate*60/bpm,phase=((sample%period)+period)%period;
+     desired=kickPulseAt(phase,rate,[0,period]);
+    }else{
+     const spectrum=audioEngine.readSpectrumSnapshot();
+     desired=Math.max(0,Math.min(1,(Math.max(spectrum[1]??0,spectrum[2]??0)/255-.5)*2));
     }
-    image.style.transform=`scale(${1+.16*robotPulse})`;
    }
-   if(snap&&valid&&doc?.showBeatGrid&&snap.getAttribute('aria-pressed')==='true'&&!reduced.matches){snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1499,0 0 ${4+8*pulse}px #39ff14cc,0 0 ${8+14*pulse}px #39ff1466`,'important');}else resetSnap();
+   level=playing&&!reduced.matches?smoothPulse(level,desired,elapsed):0;
+   if(image){image.style.animation='none';image.style.transform=`scale(${1+.14*level})`;}
+   if(snap&&snap.getAttribute('aria-pressed')==='true'){
+    snap.style.setProperty('box-shadow',`inset 0 0 0 1px #39ff1466,0 0 ${2+10*level}px rgba(57,255,20,${.2+.65*level}),0 0 ${4+16*level}px rgba(57,255,20,${.1+.45*level})`,'important');
+   }else resetSnap();
    frame=requestAnimationFrame(tick);
   };
-  frame=requestAnimationFrame(tick);return()=>{cancelAnimationFrame(frame);resetImage();resetSnap();};
- },[doc?.id,doc?.bpmInfo,doc?.sampleRate,doc?.showBeatGrid]);
+  frame=requestAnimationFrame(tick);
+  return()=>{cancelAnimationFrame(frame);resetImage();resetSnap();};
+ },[doc?.id,doc?.bpmInfo,doc?.sampleRate]);
 }
 export function installDescriptions(root:HTMLElement){
  const tip=document.createElement('div');tip.id='atz-description';tip.setAttribute('role','tooltip');
