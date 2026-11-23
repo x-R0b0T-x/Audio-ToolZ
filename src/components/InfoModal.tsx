@@ -78,7 +78,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
         {communityError && <p className="atz-about-community-error" role="alert">{communityError}</p>}
       </div>
       <section aria-labelledby="about-changelog-title" className="atz-about-changes">
-        <h3 id="about-changelog-title" className="text-sm font-bold">Changelog depuis la version 1.5</h3>
+        <h3 id="about-changelog-title" className="text-sm font-bold">Changlog depuis la v1.5</h3>
         <div className="atz-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
           {[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}
         </div>

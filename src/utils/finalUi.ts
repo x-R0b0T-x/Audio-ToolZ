@@ -5,6 +5,8 @@ import {kickPulseAt,smoothPulse} from './workspaceMath.mjs';
 import {robotBeatPulse} from './finalUiMath.mjs';
 import {installSpaceTransport} from './spaceTransport.mjs';
 type RobotTempo={bpm:number;origin:number;rate:number};
+let headerTempo:RobotTempo|null=null;
+export function readHeaderTempo():RobotTempo|null{return headerTempo;}
 const robotTempoCache=new WeakMap<Float32Array[],RobotTempo>();
 export function useBeatSync(doc:AudioDocument|null){
  useEffect(()=>{
@@ -13,6 +15,7 @@ export function useBeatSync(doc:AudioDocument|null){
   const targets=kicks.length?kicks:beats;
   const cached=doc?robotTempoCache.get(doc.channels):undefined;
   let robotTempo:RobotTempo|null=Number.isFinite(bpm)&&bpm>0?{bpm,origin:beats[0]??0,rate}:cached?.rate===rate?cached:null;
+  headerTempo=robotTempo;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
   let frame=0,last=0,level=0,image:HTMLImageElement|null=null,snap:HTMLElement|null=null;
   let worker:Worker|null=null,attempted=false,disposed=false,tempoError='';
@@ -28,7 +31,7 @@ export function useBeatSync(doc:AudioDocument|null){
      if(disposed||worker!==current)return;
      const value=event.data.bpm,origin=event.data.origin;
      if(typeof value==='number'&&Number.isFinite(value)&&value>0&&typeof origin==='number'&&Number.isFinite(origin)){
-      robotTempo={bpm:value,origin,rate};robotTempoCache.set(doc.channels,robotTempo);
+      robotTempo={bpm:value,origin,rate};headerTempo=robotTempo;robotTempoCache.set(doc.channels,robotTempo);
      }else tempoError=event.data.error??'Tempo non détecté : synchronisation indisponible.';
      stopDetection();
     };
@@ -40,7 +43,7 @@ export function useBeatSync(doc:AudioDocument|null){
    const elapsed=last?(now-last)/1000:1/60;last=now;
    const next=document.querySelector<HTMLImageElement>('.atz-about-robot>img');
    if(next!==image){resetImage();image=next;if(!image){stopDetection();attempted=false;tempoError='';}}
-   if(image)detectRobotTempo();
+   if(image||(audioEngine.isPlaying&&!reduced.matches))detectRobotTempo();
    const target=document.querySelector<HTMLElement>('[data-testid="snap-kicks-toggle"]');if(target!==snap){resetSnap();snap=target;}
    const playing=audioEngine.isPlaying,sample=playing?audioEngine.getCurrentSample():0;
    let desired=0;
@@ -68,7 +71,7 @@ export function useBeatSync(doc:AudioDocument|null){
    frame=requestAnimationFrame(tick);
   };
   frame=requestAnimationFrame(tick);
-  return()=>{disposed=true;stopDetection();cancelAnimationFrame(frame);resetImage();resetSnap();};
+  return()=>{disposed=true;stopDetection();cancelAnimationFrame(frame);resetImage();resetSnap();if(headerTempo===robotTempo)headerTempo=null;};
  },[doc?.id,doc?.channels,doc?.bpmInfo,doc?.sampleRate]);
 }
 export function installDescriptions(root:HTMLElement){
