@@ -1,3 +1,4 @@
+import {AnalyzerSelect,drawExtraAnalyzer} from './AnalyzerVisuals';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FastForward,
@@ -150,7 +151,9 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
           ctx.fillStyle = waveBg;
           ctx.fillRect(0, 0, w, h);
 
-          if (visualMode === 'oscilloscope') {
+          if (drawExtraAnalyzer(ctx,w,h,visualMode,isPlaying||isRecording)) {
+            // Extended modes are drawn without changing the audio path.
+          } else if (visualMode === 'oscilloscope') {
             const topEdge = 6;
             const botEdge = h - 6;
             const midY = h / 2;
@@ -404,7 +407,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     } else if (timeDisplayRef.current) {
       timeDisplayRef.current.textContent = formatTimecode(getPlayheadSeconds());
     }
-    if (!isPlaying && !isRecording) return;
+    if (!isPlaying && !isRecording && visualMode !== 'vu-meter') return;
 
     let raf = 0;
     const loop = () => {
@@ -417,7 +420,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [visible, collapsed, isPlaying, isRecording, drawMetersAndVisuals, getPlayheadSeconds]);
+  }, [visible, collapsed, isPlaying, isRecording, visualMode, drawMetersAndVisuals, getPlayheadSeconds]);
 
   if (!visible) return null;
 
@@ -638,21 +641,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
           <div>
             <div className="flex items-center justify-start mb-0.5">
-              <button
-                type="button"
-                data-atz-control="visual-mode"
-                onDoubleClick={(e) => { e.preventDefault(); setVisualMode('oscilloscope'); }}
-                onClick={() =>
-                  setVisualMode((prev) =>
-                    prev === 'oscilloscope' ? 'spectrum' : prev === 'spectrum' ? 'colored-waveform' : 'oscilloscope'
-                  )
-                }
-                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-semibold cursor-pointer"
-                style={{ backgroundColor: 'var(--accent-primary)', color: '#ffffff' }}
-              >
-                <span>{visualMode === 'oscilloscope' ? '1/3' : visualMode === 'spectrum' ? '2/3' : '3/3'}</span>
-                <span>{visualMode === 'oscilloscope' ? 'Oscillo' : visualMode === 'spectrum' ? 'Spectre' : 'Waveforme colorée'}</span>
-              </button>
+              <AnalyzerSelect mode={visualMode} onChange={setVisualMode}/>
             </div>
             <canvas ref={visCanvasRef} className="w-full h-24 rounded-md border block" style={{ borderColor: 'var(--border-subtle)' }} />
           </div>

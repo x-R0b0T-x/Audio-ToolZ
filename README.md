@@ -86,3 +86,12 @@ Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publ
 - Particules vertes/violettes discrètes autour du titre pendant la lecture, sans synchronisation BPM/volume ; préférence de réduction des animations respectée.
 - Boutons du didacticiel toujours violets ; seul le contour et son halo deviennent verts au survol.
 - Tests, compilation, ZIP et rendu Windows à valider sur ce candidat.
+
+
+### Visualisations et finitions graphiques v1.6
+
+- Six modes : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme, Vumètre à aiguille stéréo. Sélecteur sombre discret ; mode initial Oscilloscope puis choix mémorisé.
+- Le vumètre affiche un niveau RMS en dBFS avec une inertie visuelle ; ce n’est pas un instrument VU analogique calibré.
+- Robot d’accueil recadré sur ses pixels visibles et ajusté aux bords extérieurs des boutons Charger et Enregistrer.
+- Particules vert/violet plus lumineuses et plus longues, dont les trajectoires se terminent doucement même après pause ou arrêt.
+- Validation du candidat par tests, compilation et essais Windows requise.
