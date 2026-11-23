@@ -29,6 +29,8 @@ jobs:
       - name: Integrate optional tempo and reactive artwork
         if: github.ref == 'refs/heads/v1.6-dev'
         run: python .github/scripts/optional-bpm.py
+      - name: Finalize candidate interface and distribution notes
+        run: python .github/scripts/finalize-candidate-16.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -79,23 +81,30 @@ jobs:
           $hash = (Get-FileHash 'release-output/Audio ToolZ.exe' -Algorithm SHA256).Hash.ToLower()
           "$hash  Audio ToolZ.exe" | Out-File -Encoding ascii release-output/SHA256SUMS.txt
           Write-Output "Executable size: $($exe.Length) bytes"
-      - uses: actions/upload-artifact@v5
-        with:
-          name: Audio-ToolZ-v1.6-Windows-x64-${{ github.ref_name }}
-          path: release-output/*
-          if-no-files-found: error
       - name: Record validated development sources
         if: github.ref == 'refs/heads/v1.6-dev'
         shell: pwsh
         run: |
-          git add -A -- src src-tauri package.json CHANGELOG.md RELEASE_NOTES_1.6.md .github
+          git add -A -- src src-tauri package.json CHANGELOG.md RELEASE_NOTES_1.6.md README.md .github
           if ($LASTEXITCODE -ne 0) { throw 'Unable to stage sources' }
           git diff --cached --quiet
           if ($LASTEXITCODE -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Validate optional BPM and live preview release sources'
+            git commit -m 'Record final v1.6 candidate sources and distribution notes'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
             git push origin HEAD:refs/heads/v1.6-dev
             if ($LASTEXITCODE -ne 0) { throw 'Branch advanced; sources were not overwritten' }
           } elseif ($LASTEXITCODE -ne 0) { throw 'Unable to check staged sources' }
+      - name: Create and verify portable folder archive
+        run: python .github/scripts/finalize-candidate-16.py --package
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.6-Windows-x64-${{ github.ref_name }}
+          path: release-output/*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.6-portable-folder
+          path: portable-output/*
+          if-no-files-found: error
