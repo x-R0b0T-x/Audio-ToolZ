@@ -67,7 +67,7 @@ const STEPS:Step[]=[
    ["Ouvrir un fichier audio :","Ctrl+O, ou créez un document vierge avec Ctrl+N."],
    ["Sélectionnez, bouclez, écoutez :","puis ouvrez un effet depuis le menu Effets et réglez-le en direct."],
    ["Besoin de revoir tout ça ?","Outils, Paramètres, puis « Afficher le didacticiel »."]]}],
-  links:{heading:"Un dernier mot d’ATX",text:"Si Audio ToolZ vous plaît, rejoignez la communauté Telegram et abonnez-vous pour ne rien rater des nouveautés. Et si vous avez un petit moment, une étoile sur GitHub, ça m’aide énormément ! Vous pouvez aussi soutenir le projet par un don via PayPal.",items:[{label:"Rejoindre et s’abonner sur Telegram",href:"https://t.me/Audio_ToolZ"},{label:"★ Mettre une étoile sur GitHub",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Faire un don via PayPal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
+  links:{heading:"Un dernier mot d’ATX",text:"Si Audio ToolZ vous plaît, rejoignez la communauté Telegram et abonnez-vous pour ne rien rater des nouveautés. Et si vous avez un petit moment, une étoile sur GitHub, ça m’aide énormément ! Vous pouvez aussi soutenir le projet par un don via PayPal. Vous pouvez aussi soutenir le projet par un don via PayPal.",items:[{label:"Rejoindre et s’abonner sur Telegram",href:"https://t.me/Audio_ToolZ"},{label:"★ Mettre une étoile sur GitHub",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Faire un don via PayPal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
   outro:"Bon son, et à très vite ! — ATX"}
 ];
 const readHidden=()=>{try{return window.localStorage.getItem(KEY)==='1';}catch{return false;}};
