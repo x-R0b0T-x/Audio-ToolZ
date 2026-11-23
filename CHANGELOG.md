@@ -73,3 +73,13 @@ Version validée par le mainteneur le 22 novembre 2026. Voir [les notes détaill
 - Paquet portable pour Windows 64 bits, avec icône intégrée et moteur configuré en français.
 - Licences Electron et Chromium regroupées dans `resources/licenses`. Somme de contrôle SHA-256 fournie séparément.
 - README enrichi avec les fonctions audio, les formats et la prise en main.
+
+
+## Finalisation du candidat v1.6
+
+- Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
+- Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
+- Aucun texte « Aucun fichier récent » quand la liste est vide.
+- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP fournies séparément.
+- Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
+- Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.

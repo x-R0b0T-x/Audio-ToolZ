@@ -11,7 +11,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 28, showWordmark = 
       <path d="M18 32H24.5L28.5 20.5L34 43.5L38 27.5L41 32H46" stroke="#39ff14" strokeWidth="3.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
     {showWordmark && <span className={`font-display font-bold tracking-tight whitespace-nowrap ${wordmarkClassName}`}>
-      <span style={{ color: '#f8f8f2' }}>Audio </span><span style={{ color: '#39ff14' }}>Tool</span><span style={{ color: '#b34dff' }}>Z</span>
+      <span data-atz-brand="audio" style={{ color: '#f8f8f2' }}>Audio </span><span data-atz-brand="tool" style={{ color: '#39ff14' }}>Tool</span><span data-atz-brand="z" style={{ color: '#b34dff' }}>Z</span>
     </span>}
   </span>
 );

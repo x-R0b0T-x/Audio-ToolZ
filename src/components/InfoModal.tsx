@@ -65,7 +65,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
   if (!open) return null;
   return <div role="dialog" aria-modal="true" aria-labelledby="about-title" className="atz-about-dialog fixed z-50 rounded-xl border border-[var(--border-strong)] shadow-2xl flex flex-col overflow-hidden bg-[var(--bg-surface)] text-[var(--text-primary)]" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
     <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] cursor-grab select-none" onMouseDown={(e) => { if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return; drag.current = { x: e.clientX - box.x, y: e.clientY - box.y }; }}>
-      <h2 id="about-title" className="text-sm font-semibold">Audio ToolZ {APP_VERSION.split(' ')[0]}</h2>
+      <h2 id="about-title" className="text-sm font-semibold"><span data-atz-brand="audio">Audio </span><span data-atz-brand="tool">Tool</span><span data-atz-brand="z">Z</span> {APP_VERSION.split(' ')[0]}</h2>
       <button type="button" aria-label="Fermer" onClick={onClose}><X size={18} /></button>
     </div>
     <div className="atz-about-body">

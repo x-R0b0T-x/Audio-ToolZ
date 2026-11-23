@@ -9,3 +9,8 @@
 #root aside[aria-label="Fenêtre de contrôle flottante"] span.font-mono-tabular.justify-self-center,#root .atz-about-scroll h4{color:#39ff14!important}
 
 #root #about-changelog-title{color:#fff!important;font-weight:700!important}
+
+/* v1.6 explicit brand exceptions: stronger than the white text policy. */
+#root#root span[data-atz-brand="audio"]{color:#fff!important}
+#root#root span[data-atz-brand="tool"]{color:#39ff14!important}
+#root#root span[data-atz-brand="z"]{color:#b34dff!important}

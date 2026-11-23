@@ -57,3 +57,13 @@ La détection du tempo est une estimation. La mémorisation de l’interface ne 
 Les versions publiées se trouvent dans [GitHub Releases](https://github.com/x-R0b0T-x/Audio-ToolZ/releases). Le paquet Windows x64 portable contient Audio ToolZ.exe et SHA256SUMS.txt. Les artifacts de développement Actions ne constituent pas une publication officielle.
 
 Projet sous licence GPL v3 : voir les fichiers de licence du dépôt. Communauté : [Telegram](https://t.me/Audio_ToolZ).
+
+
+## Finalisation du candidat v1.6
+
+- Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
+- Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
+- Aucun texte « Aucun fichier récent » quand la liste est vide.
+- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP fournies séparément.
+- Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
+- Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.

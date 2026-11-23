@@ -32,4 +32,14 @@ Les fenêtres autonomes Volume/Gain et Normalisation ont été retirées ; le vo
 
 ## Distribution
 
-Windows x64 portable : Audio ToolZ.exe et SHA256SUMS.txt. La chaîne vérifie les tests audio/UI, TypeScript et l’intégrité des médias avant de produire l’exécutable. Un artifact Actions n’est pas une release GitHub officielle : la fusion, le tag v1.6 et la publication sont des étapes distinctes.
+Windows x64 portable : archive ZIP du dossier Audio ToolZ, accompagnée de SHA256SUMS.txt et BUILD.txt. La chaîne vérifie les tests audio/UI, TypeScript et l’intégrité des médias avant de produire l’exécutable. Un artifact Actions n’est pas une release GitHub officielle : la fusion, le tag v1.6 et la publication sont des étapes distinctes.
+
+
+## Finalisation du candidat v1.6
+
+- Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
+- Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
+- Aucun texte « Aucun fichier récent » quand la liste est vide.
+- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP fournies séparément.
+- Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
+- Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.
