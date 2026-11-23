@@ -70,7 +70,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     </div>
     <div className="atz-about-body">
       <div className="atz-about-brand">
-        <div className="atz-about-hero"><div className="atz-about-fx" aria-hidden="true"><span className="atz-about-fx-wave"><svg viewBox="0 0 800 100" preserveAspectRatio="none" focusable="false"><path d={WAVE_PATH} vectorEffect="non-scaling-stroke" /></svg></span><span className="atz-about-fx-halo" /></div><AboutRobot src={robotUrl} /><div className="atz-about-actions">
+        <div className="atz-about-hero"><div className="atz-about-fx" aria-hidden="true"><span className="atz-about-fx-wave"><svg viewBox="0 0 800 100" preserveAspectRatio="none" focusable="false"><path d={WAVE_PATH} vectorEffect="non-scaling-stroke" /></svg></span></div><AboutRobot src={robotUrl} /><div className="atz-about-actions">
           <a className="atz-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
           <a className="atz-about-community" href="https://github.com/x-R0b0T-x/Audio-ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Visiter le dépôt GitHub</a>
           <a className="atz-about-community" href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Faire un don</a>
