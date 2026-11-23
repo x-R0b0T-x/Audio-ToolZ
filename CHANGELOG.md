@@ -40,7 +40,7 @@ Tauri v2, Symphonia 0.5, les formats audio, les fichiers CUE, l’assemblage, l�
 
 ## Distribution finale v1.6
 
-Un seul téléchargement : `audio tools v1.6.zip`. Après extraction, le dossier `Audio ToolZ` contient `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 de l’exécutable et du ZIP figurent dans le résumé de compilation, pas dans un téléchargement séparé.
+Un seul téléchargement : `Audio ToolZ v1.6.zip`. Après extraction, le dossier `Audio ToolZ` contient `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 de l’exécutable et du ZIP figurent dans le résumé de compilation, pas dans un téléchargement séparé.
 
 ## Finalisation du candidat v1.6
 

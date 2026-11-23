@@ -11,14 +11,14 @@ test('changelog is independently scrollable and heading centered',()=>{const css
 test('distribution is one correctly named unwrapped ZIP without publishing a release',()=>{
   const workflow=read('.github/workflows/build-v1.6.yml');
   const packaging=read('.github/scripts/package-single-16.py');
-  assert.match(workflow,/path:\s*single-output\/audio tools v1\.6\.zip\s*\n\s*archive:\s*false/);
+  assert.match(workflow,/path:\s*single-output\/Audio ToolZ v1\.6\.zip\s*\n\s*archive:\s*false/);
   assert.equal((workflow.match(/uses:\s*actions\/upload-artifact@/g)||[]).length,1);
   assert.ok(workflow.includes('uses: actions/upload-artifact@v7'));
   assert.ok(workflow.includes('python .github/scripts/package-single-16.py'));
   assert.ok(!workflow.includes('release-output/'));
   assert.ok(!workflow.includes('portable-output/'));
   assert.ok(!/gh\s+release\s+(create|upload)|softprops\/action-gh-release|actions\/create-release/.test(workflow));
-  assert.ok(packaging.includes("archive = output / 'audio tools v1.6.zip'"));
+  assert.ok(packaging.includes("archive = output / 'Audio ToolZ v1.6.zip'"));
   for(const entry of ['Audio ToolZ/Audio ToolZ.exe','Audio ToolZ/logo.ico','Audio ToolZ/desktop.ini'])assert.ok(packaging.includes(entry));
   assert.ok(packaging.includes("assert set(z.namelist()) == set(entries)"));
   assert.ok(packaging.includes('LocalizedResourceName=Audio ToolZ'));

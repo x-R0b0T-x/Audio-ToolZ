@@ -71,7 +71,7 @@ Projet sous licence GPL v3 : voir les fichiers de licence du dépôt. Communaut�
 
 ## Distribution finale v1.6
 
-Un seul fichier : `audio tools v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
+Un seul fichier : `Audio ToolZ v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
 
 Accueil : illustration mix.png sans document ; Contrôle sans robot ni vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux restant violets avec contour lumineux vert au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
 

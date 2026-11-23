@@ -29,7 +29,7 @@ ini = '[.ShellClassInfo]\r\nIconResource=logo.ico,0\r\nLocalizedResourceName=Aud
 (folder / 'desktop.ini').write_text(ini, encoding='utf-16', newline='')
 for flags, path in [(['+r', '+s'], folder), (['+h'], folder / 'logo.ico'), (['+h', '+s'], folder / 'desktop.ini')]:
     subprocess.run(['attrib', *flags, str(path)], check=True)
-archive = output / 'audio tools v1.6.zip'
+archive = output / 'Audio ToolZ v1.6.zip'
 entries = {'Audio ToolZ/': 0x15, 'Audio ToolZ/Audio ToolZ.exe': 0x20, 'Audio ToolZ/logo.ico': 0x22, 'Audio ToolZ/desktop.ini': 0x26}
 with zipfile.ZipFile(archive, 'w') as z:
     for name, attributes in entries.items():
@@ -82,7 +82,7 @@ assert (actual / 'Audio ToolZ.exe').read_bytes() == exe.read_bytes()
 assert {p.name for p in actual.iterdir()} == {'Audio ToolZ.exe', 'logo.ico', 'desktop.ini'}
 digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-summary = '## Candidat v1.6 — distribution unique\n\n- Archive : `audio tools v1.6.zip`\n- Commit source : `' + head + '`\n- SHA-256 ZIP : `' + digest(archive) + '`\n- SHA-256 EXE : `' + digest(exe) + '`\n- Extraction Windows Shell, contenu et attributs contrôlés.\n- Rendu visuel de l’icône dans l’Explorateur : validation manuelle encore requise.\n'
+summary = '## Candidat v1.6 — distribution unique\n\n- Archive : `Audio ToolZ v1.6.zip`\n- Commit source : `' + head + '`\n- SHA-256 ZIP : `' + digest(archive) + '`\n- SHA-256 EXE : `' + digest(exe) + '`\n- Extraction Windows Shell, contenu et attributs contrôlés.\n- Rendu visuel de l’icône dans l’Explorateur : validation manuelle encore requise.\n'
 if os.environ.get('GITHUB_STEP_SUMMARY'):
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as f:
         f.write(summary)
