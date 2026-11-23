@@ -80,8 +80,8 @@ export function AdvancedEffects(props: Props) {
         {bands.map((b, i) => <div className="atz-band" key={i} style={{ color: colors[i], borderColor: colors[i] }} role="group" aria-label={`Bande de ${b.frequency} Hz`}>
           <strong>{Math.round(b.frequency)} Hz</strong>
           <div className="atz-filter-type">
-            <FilterShape value={b.type??'peaking'} index={i} onChange={type=>update(i,{type})}/>
-            <select aria-label={`Bande ${i+1} : pente`} disabled={!['highpass','lowpass','lowshelf','highshelf'].includes(b.type??'peaking')} value={b.order??2} onChange={e=>update(i,{order:Number(e.target.value) as Band['order']})}>{[1,2,4,6,8].map(n=><option key={n} value={n}>{n*6} dB/oct{n===1?' Gentle':n>=4?' Steep':''}</option>)}</select>
+            <FilterShape value={b.type??'peaking'} index={i} initial={bandsDefault(doc.sampleRate)[i]?.type??'peaking'} onChange={type=>update(i,{type})}/>
+            <select aria-label={`Bande ${i+1} : pente`} disabled={!['highpass','lowpass','lowshelf','highshelf'].includes(b.type??'peaking')} value={b.order??2} onDoubleClick={()=>update(i,{order:bandsDefault(doc.sampleRate)[i]?.order??2})} onChange={e=>update(i,{order:Number(e.target.value) as Band['order']})}>{[1,2,4,6,8].map(n=><option key={n} value={n}>{n*6} dB/oct{n===1?' Gentle':n>=4?' Steep':''}</option>)}</select>
           </div>
           <EffectGain disabled={!hasGain(b)} label={`${b.frequency} Hz : gain`} value={b.gainDb} onChange={gainDb => update(i, { gainDb })}/>
         </div>)}
