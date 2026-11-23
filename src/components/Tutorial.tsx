@@ -10,13 +10,61 @@ import './tutorial.css';
 
 export const TUTORIAL_EVENT='atz:show-tutorial';
 const KEY='atz-tutorial-hidden';
-type Step={image:string;alt:string;title:string;lines:string[];list?:string[]};
+type Item=[string,string];
+type Section={heading?:string;items:Item[]};
+type Step={image:string;alt:string;title:string;intro:string[];sections?:Section[];outro?:string};
 const STEPS:Step[]=[
- {image:img1,alt:"ATX, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",lines:["Salut, je suis ATX ! Je suis là pour vous présenter et vous accompagner dans ce merveilleux logiciel d’édition audio.","Suivez-moi, on fait le tour ensemble."]},
- {image:img2,alt:"ATX règle des boutons",title:"Des réglages et des effets en pagaille",lines:["Audio ToolZ met énormément d’outils à portée de main :"],list:["Fondus, vitesse et hauteur (pitch)","Égaliseur paramétrique à 7 bandes","Limiteur / Compresseur","Delay musical, calé sur le tempo","Détection du BPM et grille des kicks","Assemblage de fichiers et fichiers .cue","Auto-Cue et découpe par repères","Traitement par lots"]},
- {image:img3,alt:"ATX se gratte la tête, l’air confus",title:"Pas de panique !",lines:["Une fausse manipulation arrive à tout le monde. Annuler (Ctrl+Z) et Rétablir (Ctrl+Y) vous permettent de revenir en arrière à tout moment.","Vos retouches ne s’appliquent qu’au document ouvert dans le logiciel : vous ne pouvez ni perdre votre travail ni abîmer votre fichier d’origine en cours de route."]},
- {image:img4,alt:"ATX lève les pouces, très content",title:"Sauvegardez en qualité choisie",lines:["Quand vous avez trouvé les bons réglages, exportez votre travail dans le format de votre choix : WAV, MP3, FLAC ou OGG.","Vous choisissez aussi la qualité qui convient à votre usage."]},
- {image:img5,alt:"ATX vous montre du doigt en souriant",title:"À vous de jouer !",lines:["Vous savez maintenant l’essentiel. Ouvrez un fichier audio ou créez un document vierge, et amusez-vous !","Vous pourrez revoir cette présentation à tout moment : Outils, Paramètres, puis « Afficher le didacticiel »."]}
+ {image:img1,alt:"ATX, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
+  intro:["Salut, je suis ATX, la mascotte d’Audio ToolZ ! Je suis là pour vous présenter et vous accompagner dans ce merveilleux logiciel d’édition audio.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre en quelques étapes de quoi il est capable. Vous allez voir : il y a de quoi s’amuser."],
+  outro:"Prêt ? Suivez-moi !"},
+ {image:img2,alt:"ATX règle des boutons",title:"Un atelier complet, pensé pour la précision",
+  intro:["Ici, c’est mon coin préféré : tout se règle, et tout s’écoute en direct pendant la lecture, avant même d’appliquer l’effet."],
+  sections:[
+   {heading:"Précision et boucles",items:[
+    ["Édition sur forme d’onde :","sélection, couper / copier / coller, rognage, silence, mixage au collage (crossfade) et annuler / rétablir."],
+    ["Zoom très fort :","plongez dans la forme d’onde pour caler chaque coupe avec précision, puis revenez à la vue totale en un clic."],
+    ["Boucles et samples :","bouclez un passage, jouez-le à l’envers, découpez et préparez vos échantillons."]]},
+   {heading:"Rythme",items:[
+    ["Détection du BPM :","repères de kicks, grille de tempo et aimantation des sélections pour couper pile sur le temps."]]},
+   {heading:"Son et effets",items:[
+    ["Égaliseur paramétrique à 7 bandes :","fréquence, gain, largeur Q, formes de filtre, avec spectre d’entrée et courbe de réponse."],
+    ["Compresseur et limiteur :","modes COMP et LIMIT, enveloppe, plafond et réduction de gain bien visibles."],
+    ["Delay musical :","calé sur le tempo, en Mono, Stéréo ou Ping-pong, avec répétitions et panoramique."],
+    ["Vitesse, hauteur (pitch) et fondus :","changez le tempo ou la tonalité, et adoucissez vos entrées et sorties."],
+    ["Réduction de bruit spectrale :","pour nettoyer une prise."],
+    ["Oscilloscope, spectre et forme d’onde colorée :","pour voir ce que vous entendez."]]}
+  ]},
+ {image:img3,alt:"ATX se gratte la tête, l’air confus",title:"Pas de panique !",
+  intro:["Une fausse manip, ça arrive même aux pros. Ici, rien n’est définitif : vous pouvez tester, essayer, vous tromper, et recommencer."],
+  sections:[{items:[
+   ["Annuler / Rétablir (Ctrl+Z / Ctrl+Y) :","revenez en arrière pas à pas, puis revenez en avant si vous changez d’avis."],
+   ["Votre fichier d’origine reste intact :","vous travaillez sur une copie en mémoire, l’original n’est pas modifié pendant que vous éditez."],
+   ["Préécoute avant de valider :","réglez un effet en écoutant le résultat en direct, sans rien appliquer tant que vous n’êtes pas satisfait."],
+   ["Le réflexe du pro :","pensez à exporter votre travail avant de fermer le logiciel, c’est lui qui le met à l’abri."]]}],
+  outro:"Pas de stress : on est là pour explorer."},
+ {image:img4,alt:"ATX lève les pouces, très content",title:"Sauvegardez dans la qualité de votre choix",
+  intro:["Les bons réglages sont trouvés ? Parfait, alors on exporte, et c’est vous qui décidez de la qualité."],
+  sections:[
+   {heading:"À l’ouverture",items:[
+    ["Beaucoup de formats pris en charge :","MP3, FLAC, WAV (PCM), AAC, ALAC, Vorbis… selon vos fichiers et leurs conteneurs."]]},
+   {heading:"À l’export",items:[
+    ["WAV :","PCM 16 bits, PCM 24 bits ou flottant 32 bits."],
+    ["MP3 :","128, 192, 256 ou 320 kbit/s."],
+    ["FLAC :","compression sans perte, niveaux 0, 2 ou 5."],
+    ["OGG Vorbis :","qualité de 1 à 10."]]},
+   {heading:"Et pour aller plus loin",items:[
+    ["Traitement par lots :","appliquez les mêmes réglages à toute une série de fichiers."],
+    ["Mixes et fichiers .cue :","assemblez des pistes, importez ou exportez un .cue, détectez les silences (Auto-Cue) et découpez en WAV."],
+    ["Enregistrement :","capturez directement depuis votre micro ou votre carte son."]]}
+  ]},
+ {image:img5,alt:"ATX vous montre du doigt en souriant",title:"À vous de jouer !",
+  intro:["Vous avez fait le tour du propriétaire. Maintenant, c’est à vous de jouer !"],
+  sections:[{items:[
+   ["Ouvrir un fichier audio :","Ctrl+O, ou créez un document vierge avec Ctrl+N."],
+   ["Sélectionnez, bouclez, écoutez :","puis ouvrez un effet depuis le menu Effets et réglez-le en direct."],
+   ["Besoin de revoir tout ça ?","Outils, Paramètres, puis « Afficher le didacticiel »."],
+   ["Une question, une idée ?","Le point d’interrogation en haut à droite mène à la communauté Telegram et au dépôt GitHub."]]}],
+  outro:"Bon son, et à très vite ! — ATX"}
 ];
 const readHidden=()=>{try{return window.localStorage.getItem(KEY)==='1';}catch{return false;}};
 const writeHidden=(hidden:boolean)=>{try{if(hidden)window.localStorage.setItem(KEY,'1');else window.localStorage.removeItem(KEY);}catch{/* stockage indisponible */}};
@@ -76,11 +124,17 @@ export function Tutorial(){
     <h2 id="atz-tuto-title"><span className="atz-tuto-w">Audio </span><span className="atz-tuto-g">Tool</span><span className="atz-tuto-v">Z</span><small>Présentation</small></h2>
     <button type="button" className="atz-tuto-close" aria-label="Fermer la présentation" onClick={close}>×</button>
    </header>
-   <div className="atz-tuto-art"><img key={step} src={current.image} alt={current.alt} draggable={false}/></div>
-   <div className="atz-tuto-copy" aria-live="polite">
-    <h3>{current.title}</h3>
-    {current.lines.map(line=><p key={line}>{line}</p>)}
-    {current.list&&<ul>{current.list.map(item=><li key={item}>{item}</li>)}</ul>}
+   <div className="atz-tuto-main">
+    <div className="atz-tuto-art"><img key={step} src={current.image} alt={current.alt} draggable={false}/></div>
+    <div className="atz-tuto-copy" key={step} aria-live="polite" tabIndex={0}>
+     <h3>{current.title}</h3>
+     {current.intro.map(line=><p key={line}>{line}</p>)}
+     {current.sections?.map((section,index)=><section key={section.heading??index}>
+      {section.heading&&<h4>{section.heading}</h4>}
+      <ul>{section.items.map(([label,text])=><li key={label}><strong>{label}</strong> {text}</li>)}</ul>
+     </section>)}
+     {current.outro&&<p className="atz-tuto-outro">{current.outro}</p>}
+    </div>
    </div>
    <footer className="atz-tuto-foot">
     <label className="atz-tuto-skip"><input type="checkbox" checked={skip} onChange={e=>setSkip(e.target.checked)}/>Ne plus afficher au démarrage</label>
