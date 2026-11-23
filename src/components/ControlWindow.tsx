@@ -1,3 +1,4 @@
+import mixArtworkUrl from '../medias/mix.png?url';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FastForward,
@@ -11,7 +12,7 @@ import {
   Square,
 } from 'lucide-react';
 import { audioEngine } from '../audio/engine';
-import { formatTimecode, linearToDb } from '../audio/dsp';
+import { formatTimecode } from '../audio/dsp';
 import type { VisualAnalyzerMode } from '../audio/types';
 import {
   loadPersistedUiState,
@@ -82,9 +83,10 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
     () => loadPersistedUiState().visualMode
   );
 
-  const vuCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  /* Persist the chosen analyzer without resetting it on startup. */
+  useEffect(() => { savePersistedUiState({visualMode}); }, [visualMode]);
+
   const visCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const peakHoldRef = useRef({ l: 0, r: 0, lTime: 0, rTime: 0 });
   const specPeaksRef = useRef<{ l: Float32Array; r: Float32Array }>({
     l: new Float32Array(32),
     r: new Float32Array(32),
@@ -117,116 +119,12 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
   }, [visible, collapsed, hasDocument]);
 
   const drawMetersAndVisuals = useCallback(() => {
-    const vuCanvas = vuCanvasRef.current;
     const visCanvas = visCanvasRef.current;
-    if (!vuCanvas && !visCanvas) return;
-
+    if (!visCanvas) return;
     const style = getComputedStyle(document.documentElement);
     const waveBg = style.getPropertyValue('--wave-bg').trim() || '#080a14';
-    const borderSubtle =
-      style.getPropertyValue('--border-subtle').trim() || '#272f54';
-    const lowCol = style.getPropertyValue('--meter-low').trim() || '#34d399';
-    const midCol = style.getPropertyValue('--meter-mid').trim() || '#fbbf24';
-    const highCol = style.getPropertyValue('--meter-high').trim() || '#f43f5e';
-    const mutedCol =
-      style.getPropertyValue('--text-muted').trim() || '#6c76a3';
-
+    const borderSubtle = style.getPropertyValue('--border-subtle').trim() || '#272f54';
     const now = performance.now();
-    const levels = audioEngine.readLiveMeters();
-
-    const dbL =
-      levels.leftPeak > 1e-5 ? Math.max(-60, linearToDb(levels.leftPeak)) : -60;
-    const dbR =
-      levels.rightPeak > 1e-5
-        ? Math.max(-60, linearToDb(levels.rightPeak))
-        : -60;
-    const normL = Math.max(0, Math.min(1, (dbL + 60) / 60));
-    const normR = Math.max(0, Math.min(1, (dbR + 60) / 60));
-
-    if (normL >= peakHoldRef.current.l || now - peakHoldRef.current.lTime > 900) {
-      peakHoldRef.current.l = normL;
-      peakHoldRef.current.lTime = now;
-    } else {
-      peakHoldRef.current.l = Math.max(0, peakHoldRef.current.l - 0.015);
-    }
-    if (normR >= peakHoldRef.current.r || now - peakHoldRef.current.rTime > 900) {
-      peakHoldRef.current.r = normR;
-      peakHoldRef.current.rTime = now;
-    } else {
-      peakHoldRef.current.r = Math.max(0, peakHoldRef.current.r - 0.015);
-    }
-
-    if (vuCanvas) {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = vuCanvas.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        if (
-          vuCanvas.width !== Math.round(rect.width * dpr) ||
-          vuCanvas.height !== Math.round(rect.height * dpr)
-        ) {
-          vuCanvas.width = Math.round(rect.width * dpr);
-          vuCanvas.height = Math.round(rect.height * dpr);
-        }
-        const ctx = vuCanvas.getContext('2d');
-        if (ctx) {
-          ctx.save();
-          ctx.scale(dpr, dpr);
-          const w = rect.width;
-          const h = rect.height;
-
-          ctx.fillStyle = waveBg;
-          ctx.fillRect(0, 0, w, h);
-
-          const halfW = (w - 8) / 2;
-          const drawSideMeter = (
-            originX: number,
-            meterW: number,
-            val: number,
-            hold: number,
-            label: string
-          ) => {
-            ctx.fillStyle = mutedCol;
-            ctx.font = '10px "JetBrains Mono", monospace';
-            ctx.fillText(label, originX + 4, h / 2 + 3.5);
-
-            const startX = originX + 18;
-            const barW = meterW - 22;
-            const barY = 5;
-            const barH = h - 10;
-            const segments = 18;
-            const gap = 1.5;
-            const segW = (barW - (segments - 1) * gap) / segments;
-            const activeCount = Math.round(val * segments);
-
-            for (let i = 0; i < segments; i++) {
-              const frac = i / segments;
-              const col = frac > 0.85 ? highCol : frac > 0.65 ? midCol : lowCol;
-              ctx.fillStyle = i < activeCount ? col : borderSubtle;
-              ctx.globalAlpha = i < activeCount ? 1 : 0.4;
-              ctx.fillRect(startX + i * (segW + gap), barY, segW, barH);
-            }
-            ctx.globalAlpha = 1;
-
-            if (hold > 0.02) {
-              const hx = startX + Math.min(barW - 2, hold * barW);
-              ctx.fillStyle = hold > 0.85 ? highCol : '#ffffff';
-              ctx.fillRect(hx, barY, 2, barH);
-            }
-          };
-
-          drawSideMeter(2, halfW, normL, peakHoldRef.current.l, 'G');
-          drawSideMeter(halfW + 6, halfW, normR, peakHoldRef.current.r, 'D');
-
-          ctx.strokeStyle = borderSubtle;
-          ctx.beginPath();
-          ctx.moveTo(Math.round(w / 2) + 0.5, 2);
-          ctx.lineTo(Math.round(w / 2) + 0.5, h - 2);
-          ctx.stroke();
-
-          ctx.restore();
-        }
-      }
-    }
 
     if (visCanvas) {
       const dpr = window.devicePixelRatio || 1;
@@ -738,7 +636,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             </div>
           </div>
 
-          <canvas ref={vuCanvasRef} className="w-full h-7 rounded-md border block" style={{ borderColor: 'var(--border-subtle)' }} />
+          <img data-atz-control-art src={mixArtworkUrl} alt="ATX aux commandes du mixage" draggable={false} style={{display:"block",width:"100%",height:"140px",objectFit:"contain",padding:"6px",boxSizing:"border-box"}} />
 
           <div>
             <div className="flex items-center justify-between mb-1">

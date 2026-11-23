@@ -64,6 +64,15 @@ Projet sous licence GPL v3 : voir les fichiers de licence du dépôt. Communaut�
 - Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
 - Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
 - Aucun texte « Aucun fichier récent » quand la liste est vide.
-- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP fournies séparément.
+- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP dans le résumé de compilation.
 - Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
 - Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.
+
+
+## Distribution finale v1.6
+
+Un seul fichier : `audio tools v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
+
+Contrôle : illustration mix.png à la place des deux vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux violets devenant verts au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
+
+Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publication ; la validation de 414ae3f ne vaut pas validation de ces modifications.

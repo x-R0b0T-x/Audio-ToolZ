@@ -43,3 +43,8 @@
 .atz-tuto-links{display:flex;flex-wrap:wrap;gap:12px;padding:5px}
 .atz-tuto-links .atz-tuto-link{border:1px solid #39ff14;border-radius:8px;color:#fff!important;background:#191320;box-shadow:0 0 4px #39ff1480,0 0 9px #b34dff60;transition:box-shadow .18s ease}
 .atz-tuto-links .atz-tuto-link:hover,.atz-tuto-links .atz-tuto-link:focus-visible{outline:2px solid #b34dff;outline-offset:2px;box-shadow:0 0 7px #39ff14bb,0 0 13px #b34dff99}
+/* v1.6 compact equal community buttons */
+.atz-tuto .atz-tuto-links{display:flex;flex-wrap:wrap;gap:8px;padding:4px}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 100px;width:100px;min-width:100px;max-width:100px;height:32px;min-height:32px;max-height:32px;padding:0 8px;white-space:nowrap;font-size:13px;color:#fff!important;background:#7928b5;border:1px solid #b34dff;border-radius:7px;box-shadow:0 0 5px #b34dff66;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link:hover,.atz-tuto .atz-tuto-links>a.atz-tuto-link:focus-visible{background:#166b21;border-color:#39ff14;color:#fff!important;outline:2px solid #39ff14;outline-offset:2px;box-shadow:0 0 8px #39ff1488}
+@media(prefers-reduced-motion:reduce){.atz-tuto .atz-tuto-links>a.atz-tuto-link{transition:none}}
