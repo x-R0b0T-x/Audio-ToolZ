@@ -22,7 +22,8 @@ export function createSpaceTransport(env){
    if(!isPlainSpace(event)||!env.effectOpen()||env.recording())return false;
    swallow(event);if(event.repeat||held)return true;held=true;
    const controls=env.controls(),loop=env.loopPreferred?.()!==false;
-   const control=env.playing()?findTransportControl(controls,'stop'):(loop?findTransportControl(controls,'loop'):null)??findTransportControl(controls,'play');
+   const start=()=>loop?findTransportControl(controls,'loop')??findTransportControl(controls,'play'):findTransportControl(controls,'play');
+   const control=env.playing()?findTransportControl(controls,'stop'):start();
    if(control)env.activate(control);return true;
   },
   keyup(event){if(!isPlainSpace(event))return false;const wasHeld=held;held=false;if(!wasHeld&&(!env.effectOpen()||env.recording()))return false;swallow(event);return true;},
