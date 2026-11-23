@@ -1,0 +1,67 @@
+name: Package Audio ToolZ v1.6 folder
+on:
+  workflow_run:
+    workflows: ['Audio ToolZ v1.6 - Windows portable']
+    types: [completed]
+    branches: [v1.6-dev]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.6-Windows-x64-v1.6-dev
+          path: compiled
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Create portable folder and checksums
+        shell: python
+        run: |
+          import hashlib, pathlib, shutil, subprocess, zipfile
+          folder = pathlib.Path('staging/Audio ToolZ')
+          folder.mkdir(parents=True)
+          exe = pathlib.Path('compiled/Audio ToolZ.exe')
+          if not exe.is_file():
+              raise RuntimeError('Compiled executable missing')
+          expected = pathlib.Path('compiled/SHA256SUMS.txt').read_text().split()[0]
+          digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+          if digest(exe) != expected.lower():
+              raise RuntimeError('Executable checksum mismatch')
+          shutil.copy2(exe, folder / exe.name)
+          shutil.copy2('src/medias/logo.ico', folder / 'logo.ico')
+          (folder / 'desktop.ini').write_text('[.ShellClassInfo]\nIconResource=logo.ico,0\n', encoding='utf-16')
+          subprocess.run(['attrib', '+r', str(folder)], check=True)
+          subprocess.run(['attrib', '+h', str(folder / 'logo.ico')], check=True)
+          subprocess.run(['attrib', '+r', '+h', '+s', str(folder / 'desktop.ini')], check=True)
+          output = pathlib.Path('portable-output')
+          output.mkdir()
+          archive = output / 'Audio-ToolZ-v1.6-Windows-x64-portable.zip'
+          with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as z:
+              info = zipfile.ZipInfo('Audio ToolZ/')
+              info.create_system = 0
+              info.external_attr = 0x11
+              z.writestr(info, b'')
+              for p in sorted(folder.iterdir()):
+                  info = zipfile.ZipInfo('Audio ToolZ/' + p.name)
+                  info.create_system = 0
+                  info.compress_type = zipfile.ZIP_DEFLATED
+                  info.external_attr = {'logo.ico':0x22, 'desktop.ini':0x27}.get(p.name, 0x20)
+                  z.writestr(info, p.read_bytes())
+          (output / 'SHA256SUMS.txt').write_text(digest(archive)+'  '+archive.name+'\n'+digest(exe)+'  Audio ToolZ/Audio ToolZ.exe\n', encoding='ascii')
+          (output / 'BUILD.txt').write_text('Source commit: ${{ github.event.workflow_run.head_sha }}\nBuild run: ${{ github.event.workflow_run.id }}\n', encoding='ascii')
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Audio-ToolZ-v1.6-portable-folder
+          path: portable-output/*
+          if-no-files-found: error

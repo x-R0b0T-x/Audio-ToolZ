@@ -37,3 +37,4 @@
 @keyframes atz-tuto-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:720px){.atz-tuto-main{grid-template-columns:1fr;grid-template-rows:minmax(0,170px) minmax(0,1fr)}.atz-tuto-art{padding:8px 16px 0}.atz-tuto-copy{padding:10px 18px}}
 @media(prefers-reduced-motion:reduce){.atz-tuto-art img,.atz-tuto-copy{animation:none}.atz-tuto-nav button,.atz-tuto-link{transition:none}}
+.atz-tuto{background:#191320;border-color:#39ff14;box-shadow:0 0 8px #39ff14aa,0 0 24px #39ff1466,0 0 42px #39ff142b,0 20px 60px #000a}
