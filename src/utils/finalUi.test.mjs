@@ -1,4 +1,5 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import './robotFit.test.mjs';import './spaceTransport.test.mjs';
 import {beatPulse,loopSelection,robotBeatPulse} from './finalUiMath.mjs';
 test('beat pulse follows sample position and beat origin',()=>{assert.equal(beatPulse(0,120,48000),1);assert.ok(beatPulse(12000,120,48000)<1e-10);assert.equal(beatPulse(24000,120,48000),1);assert.equal(beatPulse(25000,120,48000,1000),1);assert.equal(beatPulse(-24000,120,48000),1);assert.equal(beatPulse(0,0,48000),0);});
 test('loop click retains current end or starts a pending new region',()=>{assert.deepEqual(loopSelection(30,80),{startSample:30,endSample:80});assert.deepEqual(loopSelection(90,80),{startSample:90,endSample:90});assert.deepEqual(loopSelection(80,80),{startSample:80,endSample:80});});
@@ -31,19 +32,35 @@ test('boom pulses have a fast attack, gradual return and bounded scale on every 
  }
  for(const args of [[0,0,rate],[NaN,120,rate],[0,120,0],[0,Infinity,rate]])assert.equal(robotBeatPulse(...args),0);
 });
-test('About keeps two columns at every width and fits the complete robot pulse in its slot',()=>{
+test('About keeps two columns, the robot on the left, and reserves room for its pulse',()=>{
  const css=readFileSync('src/components/aboutLayout.css','utf8');
- assert.ok(css.includes('grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)'));
+ assert.ok(css.includes('grid-template-columns:minmax(0,1.1fr) minmax(150px,1fr)'));
  assert.ok(!css.includes('@container'));assert.ok(!/grid-template-columns:minmax\(0,1fr\)[;}]/.test(css));
- assert.ok(css.includes('--atz-art-size:calc((100cqw - 16px)/1.7)'));
- assert.ok(css.includes('aspect-ratio:1'));assert.ok(css.includes('overflow-y:auto'));
- for(const slot of [100,140,180,240,322]){const art=(slot-16)/1.7;assert.ok(Math.abs(art*1.7+16-slot)<1e-9);}
+ assert.ok(css.includes('padding:var(--atz-room,24px) 12px var(--atz-room,24px) 40px'));
+ assert.ok(css.includes('--atz-art-size:var(--atz-fit-size,150px)'));
+ assert.ok(css.includes('transform-origin:var(--atz-ox,50%) var(--atz-oy,50%)'));
+ assert.ok(css.includes('left:calc(50% + var(--atz-dx,0px))'));assert.ok(css.includes('top:calc(50% + var(--atz-dy,0px))'));
+ assert.ok(css.includes('.atz-about-robot{--atz-art-size'));assert.ok(css.includes('z-index:0'));assert.ok(css.includes('.atz-about-actions{position:relative;z-index:1'));
+ assert.ok(css.includes('overflow-x:hidden;overflow-y:auto'));
 });
-test('About link halos use the main title neon strengths and preserve reduced motion',()=>{
+test('robot is fitted to its visible drawing and to the block of three links',()=>{
+ const code=readFileSync('src/components/AboutRobot.tsx','utf8');
+ assert.ok(code.includes('alphaBounds(ctx.getImageData'));assert.ok(code.includes('fitRobot(bounds,block,'));
+ assert.ok(code.includes('last.getBoundingClientRect().bottom-first.getBoundingClientRect().top'));
+ assert.ok(code.includes('.atz-about-actions'));assert.ok(code.includes('ResizeObserver'));assert.ok(code.includes('--atz-fit-size'));assert.ok(code.includes('--atz-room'));
+ assert.ok(code.includes('<img src={src}'));
+});
+test('About link halos are thinner, sharper and faster',()=>{
  const css=readFileSync('src/components/aboutLayout.css','utf8');
- assert.ok(css.includes('drop-shadow(0 0 7px rgba(57,255,20,.85))'));
- assert.ok(css.includes('drop-shadow(0 0 9px rgba(179,77,255,.88))'));
- assert.ok(css.includes('drop-shadow(0 0 18px rgba(57,255,20,.42))'));
- assert.ok(css.includes('atz-about-bright-halo 4s linear infinite'));assert.ok(css.includes('pointer-events:none'));
+ assert.ok(css.includes('animation:atz-about-ring 1.6s linear infinite'));
+ const seconds=Number(css.match(/atz-about-ring ([0-9.]+)s linear/)?.[1]);assert.ok(seconds>0&&seconds<=2);
+ assert.ok(css.includes('conic-gradient(from var(--atz-halo-angle)'));assert.ok(css.includes('mask-composite:exclude'));assert.ok(css.includes('inset:-2px;padding:2px'));
+ assert.ok(!css.includes('atz-about-bright-halo'));assert.ok(!css.includes('drop-shadow(0 0 18px'));assert.ok(css.includes('drop-shadow(0 0 2px rgba(57,255,20,.75))'));
  assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));assert.ok(css.includes('.atz-about-actions>a::before{animation:none}'));
+});
+test('Space transport is installed once with the global descriptions and only uses existing controls',()=>{
+ const code=readFileSync('src/utils/finalUi.ts','utf8'),space=readFileSync('src/utils/spaceTransport.mjs','utf8');
+ assert.ok(code.includes('installSpaceTransport({isPlaying:()=>audioEngine.isPlaying,isRecording:()=>audioEngine.isRecording})'));assert.ok(code.includes('removeSpaceTransport();hide();'));
+ assert.ok(space.includes("'.atz-advanced-backdrop'"));assert.ok(space.includes('addEventListener(\'keydown\',down,true)'));assert.ok(space.includes('control.element.click()'));
+ assert.ok(!space.includes('audioEngine'));
 });

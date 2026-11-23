@@ -10,8 +10,12 @@ export function overviewRange(total,start,length){
 }
 export function overviewZoom(total,start,end,delta){
  const old=end-start;
- const size=Math.max(Math.min(64,total),Math.min(total,Math.round(old*Math.exp(-Math.max(-240,Math.min(240,delta))*.0022))));
+ const size=Math.max(Math.min(64,total),Math.min(total,Math.round(old*Math.exp(Math.max(-240,Math.min(240,delta))*.0022))));
  return overviewRange(total,(start+end-size)/2,size);
+}
+export function overviewPan(total,start,length,dx,width,threshold=3){
+ if(!Number.isFinite(total)||!Number.isFinite(start)||!Number.isFinite(length)||!Number.isFinite(dx)||!Number.isFinite(width)||width<=0||Math.abs(dx)<threshold)return null;
+ return overviewRange(total,start+dx*total/width,length);
 }
 export function kickPulseAt(sample,rate,kicks){
  if(!Number.isFinite(sample)||!Number.isFinite(rate)||rate<=0||!kicks.length)return 0;

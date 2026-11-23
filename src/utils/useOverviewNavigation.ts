@@ -1,29 +1,23 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {RefObject} from 'react';
 import type {AudioDocument} from '../audio/types';
-import {overviewRange,overviewZoom} from './workspaceMath.mjs';
+import {overviewPan,overviewZoom} from './workspaceMath.mjs';
 export {overviewRange,kickPulseAt} from './workspaceMath.mjs';
 type Options={canvas:RefObject<HTMLCanvasElement|null>;doc:AudioDocument|null;isRecording:boolean;isLooping?:boolean;onViewRangeChange:(start:number,end:number)=>void};
+type Drag={id:number;x:number;start:number;length:number;width:number;total:number;moved:boolean};
 export function useOverviewNavigation(options:Options){
  const latest=useRef(options);latest.current=options;
- const [range,setRange]=useState<[number,number]>([options.doc?.viewStartSample??0,options.doc?.viewEndSample??0]);
+ const viewStart=options.doc?.viewStartSample??0,viewEnd=options.doc?.viewEndSample??0;
+ const [range,setRange]=useState<[number,number]>([viewStart,viewEnd]);
  const handle=useRef<[number,number]>(range);handle.current=range;
- const previousDoc=useRef<string|null>(null);
  useLayoutEffect(()=>{
-  const d=options.doc;if(!d)return;
-  const selected=d.selection,total=d.channels[0]?.length??0;
-  if(selected.endSample>selected.startSample){
-   const next=overviewRange(total,selected.startSample,selected.endSample-selected.startSample);
-   handle.current=next;setRange(old=>old[0]===next[0]&&old[1]===next[1]?old:next);
-  }else if(previousDoc.current!==d.id){
-   const next:[number,number]=[d.viewStartSample,d.viewEndSample];handle.current=next;setRange(next);
-  }
-  previousDoc.current=d.id;
- },[options.doc?.id,options.doc?.selection.startSample,options.doc?.selection.endSample]);
+  const next:[number,number]=[viewStart,viewEnd];
+  handle.current=next;setRange(old=>old[0]===next[0]&&old[1]===next[1]?old:next);
+ },[options.doc?.id,viewStart,viewEnd]);
  useEffect(()=>{
   const canvas=latest.current.canvas.current;
   if(!canvas||!options.doc||options.isRecording)return;
-  let drag:{id:number;x:number;start:number;length:number;width:number;total:number}|null=null;
+  let drag:Drag|null=null;
   const hit=(x:number,y:number)=>{
    const d=latest.current.doc,r=canvas.getBoundingClientRect(),total=d?.channels[0]?.length??0;
    if(!total||r.width<=0||y<r.top||y>r.bottom)return false;
@@ -37,15 +31,18 @@ export function useOverviewNavigation(options:Options){
    if(e.button!==0||drag||!hit(e.clientX,e.clientY))return;
    const d=latest.current.doc,r=canvas.getBoundingClientRect();if(!d||r.width<=0)return;
    const [start,end]=handle.current;
-   drag={id:e.pointerId,x:e.clientX,start,length:end-start,width:r.width,total:d.channels[0]?.length??0};
+   drag={id:e.pointerId,x:e.clientX,start,length:end-start,width:r.width,total:d.channels[0]?.length??0,moved:false};
    canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';
   };
   const move=(e:PointerEvent)=>{
    if(!drag){canvas.style.cursor=hit(e.clientX,e.clientY)?'grab':'default';return;}
    if(e.pointerId!==drag.id)return;
-   e.preventDefault();e.stopImmediatePropagation();publish(overviewRange(drag.total,drag.start+(e.clientX-drag.x)*drag.total/drag.width,drag.length));
+   e.preventDefault();e.stopImmediatePropagation();
+   const next=overviewPan(drag.total,drag.start,drag.length,e.clientX-drag.x,drag.width,drag.moved?0:3);
+   if(!next)return;
+   drag.moved=true;publish(next);
   };
-  const up=(e:PointerEvent)=>{if(drag&&e.pointerId===drag.id){move(e);e.preventDefault();e.stopImmediatePropagation();stop();}};
+  const up=(e:PointerEvent)=>{if(drag&&e.pointerId===drag.id){e.preventDefault();e.stopImmediatePropagation();if(drag.moved)move(e);stop();}};
   const wheel=(e:WheelEvent)=>{
    e.preventDefault();e.stopImmediatePropagation();if(drag||!hit(e.clientX,e.clientY)||!e.deltaY)return;
    const total=latest.current.doc?.channels[0]?.length??0;if(!total)return;
@@ -55,7 +52,7 @@ export function useOverviewNavigation(options:Options){
   const suppress=(e:Event)=>{e.preventDefault();e.stopImmediatePropagation();};
   const leave=()=>{if(!drag)canvas.style.cursor='default';};
   const oldTouch=canvas.style.touchAction;canvas.style.touchAction='none';
-  canvas.title='Glisser avec le bouton gauche pour déplacer la vue ; molette vers le haut pour élargir, vers le bas pour rétrécir.';
+  canvas.title='Glisser avec le bouton gauche pour déplacer la vue ; molette vers le haut pour zoomer, vers le bas pour dézoomer.';
   canvas.addEventListener('pointerdown',down,true);canvas.addEventListener('pointermove',move,true);canvas.addEventListener('pointerup',up,true);
   canvas.addEventListener('pointercancel',stop,true);canvas.addEventListener('lostpointercapture',stop,true);canvas.addEventListener('pointerleave',leave);
   canvas.addEventListener('wheel',wheel,{passive:false,capture:true});

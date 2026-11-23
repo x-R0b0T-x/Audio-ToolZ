@@ -3,6 +3,7 @@ import type {AudioDocument} from '../audio/types';
 import {audioEngine} from '../audio/engine';
 import {kickPulseAt,smoothPulse} from './workspaceMath.mjs';
 import {robotBeatPulse} from './finalUiMath.mjs';
+import {installSpaceTransport} from './spaceTransport.mjs';
 type RobotTempo={bpm:number;origin:number;rate:number};
 const robotTempoCache=new WeakMap<Float32Array[],RobotTempo>();
 export function useBeatSync(doc:AudioDocument|null){
@@ -71,6 +72,7 @@ export function useBeatSync(doc:AudioDocument|null){
  },[doc?.id,doc?.channels,doc?.bpmInfo,doc?.sampleRate]);
 }
 export function installDescriptions(root:HTMLElement){
+ const removeSpaceTransport=installSpaceTransport({isPlaying:()=>audioEngine.isPlaying,isRecording:()=>audioEngine.isRecording});
  const tip=document.createElement('div');tip.id='atz-description';tip.setAttribute('role','tooltip');
  Object.assign(tip.style,{position:'fixed',zIndex:'2147483647',maxWidth:'min(340px, calc(100vw - 16px))',padding:'8px 12px',border:'1px solid #39ff14',borderRadius:'7px',background:'#17131f',color:'#fff',font:'12px/1.45 system-ui',boxShadow:'0 0 6px #39ff14aa,0 0 14px #39ff1455',pointerEvents:'none'});
  let current:HTMLElement|null=null,title:string|null=null,described:string|null=null,timer=0;
@@ -86,5 +88,5 @@ export function installDescriptions(root:HTMLElement){
  const out=(event:PointerEvent)=>{if(current&&(!(event.relatedTarget instanceof Node)||!current.contains(event.relatedTarget)))hide();};
  const key=(event:KeyboardEvent)=>{if(event.key==='Escape')hide();};
  root.addEventListener('pointerover',show);root.addEventListener('pointerout',out);root.addEventListener('focusin',show);root.addEventListener('focusout',hide);window.addEventListener('scroll',hide,true);window.addEventListener('keydown',key);
- return()=>{hide();root.removeEventListener('pointerover',show);root.removeEventListener('pointerout',out);root.removeEventListener('focusin',show);root.removeEventListener('focusout',hide);window.removeEventListener('scroll',hide,true);window.removeEventListener('keydown',key);};
+ return()=>{removeSpaceTransport();hide();root.removeEventListener('pointerover',show);root.removeEventListener('pointerout',out);root.removeEventListener('focusin',show);root.removeEventListener('focusout',hide);window.removeEventListener('scroll',hide,true);window.removeEventListener('keydown',key);};
 }
