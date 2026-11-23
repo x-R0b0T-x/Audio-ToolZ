@@ -3,12 +3,12 @@ import {createSpaceTransport,findTransportControl,installSpaceTransport,normaliz
 import {isLoopActive,setLoopActive} from './loopState.mjs';
 function key(over={}){return Object.assign({code:'Space',key:' ',repeat:false,ctrlKey:false,altKey:false,metaKey:false,shiftKey:false,prevented:0,stopped:0,preventDefault(){this.prevented++;},stopPropagation(){},stopImmediatePropagation(){this.stopped++;}},over);}
 function setup(over={}){
- const state={open:true,playing:false,recording:false,loop:false,clicks:[],...over};
+ const state={open:true,playing:false,recording:false,clicks:[],...over};
  const controls=['Lecture','Boucle','Stop'].map(name=>({id:name,names:[null,name,name],disabled:false}));
- const gate=createSpaceTransport({effectOpen:()=>state.open,loopActive:()=>state.loop,recording:()=>state.recording,playing:()=>state.playing,controls:()=>controls,activate:control=>{state.clicks.push(control.id);state.playing=control.id!=='Stop';}});
+ const gate=createSpaceTransport({effectOpen:()=>state.open,recording:()=>state.recording,playing:()=>state.playing,controls:()=>controls,activate:control=>{state.clicks.push(control.id);state.playing=control.id!=='Stop';}});
  return {state,gate,controls};
 }
-test('shared loop state is a simple flag that survives re-rendered elements',()=>{
+test('shared loop state is a simple flag',()=>{
  assert.equal(isLoopActive(),false);setLoopActive(true);assert.equal(isLoopActive(),true);setLoopActive(0);assert.equal(isLoopActive(),false);
 });
 test('labels are matched exactly and disabled controls are skipped',()=>{
@@ -19,24 +19,24 @@ test('labels are matched exactly and disabled controls are skipped',()=>{
  assert.equal(findTransportControl([{names:['Enregistrer'],disabled:false}],'loop'),null);
  assert.equal(findTransportControl(controls,'unknown'),null);
 });
-test('space plays normally without a loop and stops when playing, keeping the effect window',()=>{
+test('space starts the loop button when stopped and stops when playing, keeping the effect window',()=>{
  const {state,gate}=setup();
- const first=key();assert.equal(gate.keydown(first),true);assert.deepEqual(state.clicks,['Lecture']);assert.ok(first.prevented>0&&first.stopped>0);
+ const first=key();assert.equal(gate.keydown(first),true);assert.deepEqual(state.clicks,['Boucle']);assert.ok(first.prevented>0&&first.stopped>0);
  gate.keyup(key());
- gate.keydown(key());assert.deepEqual(state.clicks,['Lecture','Stop']);assert.equal(state.playing,false);assert.equal(state.open,true);
+ gate.keydown(key());assert.deepEqual(state.clicks,['Boucle','Stop']);assert.equal(state.playing,false);assert.equal(state.open,true);
  gate.keyup(key());
- gate.keydown(key());assert.deepEqual(state.clicks,['Lecture','Stop','Lecture']);
+ gate.keydown(key());assert.deepEqual(state.clicks,['Boucle','Stop','Boucle']);
 });
-test('space plays the loop when a loop is selected and stops it afterwards',()=>{
- const {state,gate}=setup({loop:true});
- gate.keydown(key());assert.deepEqual(state.clicks,['Boucle']);gate.keyup(key());
- gate.keydown(key());assert.deepEqual(state.clicks,['Boucle','Stop']);
+test('space falls back to the play button when the loop button is unavailable',()=>{
+ const {state,gate,controls}=setup();
+ controls[1].disabled=true;
+ gate.keydown(key());assert.deepEqual(state.clicks,['Lecture']);
 });
 test('holding space produces a single action even with synthetic repeats',()=>{
  const {state,gate}=setup();
  gate.keydown(key());for(let n=0;n<20;n++)gate.keydown(key({repeat:true}));gate.keydown(key());
- assert.deepEqual(state.clicks,['Lecture']);
- gate.keyup(key());gate.keydown(key());assert.deepEqual(state.clicks,['Lecture','Stop']);
+ assert.deepEqual(state.clicks,['Boucle']);
+ gate.keyup(key());gate.keydown(key());assert.deepEqual(state.clicks,['Boucle','Stop']);
 });
 test('space never reaches a focused field or button while an effect window is open',()=>{
  const {state,gate}=setup();
@@ -54,13 +54,13 @@ test('space is left alone outside effect windows, with modifiers or while record
  assert.equal(gate.keydown(key({code:'Enter',key:'Enter'})),false);
  assert.deepEqual(state.clicks,[]);
 });
-test('a missing or disabled transport button is swallowed without side effects and blur releases the latch',()=>{
+test('missing transport buttons are swallowed without side effects and blur releases the latch',()=>{
  const {state,gate,controls}=setup();
- controls[0].disabled=true;
+ controls[0].disabled=true;controls[1].disabled=true;
  const e=key();assert.equal(gate.keydown(e),true);assert.ok(e.prevented>0);assert.deepEqual(state.clicks,[]);
- gate.reset();controls[0].disabled=false;gate.keydown(key());assert.deepEqual(state.clicks,['Lecture']);
+ gate.reset();controls[1].disabled=false;gate.keydown(key());assert.deepEqual(state.clicks,['Boucle']);
 });
-test('the installed listeners run in the capture phase and use the shared loop state',()=>{
+test('the installed listeners run in the capture phase and click only the real transport buttons',()=>{
  const listeners={},clicks=[];
  const button=label=>({disabled:false,textContent:label,getAttribute:name=>name==='title'?label:null,click(){clicks.push(label);}});
  const target={
@@ -69,11 +69,10 @@ test('the installed listeners run in the capture phase and use the shared loop s
   document:{querySelector:selector=>selector==='.atz-advanced-backdrop'?{}:null,querySelectorAll:()=>[button('Lecture'),button('Boucle'),button('Stop')]},
  };
  let playing=false;
- setLoopActive(false);
  const remove=installSpaceTransport({isPlaying:()=>playing,isRecording:()=>false},target);
  assert.equal(listeners.keydown.capture,true);assert.equal(listeners.keyup.capture,true);
- const e=key();listeners.keydown.fn(e);assert.deepEqual(clicks,['Lecture']);assert.ok(e.prevented>0);
- listeners.keyup.fn(key());playing=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture','Stop']);
- listeners.keyup.fn(key());playing=false;setLoopActive(true);listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture','Stop','Boucle']);
- setLoopActive(false);remove();assert.equal(Object.keys(listeners).length,0);
+ const e=key();listeners.keydown.fn(e);assert.deepEqual(clicks,['Boucle']);assert.ok(e.prevented>0);
+ listeners.keyup.fn(key());playing=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Boucle','Stop']);
+ listeners.keyup.fn(key());playing=false;listeners.keydown.fn(key());assert.deepEqual(clicks,['Boucle','Stop','Boucle']);
+ remove();assert.equal(Object.keys(listeners).length,0);
 });
