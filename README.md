@@ -1,97 +1,129 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/e5677deb-fe21-4d32-9495-dfe60b4ffe69" alt="Logo Audio-ToolZ" width="160" height="160" />
-  <h1>Audio-ToolZ 1.6</h1>
-  <p>Éditeur audio léger à interface française — Windows portable sous Tauri v2 et navigateur.</p>
+  <img src="src/medias/mix.png" alt="Logo Audio ToolZ" width="220" />
+  <h1>Audio ToolZ v1.6</h1>
+  <p>Découpez, transformez et assemblez vos sons.</p>
+  <p>Éditeur audio à interface française · Windows portable · Traitements locaux</p>
+  <p><a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases">Versions publiées</a> · <a href="RELEASE_NOTES_1.6.md">Nouveautés v1.6</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="https://t.me/Audio_ToolZ">Communauté Telegram</a></p>
 </div>
 
-## Présentation
+---
 
-Audio-ToolZ permet de préparer des échantillons, découper un passage, travailler en boucle, appliquer des effets et assembler plusieurs fichiers. Les documents s’ouvrent en onglets ; la fenêtre Contrôle regroupe transport, niveaux et visualisations stéréo.
+## Votre atelier audio, du premier extrait au mix final
 
-## Version 1.6
+Préparer un échantillon, affiner une boucle, corriger un niveau, sculpter un son ou assembler plusieurs morceaux : Audio ToolZ réunit ces outils dans un espace de travail à interface française, avec documents en onglets, édition sur forme d’onde et préécoute des effets.
 
-- Égaliseur paramétrique sept bandes avec formes de filtre, largeur Q et courbe de réponse.
-- Limiteur / Compresseur avec graphique de sortie et réduction de gain.
-- Effets en préécoute pendant une lecture normale, sans boucle obligatoire. Ils ciblent la sélection ou tout le morceau lorsqu’aucune sélection n’existe.
-- Delay musical : temps, répétitions, volume d’effet, panoramique et modes Mono / Stéréo / Ping-pong / Off. Détection BPM accessible dans son panneau.
-- Navigation dans l’aperçu indépendante de la boucle audio.
-- À propos : robot à côté des liens, pulsation synchronisée au tempo avec détection automatique, halos vert/violet.
+La v1.6 est une grosse mise à jour : égaliseur paramétrique à sept bandes, fenêtre compresseur/limiteur, didacticiel avec ATZ et refonte graphique violet et vert néon.
 
-Les détails et limites figurent dans [les notes de la 1.6](RELEASE_NOTES_1.6.md) et le [changelog](CHANGELOG.md). Les anciennes fenêtres autonomes Volume/Gain et Normalisation ne sont plus présentes ; le volume général et les gains intégrés restent disponibles.
+## Audio ToolZ en image
 
-## Fonctionnalités conservées
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e1e65796-d3d2-409c-bdcf-fe649f2b3a93" alt="Grande illustration de présentation d’Audio ToolZ" width="1000" />
+</p>
 
-- Édition sur forme d’onde : sélection, couper/copier/coller, mixage au collage, silence, rognage, annuler/rétablir et zoom.
-- Lecture normale, pause, arrêt, boucle et lecture inversée ; volume, balance, vitesse et activation des canaux.
-- Fondus, vitesse et hauteur, réduction de bruit spectrale, égalisation, dynamique et Delay.
-- Détection BPM, repères rythmiques et aimantation des sélections.
-- Enregistrement depuis une entrée audio autorisée et sélection des périphériques selon les possibilités du système.
-- Assemblage de fichiers, import et export CUE, Auto-Cue, découpe WAV et traitement par lots. L’assemblage juxtapose les pistes : ce n’est pas un séquenceur multipiste.
-- Oscilloscope, spectre et forme d’onde colorée.
+Cette illustration de présentation est conservée ; elle ne remplace pas une capture exhaustive des nouveautés de la v1.6.
 
-## Formats et export
+## Une grosse mise à jour : la v1.6
 
-La version Windows utilise WebView2 et le décodeur de secours Symphonia, notamment pour AAC, ALAC, FLAC, MP3, PCM et Vorbis dans les conteneurs compatibles. La compatibilité dépend du fichier et du décodeur disponible.
-
-| Export | Options |
+| Nouveauté | Pour votre travail audio |
 | --- | --- |
-| WAV | PCM 16 bits, PCM 24 bits, flottant 32 bits |
-| MP3 | 128, 192, 256 ou 320 kbit/s |
-| FLAC | Niveaux 0, 2 ou 5 |
-| OGG Vorbis | Qualité 1 à 10 |
+| Égaliseur paramétrique à sept bandes | Réglez fréquence, gain et largeur Q, choisissez les formes de filtre et consultez le spectre ainsi que la réponse globale. |
+| Compresseur et limiteur | Travaillez la dynamique avec les modes COMP et LIMIT, le plafond, l’enveloppe et l’affichage de la réduction de gain. |
+| Didacticiel avec ATZ | Découvrez l’application avec la mascotte et retrouvez les liens vers la communauté et le soutien au projet. |
+| Refonte graphique | Retrouvez une interface harmonisée, des potards violets gradués et des accents vert néon. |
+| Préécoute pendant la lecture | Ajustez les effets en lecture normale, sans imposer de boucle, sur la sélection ou le morceau entier. |
+| Delay musical compact | Réglez temps musicaux, répétitions, volume et panoramique ; détectez le BPM directement dans le panneau. |
 
-Les traitements et l’encodage sont réalisés localement. L’accès aux entrées audio requiert une autorisation ; le choix des périphériques et les dialogues d’enregistrement varient selon le navigateur et le système.
-
-## Prise en main
-
-1. Ouvrez un fichier et lancez sa lecture.
-2. Sélectionnez un passage si nécessaire ; sinon les effets ciblent le morceau entier.
-3. Ouvrez un effet et ajustez ses réglages pendant la lecture.
-4. Pour le Delay musical, utilisez Détection BPM si le tempo est inconnu, choisissez un mode actif, des répétitions et un volume d’effet supérieur à zéro. Aucune boucle n’est requise.
-5. Appliquez le traitement puis exportez le document ou la sélection.
-
-La détection du tempo est une estimation. La mémorisation de l’interface ne sauvegarde pas vos documents : exportez votre travail avant de fermer l’application. Les fichiers longs et l’historique d’édition peuvent consommer beaucoup de mémoire.
-
-## Distribution et licence
-
-Les versions publiées se trouvent dans [GitHub Releases](https://github.com/x-R0b0T-x/Audio-ToolZ/releases). Le paquet Windows x64 portable contient Audio ToolZ.exe et SHA256SUMS.txt. Les artifacts de développement Actions ne constituent pas une publication officielle.
-
-Projet sous licence GPL v3 : voir les fichiers de licence du dépôt. Communauté : [Telegram](https://t.me/Audio_ToolZ).
-
-
-## Finalisation du candidat v1.6
-
-- Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
-- Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
-- Aucun texte « Aucun fichier récent » quand la liste est vide.
-- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP dans le résumé de compilation.
-- Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
-- Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.
-
-
-## Distribution finale v1.6
-
-Un seul fichier : `Audio ToolZ v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
-
-Accueil : illustration mix.png sans document ; Contrôle sans robot ni vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux restant violets avec contour lumineux vert au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
-
-Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publication ; la validation de 414ae3f ne vaut pas validation de ces modifications.
-
-
-### Dernières finitions v1.6
-
-- Bornes de boucle saisissables au clic gauche, même pendant la lecture ; création au clic droit et suppression au double-clic conservées.
-- Robot statique sur l’accueil sans document, retiré de Contrôle.
-- Sélecteur de visualisation aligné à gauche sans libellé redondant ; zone de visualisation conservée.
-- Onde électrique verte continue, attachée au titre et pilotée uniquement par le niveau sonore RMS ; aucun signal à l’arrêt, en pause ou pendant le silence ; réduction des animations respectée.
-- Boutons du didacticiel toujours violets ; seul le contour et son halo deviennent verts au survol.
-- Tests, compilation, ZIP et rendu Windows à valider sur ce candidat.
-
+Le limiteur agit sur les crêtes d’échantillons ; il ne revendique pas de limitation true peak suréchantillonnée. Le BPM est nécessaire au calcul des temps musicaux du Delay, pas à l’égaliseur, au compresseur ni au limiteur. Ouvrir un effet ne lance pas automatiquement la lecture.
 
 ### Visualisations et finitions graphiques v1.6
 
-- Six modes : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme, Vumètre à aiguille stéréo. Sélecteur sombre discret ; mode initial Oscilloscope puis choix mémorisé.
-- Le vumètre affiche un niveau RMS en dBFS avec une inertie visuelle ; ce n’est pas un instrument VU analogique calibré.
-- Robot d’accueil recadré sur ses pixels visibles et ajusté aux bords extérieurs des boutons Charger et Enregistrer.
-- Onde vert néon en courbes, attachée au titre et atténuée à ses extrémités, sans BPM ni kicks.
-- Validation du candidat par tests, compilation et essais Windows requise.
+Six modes accompagnent l’écoute : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme et Vumètre à aiguille stéréo. L’oscilloscope est utilisé sans préférence enregistrée, puis le dernier choix est mémorisé.
+
+Le vumètre représente un niveau RMS en dBFS avec inertie visuelle : il ne s’agit pas d’un instrument VU analogique calibré.
+
+### Dernières finitions v1.6
+
+- Onde électrique vert néon attachée au titre, en courbes continues : son amplitude suit uniquement le niveau sonore RMS stéréo, sans BPM ni kicks. Elle s’atténue à ses extrémités et disparaît en pause, à l’arrêt ou pendant le silence.
+- Accueil illustré, fenêtre À propos réorganisée et historique des modifications défilant.
+- Survol du bouton « ? » limité au point d’interrogation lumineux.
+- Navigation de l’aperçu indépendante de la boucle, bornes ajustables pendant la lecture et aimantation conservée.
+- Préférences de réduction des animations respectées.
+
+Retrouvez les détails et les limites dans les [notes de version](RELEASE_NOTES_1.6.md) et le [journal des modifications](CHANGELOG.md).
+
+## Les outils du quotidien
+
+### Éditer et écouter
+
+- Ouvrez plusieurs documents en onglets et travaillez sur leur forme d’onde.
+- Sélectionnez, coupez, copiez, collez, rognez ou mettez un passage en silence.
+- Utilisez le mixage au collage, l’annulation, le rétablissement et les outils de zoom.
+- Écoutez en lecture normale, en boucle ou en sens inverse ; réglez volume, balance, vitesse et canaux actifs.
+- Détectez le tempo, affichez les repères rythmiques et activez l’aimantation pour affiner vos sélections.
+
+### Transformer et assembler
+
+- Appliquez des fondus, ajustez vitesse et hauteur, utilisez la réduction de bruit et les effets audio disponibles.
+- Préécoutez avant d’appliquer, sur une sélection ou sur le morceau entier.
+- Assemblez des fichiers, gérez les feuilles CUE, utilisez Auto-Cue, la découpe WAV et le traitement par lots.
+- Enregistrez depuis une entrée audio autorisée et sélectionnez vos périphériques selon les possibilités du système.
+
+L’assemblage juxtapose les pistes : ce n’est pas un séquenceur multipiste à superposition. Les anciennes fenêtres autonomes Volume/Gain et Normalisation ont été retirées ; le volume général, les gains internes et les traitements par lots restent disponibles.
+
+## Formats et export
+
+La version Windows repose sur Tauri v2 et WebView2, avec le décodeur de secours Symphonia. La compatibilité à l’ouverture dépend du fichier, de son conteneur et du décodeur disponible.
+
+| Export | Réglages proposés |
+| --- | --- |
+| WAV | PCM 16 bits, PCM 24 bits ou flottant 32 bits |
+| MP3 | 128, 192, 256 ou 320 kbit/s |
+| FLAC | Niveaux de compression 0, 2 ou 5 |
+| OGG Vorbis | Qualité de 1 à 10 |
+
+Les traitements et l’encodage sont réalisés localement, sans envoyer le contenu audio à un service d’encodage distant.
+
+## Prise en main
+
+1. Téléchargez le paquet Windows et extrayez le dossier complet.
+2. Lancez `Audio ToolZ.exe` et consultez le didacticiel avec ATZ.
+3. Ouvrez un fichier audio et lancez sa lecture.
+4. Sélectionnez un passage si nécessaire ; sinon les effets ciblent le morceau entier.
+5. Ajustez vos effets avec la préécoute, appliquez le traitement, puis exportez votre travail.
+
+Pour le Delay musical, détectez le BPM si nécessaire, choisissez un mode actif, ajoutez des répétitions et augmentez le volume d’effet. Ses valeurs initiales sont Off, zéro répétition et volume d’effet nul.
+
+## Distribution finale v1.6
+
+Le nom exact du paquet Windows x64 portable est :
+
+```text
+Audio ToolZ v1.6.zip
+```
+
+Après extraction :
+
+```text
+Audio ToolZ/
+├── Audio ToolZ.exe
+├── logo.ico
+└── desktop.ini
+```
+
+Conservez ces trois fichiers ensemble. Les empreintes SHA-256 de l’exécutable et du ZIP figurent dans le résumé de compilation, sans fichier de contrôle séparé à télécharger.
+
+Consultez les [versions publiées sur GitHub Releases](https://github.com/x-R0b0T-x/Audio-ToolZ/releases). Les paquets de développement disponibles dans Actions sont distincts des releases officielles ; l’intégration dans `main` ne publie pas à elle seule une release.
+
+## À savoir
+
+- La détection du tempo reste une estimation dépendant du contenu audio.
+- L’enregistrement nécessite une autorisation d’accès à l’entrée audio.
+- Le choix des périphériques et les dialogues de fichiers varient selon le navigateur et le système.
+- Les longs fichiers et l’historique d’édition peuvent consommer beaucoup de mémoire.
+- Les préférences mémorisées ne sauvegardent pas les documents : exportez votre travail avant de fermer l’application.
+
+## Communauté et licence
+
+Retrouvez le projet sur [GitHub](https://github.com/x-R0b0T-x/Audio-ToolZ), rejoignez la [communauté Telegram](https://t.me/Audio_ToolZ) ou [soutenez son développement](https://www.paypal.com/ncp/payment/GAUJE54VM28T8).
+
+Projet sous licence GPL v3 ; consultez les fichiers de licence du dépôt.
