@@ -5,10 +5,12 @@ import { RELEASE_ADDITIONS, RELEASE_FIXES } from '../releaseNotes';
 import { AboutRobot } from './AboutRobot';
 import './aboutPresentation.css';
 import './aboutLayout.css';
+import './aboutFx.css';
 
 interface InfoModalProps { open: boolean; onClose: () => void; }
 export const APP_VERSION = 'v1.6';
 const DEFAULT_WIDTH = 500;
+const WAVE_PATH = Array.from({ length: 4 }, (_, i) => { const o = i * 200; return `M${o} 50 H${o + 55} L${o + 65} 46 L${o + 75} 50 L${o + 85} 50 L${o + 93} 14 L${o + 105} 88 L${o + 115} 36 L${o + 123} 50 H${o + 200}`; }).join(' ');
 
 export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
   const [communityError, setCommunityError] = useState('');
@@ -68,7 +70,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     </div>
     <div className="atz-about-body">
       <div className="atz-about-brand">
-        <div className="atz-about-hero"><AboutRobot src={robotUrl} /><div className="atz-about-actions">
+        <div className="atz-about-hero"><div className="atz-about-fx" aria-hidden="true"><span className="atz-about-fx-wave"><svg viewBox="0 0 800 100" preserveAspectRatio="none" focusable="false"><path d={WAVE_PATH} vectorEffect="non-scaling-stroke" /></svg></span><span className="atz-about-fx-halo" /></div><AboutRobot src={robotUrl} /><div className="atz-about-actions">
           <a className="atz-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
           <a className="atz-about-community" href="https://github.com/x-R0b0T-x/Audio-ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Visiter le dépôt GitHub</a>
           <a className="atz-about-community" href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Faire un don</a>
