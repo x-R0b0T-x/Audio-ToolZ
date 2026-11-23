@@ -25,7 +25,7 @@ test('a click without movement changes nothing and a drag keeps the zoom level',
  assert.deepEqual(overviewPan(1000,350,100,-5000,500),[0,100]);
  assert.deepEqual(overviewPan(1000,350,100,5000,500),[900,1000]);
  assert.deepEqual(overviewPan(1000,350,100,1,500,0),[352,452]);
- for(const dx of [3,17,-9,240])assert.equal(overviewPan(100000,20000,6000,dx,800)[1]-overviewPan(100000,20000,6000,dx,800)[0],6000);
+ for(const dx of [3,17,-9,240]){const panned=overviewPan(100000,20000,6000,dx,800);assert.ok(panned);assert.equal(panned[1]-panned[0],6000);}
  assert.equal(overviewPan(1000,350,100,10,0),null);assert.equal(overviewPan(1000,350,100,NaN,500),null);
 });
 test('balance only attenuates and isolates original channels at endpoints',()=>{
