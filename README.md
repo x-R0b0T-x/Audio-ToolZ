@@ -83,7 +83,7 @@ Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publ
 - Bornes de boucle saisissables au clic gauche, même pendant la lecture ; création au clic droit et suppression au double-clic conservées.
 - Robot statique sur l’accueil sans document, retiré de Contrôle.
 - Sélecteur de visualisation aligné à gauche sans libellé redondant ; zone de visualisation conservée.
-- Particules vertes/violettes discrètes autour du titre pendant la lecture, sans synchronisation BPM/volume ; préférence de réduction des animations respectée.
+- Onde électrique verte continue, attachée au titre et pilotée uniquement par le niveau sonore RMS ; aucun signal à l’arrêt, en pause ou pendant le silence ; réduction des animations respectée.
 - Boutons du didacticiel toujours violets ; seul le contour et son halo deviennent verts au survol.
 - Tests, compilation, ZIP et rendu Windows à valider sur ce candidat.
 
@@ -93,5 +93,5 @@ Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publ
 - Six modes : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme, Vumètre à aiguille stéréo. Sélecteur sombre discret ; mode initial Oscilloscope puis choix mémorisé.
 - Le vumètre affiche un niveau RMS en dBFS avec une inertie visuelle ; ce n’est pas un instrument VU analogique calibré.
 - Robot d’accueil recadré sur ses pixels visibles et ajusté aux bords extérieurs des boutons Charger et Enregistrer.
-- Particules vert/violet plus lumineuses et plus longues, dont les trajectoires se terminent doucement même après pause ou arrêt.
+- Onde vert néon en courbes, attachée au titre et atténuée à ses extrémités, sans BPM ni kicks.
 - Validation du candidat par tests, compilation et essais Windows requise.

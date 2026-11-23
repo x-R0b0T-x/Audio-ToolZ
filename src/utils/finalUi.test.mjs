@@ -1,3 +1,4 @@
+import './headerWaveMath.test.mjs';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import './robotFit.test.mjs';import './spaceTransport.test.mjs';
 import './aboutTransport.test.mjs';import './kickMagnet.test.mjs';
@@ -32,7 +33,7 @@ test('shared tempo detection serves About or active animated playback and retain
  assert.ok(code.includes('stopDetection();attempted=false'));assert.ok(code.includes('disposed=true;stopDetection()'));
  assert.ok(code.includes('if(disposed||worker!==current)return;'));assert.ok(code.includes('worker?.terminate()'));
  assert.ok(code.includes('export function readHeaderTempo()'));assert.ok(code.includes('headerTempo=robotTempo'));
- assert.ok(particles.includes('readHeaderTempo()'));assert.ok(particles.includes('audioEngine.getCurrentSample()'));assert.ok(particles.includes('Math.random()'));
+ assert.ok(particles.includes('audioEngine.readLiveMeters()'));assert.ok(particles.includes('meters.leftRms,meters.rightRms'));assert.ok(!particles.includes('readHeaderTempo'));assert.ok(!particles.includes('getCurrentSample'));assert.ok(!particles.includes('kick'));
  assert.ok(worker.includes('detectBpmAndBeats(channels,sampleRate)'));assert.ok(worker.includes('result.beatSamples[0]??0'));
 });
 test('boom pulses have a fast attack, gradual return and bounded scale on every beat',()=>{

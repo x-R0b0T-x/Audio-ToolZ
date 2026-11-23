@@ -1,33 +1,50 @@
 # Journal des modifications
 
-## 1.6
+## 1.6 — Une grosse mise à jour
 
-Version validée par le mainteneur le 22 novembre 2026. Voir [les notes détaillées](RELEASE_NOTES_1.6.md). La fusion dans main et la publication du tag v1.6 sont des étapes distinctes de cette préparation documentaire.
+La v1.6 marque une évolution importante d’Audio ToolZ : une chaîne de traitement enrichie, un égaliseur paramétrique à sept bandes, une interface retravaillée et un didacticiel accompagné par ATZ, la mascotte.
 
-### Effets et lecture
+## Les nouveautés phares
 
-- Égaliseur paramétrique sept bandes en remplacement des trois bandes de la 1.5 : formes de filtre, pentes compatibles, Q, spectre et réponse globale.
-- Fenêtre Limiteur / Compresseur avec enveloppe, plafond, graphique de sortie et réduction de gain. Limitation des crêtes d’échantillons, sans garantie true peak.
-- Préécoute et application pendant une lecture normale, sans boucle obligatoire ; sélection active ou morceau entier.
-- Reprise du dernier réglage de préécoute au démarrage de la lecture ; aucun démarrage automatique à l’ouverture d’un effet.
-- Navigation de l’aperçu indépendante de la boucle, conservation du cadrage et reprise de lecture après un clic au-delà d’une boucle.
+- Égaliseur paramétrique à sept bandes indépendantes, en remplacement des trois bandes de la v1.5 : fréquence, gain, largeur Q, formes et pentes compatibles, spectre d’entrée et courbe de réponse globale.
+- Compresseur et limiteur réunis dans une fenêtre dédiée : modes COMP et LIMIT, gain d’entrée, plafond, attaque, relâchement, enveloppe et visualisation de la réduction de gain. Le limiteur traite les crêtes d’échantillons ; il ne revendique pas de limitation true peak suréchantillonnée.
+- Didacticiel intégré avec ATZ pour accompagner la prise en main, avec accès à Telegram, Github et Paypal sur la dernière page.
+- Refonte graphique violet et vert néon : potards gradués, indicateurs lumineux, boutons harmonisés, accueil illustré et fenêtre À propos réorganisée.
+- Six visualisations : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme et Vumètre à aiguille stéréo. Le dernier choix est mémorisé ; sans préférence, l’oscilloscope est utilisé. Le vumètre indique un niveau RMS en dBFS avec inertie visuelle, pas un instrument VU analogique calibré.
 
-### Delay
+## Effets, Delay et lecture
 
-- Temps musicaux, répétitions, volume d’effet et panoramique de départ à 0 ; disposition compacte et sélecteur vertical Mono / Stéréo / Ping-pong / Off.
-- Détection BPM directement dans le panneau, en arrière-plan, sans modification des réglages. Le tempo est requis pour le Delay musical, pas pour les autres effets.
-- Valeurs initiales : Off, zéro répétition et volume d’effet à zéro. Aucune commande de durée libre en millisecondes dans l’interface finale.
-- Routage ping-pong conservé : premier côté choisi par le panoramique décentré ; répétitions mono identiques au centre, sans revendication de permutation stéréo du type Fruity Delay 3.
-- Balance du panneau Contrôle par atténuation du canal opposé, sans sommation.
+- Préécoute et application des effets pendant la lecture normale, sans boucle obligatoire, sur la sélection ou le morceau entier. Ouvrir un effet ne lance pas la lecture.
+- Reprise des derniers réglages de préécoute au démarrage de la lecture.
+- Delay musical compact : temps musicaux, répétitions, volume d’effet, panoramique et modes Mono / Stéréo / Ping-pong / Off. Détection BPM en arrière-plan dans le panneau, sans modifier les réglages.
+- Delay initialisé sur Off, zéro répétition, volume d’effet nul et panoramique centré ; aucune durée libre en millisecondes dans l’interface finale. Le BPM sert aux temps musicaux du Delay, pas au compresseur, au limiteur ni à l’égaliseur.
+- Routage ping-pong conservé : panoramique décentré pour choisir le premier côté ; répétitions mono identiques au centre.
+- Navigation de l’aperçu indépendante de la boucle, largeur à la molette et reprise de lecture au point choisi après la boucle.
+- Bornes de boucle ajustables pendant la lecture ; aimantation conservée. Raccourci Espace disponible dans les fenêtres d’effets via les commandes de transport existantes.
+- Balance par atténuation des canaux, sans sommation du canal opposé.
 
-### Présentation et nettoyage
+### Dernières finitions v1.6
 
-- Potards violets, graduations et indicateurs verts, illumination au survol et pendant le réglage.
-- À propos : robot à gauche des liens, halos vert/violet renforcés et changelog défilant.
-- Détection automatique du tempo à l’ouverture d’À propos et pulsation du robot jusqu’à 170 %, indépendante du volume et des basses. Robot immobile à l’arrêt ou sans tempo exploitable ; réduction des animations respectée.
-- Fenêtres autonomes Volume/Gain et Normalisation retirées ; volume général, gains internes et traitements par lots conservés.
-- Tauri v2, Symphonia 0.5, formats audio, CUE, assemblage et enregistrement conservés depuis la 1.5.
-- Tests audio/UI, contrôle TypeScript et contrôle de l’intégrité des médias avant compilation Windows portable, avec SHA-256.
+- Onde électrique vert néon attachée de chaque côté du titre, en courbes continues. Son amplitude suit uniquement le niveau RMS stéréo de sortie, sans BPM ni kicks. Elle s’atténue vers ses extrémités ; aucun signal en pause, à l’arrêt ou dans le silence.
+- Survol du bouton « ? » : seul le point d’interrogation s’illumine, sans cadre ni halo vert autour du bouton.
+- Titre vert « Changlog depuis la v1.5 » dans À propos ; robot et trois liens conservés. La pulsation du robot reste distincte de l’onde et suit le tempo lorsque celui-ci est exploitable.
+- Boutons du didacticiel violets avec contour lumineux vert au survol.
+
+### Visualisations et finitions graphiques v1.6
+
+Accueil avec illustration ajustée à ses pixels visibles ; panneau Contrôle sans illustration ni anciens vumètres séparés, analyseur conservé. Identité Audio blanc, Tool vert et Z violet. Les préférences de réduction des animations sont respectées.
+
+## Compatibilité et nettoyage
+
+Tauri v2, Symphonia 0.5, les formats audio, les fichiers CUE, l’assemblage, l’enregistrement et les traitements par lots sont conservés depuis la v1.5. Les fenêtres autonomes Volume/Gain et Normalisation sont retirées ; le volume général, les gains internes et les traitements par lots restent disponibles.
+
+## Distribution finale v1.6
+
+Un seul téléchargement : `audio tools v1.6.zip`. Après extraction, le dossier `Audio ToolZ` contient `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 de l’exécutable et du ZIP figurent dans le résumé de compilation, pas dans un téléchargement séparé.
+
+## Finalisation du candidat v1.6
+
+Cette dernière révision doit passer les tests audio et UI, le contrôle TypeScript, la compilation Windows et les contrôles du ZIP. Les validations de versions antérieures ne valent pas validation de cette nouvelle onde. Le passage dans main intervient après validation de la chaîne ; aucun tag ni aucune release officielle ne sont créés par cette préparation.
 
 ## 1.5
 
@@ -73,41 +90,3 @@ Version validée par le mainteneur le 22 novembre 2026. Voir [les notes détaill
 - Paquet portable pour Windows 64 bits, avec icône intégrée et moteur configuré en français.
 - Licences Electron et Chromium regroupées dans `resources/licenses`. Somme de contrôle SHA-256 fournie séparément.
 - README enrichi avec les fonctions audio, les formats et la prise en main.
-
-
-## Finalisation du candidat v1.6
-
-- Nom Audio ToolZ : Audio blanc, Tool vert, Z violet.
-- Dernière page du didacticiel : liens Telegram, GitHub et PayPal.
-- Aucun texte « Aucun fichier récent » quand la liste est vide.
-- Distribution portable : ZIP contenant le dossier Audio ToolZ avec Audio ToolZ.exe, logo.ico et desktop.ini ; empreintes SHA-256 de l’exécutable et du ZIP dans le résumé de compilation.
-- Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
-- Ce candidat corrigé doit être testé avant fusion, tag et publication officiels. La validation de 414ae3f concerne la base antérieure.
-
-
-## Distribution finale v1.6
-
-Un seul fichier : `audio tools v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
-
-Accueil : illustration mix.png sans document ; Contrôle sans robot ni vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux restant violets avec contour lumineux vert au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
-
-Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publication ; la validation de 414ae3f ne vaut pas validation de ces modifications.
-
-
-### Dernières finitions v1.6
-
-- Bornes de boucle saisissables au clic gauche, même pendant la lecture ; création au clic droit et suppression au double-clic conservées.
-- Robot statique sur l’accueil sans document, retiré de Contrôle.
-- Sélecteur de visualisation aligné à gauche sans libellé redondant ; zone de visualisation conservée.
-- Particules vertes/violettes discrètes autour du titre pendant la lecture, sans synchronisation BPM/volume ; préférence de réduction des animations respectée.
-- Boutons du didacticiel toujours violets ; seul le contour et son halo deviennent verts au survol.
-- Tests, compilation, ZIP et rendu Windows à valider sur ce candidat.
-
-
-### Visualisations et finitions graphiques v1.6
-
-- Six modes : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme, Vumètre à aiguille stéréo. Sélecteur sombre discret ; mode initial Oscilloscope puis choix mémorisé.
-- Le vumètre affiche un niveau RMS en dBFS avec une inertie visuelle ; ce n’est pas un instrument VU analogique calibré.
-- Robot d’accueil recadré sur ses pixels visibles et ajusté aux bords extérieurs des boutons Charger et Enregistrer.
-- Particules vert/violet plus lumineuses et plus longues, dont les trajectoires se terminent doucement même après pause ou arrêt.
-- Validation du candidat par tests, compilation et essais Windows requise.

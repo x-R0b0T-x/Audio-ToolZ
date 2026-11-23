@@ -37,19 +37,13 @@ test('welcome artwork fits visible alpha bounds against the outer button edges',
   for(const token of ['getImageData','>=12','b.right-a.left','ResizeObserver','crop.width','crop.height','translateX'])assert.ok(fit.includes(token));
   assert.ok(fit.includes("../medias/mix.png?url"));
 });
-test('green electrical arcs follow the beat and expire by lifetime rather than playback stop',()=>{
+test('continuous green header waves follow amplitude only and stay anchored',()=>{
   const code=read('src/components/HeaderParticles.tsx'),css=read('src/components/headerParticles.css');
-  for(const token of ['audioEngine.isPlaying&&tempo','readHeaderTempo()','audioEngine.getCurrentSample()','beat!==lastBeat','Math.random()','Math.min(reach,','for(const side of [-1,1])','if(emit)','makeArc(id++,now,side,reach)','window.clearInterval(timer)','aria-hidden="true"','atz-arc-glow','atz-arc-core','atz-arc-branch'])assert.ok(code.includes(token),token);
-  const expiry=code.match(/current\.filter\(arc=>([^)]+)\)/)?.[1];assert.ok(expiry,'Arcs must expire through a lifetime predicate');
-  const alive=new Function('now','arc',`return (${expiry});`);
-  for(const life of [650,725,850]){assert.equal(alive(1000,{born:1000,life}),true);assert.equal(alive(1000+life-1,{born:1000,life}),true);assert.equal(alive(1000+life,{born:1000,life}),false);}
-  assert.ok(!/playing|audioEngine/i.test(expiry));
-  assert.ok(!code.includes('!audioEngine.isPlaying'));
-  assert.ok(code.includes('}else{lastBeat=null;lastSample=null;}'));
-  assert.ok(code.includes('.slice(-16)'));
-  assert.ok(code.includes('if(reduced.matches||document.hidden)'));
-  for(const token of ['stroke:#39ff14','stroke:#eaffdf','drop-shadow','@keyframes atz-electric-travel','stroke-dashoffset:-.7','100%{opacity:0','pointer-events:none!important','@media(prefers-reduced-motion:reduce)'])assert.ok(css.includes(token),token);
-  assert.ok(!code.includes('#bf40ff'));assert.ok(!css.includes('atz-header-drift'));
+  for(const token of ['audioEngine.readLiveMeters()','meters.leftRms,meters.rightRms','if(!audioEngine.isPlaying||reduced.matches||document.hidden)','if(target===0)','ctx.moveTo(0,21)','waveOffset(x,width,now*.004,level)','ctx.lineTo(width,21)','createLinearGradient','cancelAnimationFrame(frame)','observer.disconnect()','aria-hidden="true"'])assert.ok(code.includes(token),token);
+  assert.equal((code.match(/<canvas /g)||[]).length,2);
+  for(const absent of ['readHeaderTempo','getCurrentSample','kick','Math.random','setInterval','stroke-dasharray'])assert.ok(!code.includes(absent),absent);
+  assert.ok(css.includes('canvas[data-side="left"]{right:100%}'));assert.ok(css.includes('canvas[data-side="right"]{left:100%}'));
+  assert.ok(code.includes("'#39ff1400'"));assert.ok(css.includes('pointer-events:none!important'));assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));
 });
 test('tutorial retains three equal purple buttons with green contour only',()=>{
   const labels=Array.from(read('src/components/Tutorial.tsx').matchAll(/\{label:"([^"]*)",href:"[^"]*"\}/g),m=>m[1]);

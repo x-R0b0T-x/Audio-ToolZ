@@ -1,4 +1,9 @@
 export const RELEASE_ADDITIONS = [
+ "Grosse mise à jour v1.6 : nouveaux outils audio, didacticiel avec ATZ et refonte graphique.",
+ "Didacticiel intégré avec ATZ, la mascotte, pour accompagner la prise en main.",
+ "Onde électrique vert néon attachée au titre, en courbes continues : amplitude pilotée par le niveau RMS stéréo, sans BPM ni kicks ; aucun signal en pause, à l’arrêt ou pendant le silence.",
+ "Six visualisations : oscilloscope, spectre, waveform colorée, vectorscope stéréo, spectrogramme et vumètre à aiguille stéréo.",
+
  "Égaliseur trois bandes de la 1.5 remplacé par un égaliseur paramétrique à sept bandes indépendantes.",
  "Réglages de fréquence, gain et largeur Q ; formes et pentes de filtre compatibles, spectre d’entrée et réponse globale.",
  "Fenêtre Limiteur / Compresseur avec modes LIMIT et COMP, enveloppe, plafond et réduction de gain.",
