@@ -1,7 +1,12 @@
 .atz-header-emitter{position:relative;overflow:visible;isolation:isolate}
 .atz-header-particles{position:absolute;inset:0;pointer-events:none!important;user-select:none;z-index:0}
-.atz-header-particle{position:absolute;display:block;border-radius:50%;pointer-events:none!important;box-shadow:0 0 2px #fff,0 0 6px currentColor,0 0 10px currentColor;animation:atz-header-drift var(--atz-particle-life) cubic-bezier(.15,.5,.35,1) both}
-.atz-header-particle::after{content:"";position:absolute;right:50%;top:50%;width:var(--atz-trail-length);height:1.5px;border-radius:100%;background:linear-gradient(90deg,transparent,currentColor);transform-origin:right center;transform:rotate(var(--atz-trail-angle));filter:drop-shadow(0 0 2px currentColor);pointer-events:none}
-@keyframes atz-header-drift{0%{opacity:0;transform:translate(0,0) scale(.65)}8%{opacity:.95}35%{opacity:.8;transform:translate(var(--atz-particle-mid-x),var(--atz-particle-mid-y)) scale(1)}70%{opacity:.32}100%{opacity:0;transform:translate(var(--atz-particle-x),var(--atz-particle-y)) scale(.05)}}
+.atz-header-arc{position:absolute;left:100%;top:calc(50% - 20px);overflow:visible;pointer-events:none!important;color:#39ff14}
+.atz-header-arc-left{left:auto;right:100%;transform:scaleX(-1)}
+.atz-header-arc path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.3 .7;stroke-dashoffset:1;animation:atz-electric-travel var(--atz-arc-life) linear both}
+.atz-header-arc .atz-arc-glow{stroke:#39ff14;stroke-width:2.2;filter:drop-shadow(0 0 2px #39ff14) drop-shadow(0 0 4px #39ff14)}
+.atz-header-arc .atz-arc-core{stroke:#eaffdf;stroke-width:.85;filter:drop-shadow(0 0 1px #39ff14)}
+.atz-header-arc .atz-arc-branch{stroke:#83ff63;stroke-width:.65;stroke-dasharray:none;filter:drop-shadow(0 0 2px #39ff14);animation:atz-electric-branch var(--atz-arc-life) ease-out both}
+@keyframes atz-electric-travel{0%{opacity:0;stroke-dashoffset:1}8%{opacity:1}55%{opacity:.95}80%{opacity:.4}100%{opacity:0;stroke-dashoffset:-.7}}
+@keyframes atz-electric-branch{0%,22%{opacity:0}30%{opacity:.75}45%{opacity:.3}65%,100%{opacity:0}}
 #root .atz-about-dialog #about-changelog-title{color:#39ff14!important}
-@media(prefers-reduced-motion:reduce){.atz-header-particles{display:none}.atz-header-particle{animation:none}}
+@media(prefers-reduced-motion:reduce){.atz-header-particles{display:none}.atz-header-arc path{animation:none}}
