@@ -1,4 +1,5 @@
 import {installDescriptions} from './utils/finalUi';
+import {installSpaceDebug} from './utils/spaceDebug';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {installControlGestures} from './utils/controlGestures';
@@ -9,6 +10,7 @@ import './textReadability.css';
 
 const root = document.getElementById('root')!;
 createRoot(root).render(<App />);
+installSpaceDebug();
 installControlGestures(root);
 installTextExceptions(root);
 
