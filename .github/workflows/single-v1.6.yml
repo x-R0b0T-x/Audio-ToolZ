@@ -2,7 +2,7 @@ name: Audio ToolZ v1.6 - single ZIP candidate
 on:
   push:
     branches: [v1.6-dev]
-    paths: ['.github/scripts/package-single-16.py', '.github/workflows/single-v1.6.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/**', '.github/workflows/single-v1.6.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -29,6 +29,8 @@ jobs:
         run: python .github/scripts/optional-bpm.py
       - name: Finalize existing candidate corrections
         run: python .github/scripts/finalize-candidate-16.py
+      - name: Correct and verify tutorial community buttons
+        run: python .github/scripts/fix-tutorial-buttons-16.py
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -69,10 +71,16 @@ jobs:
             if ($bundled.Count -ne 1) { throw 'Bundled media unavailable' }
             if ((Get-FileHash $item.source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw 'Bundled media changed' }
           }
+      - name: Record generated candidate source hashes
+        shell: pwsh
+        run: |
+          '## Sources transformées utilisées pour cette compilation' >> $env:GITHUB_STEP_SUMMARY
+          Get-FileHash src/components/Tutorial.tsx,src/components/tutorial.css,src/components/InfoModal.tsx,src/components/TopMenuBar.tsx,src/textReadability.css -Algorithm SHA256 | Format-Table -AutoSize | Out-String | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Package and verify single ZIP using Windows Shell extraction
         run: python .github/scripts/package-single-16.py
-      - uses: actions/upload-artifact@v5
+      - name: Upload exact ZIP without an outer archive
+        uses: actions/upload-artifact@v7
         with:
-          name: Audio-ToolZ-v1.6-single-zip
           path: single-output/audio tools v1.6.zip
+          archive: false
           if-no-files-found: error
