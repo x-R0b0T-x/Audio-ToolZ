@@ -116,11 +116,25 @@ export function useWaveformInteractions(options: Options) {
       drag.x = event.clientX; drag.alt = event.altKey; move(0); stop(true);
     };
     const contextmenu = (event: MouseEvent) => { event.preventDefault(); event.stopImmediatePropagation(); };
+    const doubleClick = (event: MouseEvent) => {
+      const doc = latest.current.doc;
+      if (!doc || event.button !== 0) return;
+      const total = doc.channels[0]?.length ?? 0, rect = canvas.getBoundingClientRect(), left = rect.left + 52;
+      if (!total || event.clientX < left) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      stop(false);
+      const width = Math.max(1, rect.width - 52), length = Math.max(1, doc.viewEndSample - doc.viewStartSample);
+      const frame = dragFrame(doc.viewStartSample, doc.viewEndSample, total, left, width, event.clientX, 0);
+      const point = Math.min(total - 1, snap(frame.sample, width, length, event.altKey));
+      const next = { startSample: point, endSample: point };
+      latest.current.onSelectionChange(next, 'cursor');
+      latest.current.onSelectionCommit?.(next, 'cursor');
+    };
     const blur = () => stop(true);
-    canvas.addEventListener('mousedown', down, true); canvas.addEventListener('contextmenu', contextmenu, true);
+    canvas.addEventListener('mousedown', down, true); canvas.addEventListener('contextmenu', contextmenu, true); canvas.addEventListener('dblclick', doubleClick, true);
     window.addEventListener('mousemove', mousemove, true); window.addEventListener('mouseup', mouseup, true); window.addEventListener('blur', blur);
     return () => {
-      stop(false); canvas.removeEventListener('mousedown', down, true); canvas.removeEventListener('contextmenu', contextmenu, true);
+      stop(false); canvas.removeEventListener('mousedown', down, true); canvas.removeEventListener('contextmenu', contextmenu, true); canvas.removeEventListener('dblclick', doubleClick, true);
       window.removeEventListener('mousemove', mousemove, true); window.removeEventListener('mouseup', mouseup, true); window.removeEventListener('blur', blur);
     };
   }, [options.doc?.id, options.isRecording]);
