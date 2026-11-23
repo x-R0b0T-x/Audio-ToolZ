@@ -573,6 +573,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   icon={<Square className="w-3 h-3" />}
                 />
               </div>
+              <img data-atz-control-art src={mixArtworkUrl} alt="ATX aux commandes du mixage" draggable={false} style={{display:"block",width:"100%",height:"76px",objectFit:"contain",padding:"4px",boxSizing:"border-box"}} />
             </div>
 
             <div className="col-span-7 space-y-2">
@@ -636,7 +637,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
             </div>
           </div>
 
-          <img data-atz-control-art src={mixArtworkUrl} alt="ATX aux commandes du mixage" draggable={false} style={{display:"block",width:"100%",height:"140px",objectFit:"contain",padding:"6px",boxSizing:"border-box"}} />
 
           <div>
             <div className="flex items-center justify-between mb-1">
