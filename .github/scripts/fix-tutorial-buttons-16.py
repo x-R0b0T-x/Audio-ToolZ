@@ -24,14 +24,17 @@ marker = '/* v1.6 compact equal community buttons */'
 css = css.split(marker)[0].rstrip() + '\n'
 css += '''/* v1.6 compact equal community buttons */
 .atz-tuto .atz-tuto-links{display:flex;flex-wrap:wrap;gap:8px;padding:4px}
-.atz-tuto .atz-tuto-links>a.atz-tuto-link{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 100px;width:100px;min-width:100px;max-width:100px;height:32px;min-height:32px;max-height:32px;padding:0 8px;white-space:nowrap;font-size:13px;color:#fff!important;background:#7928b5;border:1px solid #b34dff;border-radius:7px;box-shadow:0 0 5px #b34dff66;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}
-.atz-tuto .atz-tuto-links>a.atz-tuto-link:hover,.atz-tuto .atz-tuto-links>a.atz-tuto-link:focus-visible{background:#166b21;border-color:#39ff14;color:#fff!important;outline:2px solid #39ff14;outline-offset:2px;box-shadow:0 0 8px #39ff1488}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 100px;width:100px;min-width:100px;max-width:100px;height:32px;min-height:32px;max-height:32px;padding:0 8px;white-space:nowrap;font-size:13px;color:#fff!important;background:#7928b5!important;border:1px solid #b34dff;border-radius:7px;outline:none;box-shadow:0 0 5px #b34dff66;transition:border-color .16s ease,box-shadow .16s ease}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link:hover,.atz-tuto .atz-tuto-links>a.atz-tuto-link:focus-visible{background:#7928b5!important;border-color:#39ff14;color:#fff!important;outline:none;box-shadow:0 0 0 1px #39ff14,0 0 8px #39ff1488}
 @media(prefers-reduced-motion:reduce){.atz-tuto .atz-tuto-links>a.atz-tuto-link{transition:none}}
 '''
 css_path.write_text(css, encoding='utf-8')
 matches = re.findall(r'\{label:"([^"]*)",href:"([^"]*)"\}', source)
 assert matches == links, matches
 assert sentence + sentence not in source
-for token in ['width:100px', 'height:32px', 'background:#7928b5', 'background:#166b21']:
+for token in ['width:100px', 'height:32px', 'background:#7928b5!important', 'border-color:#39ff14']:
     assert token in css
-print('Verified tutorial labels, destinations and equal button dimensions.')
+hover = css.split('.atz-tuto .atz-tuto-links>a.atz-tuto-link:hover', 1)[1].split('}', 1)[0]
+assert 'background:#7928b5!important' in hover
+assert 'background:#166b21' not in css
+print('Three equal purple tutorial buttons; only border and halo turn green on hover.')
