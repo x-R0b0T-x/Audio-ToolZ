@@ -384,6 +384,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               />
             </label>
           </section>
+
+          {/* Tutorial */}
+          <section
+            className="rounded-lg border p-3.5 flex items-center justify-between gap-3"
+            style={{
+              backgroundColor: 'var(--bg-input)',
+              borderColor: 'var(--border-subtle)',
+            }}
+          >
+            <div className="space-y-1">
+              <h3
+                className="text-xs font-display font-semibold"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                Didacticiel
+              </h3>
+              <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                Revoir la présentation d&apos;ATX et choisir de l&apos;afficher ou
+                non au démarrage.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                window.dispatchEvent(new Event('atz:show-tutorial'));
+              }}
+              className="shrink-0 px-3 py-1.5 rounded border text-[11px] font-medium cursor-pointer hover:bg-[var(--bg-hover)]"
+              style={{
+                backgroundColor: 'var(--bg-elevated)',
+                borderColor: 'var(--border-subtle)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Afficher le didacticiel
+            </button>
+          </section>
         </div>
 
         <div

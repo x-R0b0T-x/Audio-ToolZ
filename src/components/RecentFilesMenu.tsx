@@ -19,7 +19,6 @@ export function RecentFilesMenu({ onOpen }: { onOpen: (id: string) => void }) {
   };
   return <div className="mt-1 pt-1 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
     <p className="px-2.5 py-1 text-xs" style={{ color: 'var(--text-muted)' }}>Fichiers récents</p>
-    {!entries.length && <p className="px-2.5 py-1 text-xs" style={{ color: 'var(--text-secondary)' }}>{desktop() ? 'Aucun fichier récent' : 'Disponible dans la version Windows'}</p>}
     <div className="max-h-64 overflow-y-auto">
       {entries.map((entry) => <button key={entry.id} type="button" role="menuitem" title={entry.path} onClick={() => onOpen(entry.id)} className="w-full text-left px-2.5 py-1.5 rounded text-xs truncate cursor-pointer hover:bg-[var(--bg-hover)]" style={{ color: 'var(--text-primary)' }}>{entry.name}</button>)}
     </div>

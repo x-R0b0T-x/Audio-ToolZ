@@ -1,0 +1,3 @@
+.atz-filter-shape .atz-shape-options{border-color:var(--atz-band-color);box-shadow:0 0 8px var(--atz-band-color)}
+.atz-filter-shape .atz-shape-options button[aria-pressed=true],.atz-filter-shape .atz-shape-options button:hover{color:var(--atz-band-color);border-color:var(--atz-band-color)}
+.atz-filter-shape .atz-shape-options button[aria-pressed=true] svg{filter:drop-shadow(0 0 2px var(--atz-band-color))}

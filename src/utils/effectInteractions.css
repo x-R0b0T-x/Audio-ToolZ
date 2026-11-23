@@ -1,0 +1,42 @@
+/* Green halo of the other dialogs. The 1.6 effect windows (.atz-advanced) no longer glow as a whole:
+   their halo only appears on the control being hovered or used (see advancedEffects.css).
+   Do not recolor the seven EQ bands, their controls or their response curves. */
+[role="dialog"].fixed.inset-0 > div,
+[role="dialog"].fixed:not(.inset-0) {
+  border-color: rgba(57, 255, 20, 0.85) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(57, 255, 20, 0.28),
+    0 0 12px 2px rgba(57, 255, 20, 0.48),
+    0 0 26px 4px rgba(57, 255, 20, 0.26),
+    0 24px 48px -12px rgba(0, 0, 0, 0.8) !important;
+}
+.atz-advanced .atz-band:nth-child(1) { --atz-control-color: #a65de0; }
+.atz-advanced .atz-band:nth-child(2) { --atz-control-color: #df69b3; }
+.atz-advanced .atz-band:nth-child(3) { --atz-control-color: #df8762; }
+.atz-advanced .atz-band:nth-child(4) { --atz-control-color: #d6cb65; }
+.atz-advanced .atz-band:nth-child(5) { --atz-control-color: #84c866; }
+.atz-advanced .atz-band:nth-child(6) { --atz-control-color: #61bcb5; }
+.atz-advanced .atz-band:nth-child(7) { --atz-control-color: #6499df; }
+.atz-advanced .atz-band button,
+.atz-advanced .atz-band input {
+  accent-color: var(--atz-control-color);
+}
+.atz-advanced button:not(:disabled):hover,
+.atz-advanced button:not(:disabled):focus-visible,
+.atz-advanced button[aria-pressed="true"],
+[role="dialog"] button:not(:disabled):hover,
+[role="dialog"] button:not(:disabled):focus-visible {
+  border-color: var(--atz-control-color, #39ff14) !important;
+  box-shadow: 0 0 7px rgba(57, 255, 20, 0.65), 0 0 14px rgba(57, 255, 20, 0.24);
+}
+.atz-advanced [role="slider"]:focus-visible,
+.atz-advanced [role="slider"]:hover,
+.atz-knob [role="slider"]:focus-visible,
+.atz-knob [role="slider"]:hover {
+  filter: drop-shadow(0 0 4px rgba(57, 255, 20, 0.6));
+}
+.atz-advanced input:focus-visible,
+[role="dialog"] input[type="range"]:focus-visible {
+  outline: 1px solid var(--atz-control-color, #39ff14);
+  outline-offset: 3px;
+}

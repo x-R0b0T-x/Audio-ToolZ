@@ -1,0 +1,12 @@
+.atz-delay-panel .atz-legacy-controls{display:block}
+.atz-delay-controls{width:100%;min-width:0}
+.atz-delay-tempo{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;margin:0 0 18px;font-size:11px;color:var(--text-muted)}
+.atz-delay-row{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.atz-delay-panel .atz-delay-tempo button,.atz-delay-panel footer button{background:#3d2466;color:#e6d9fa;border:1px solid #bd93f9;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer}
+.atz-delay-panel .atz-delay-tempo button:not(:disabled):hover,.atz-delay-panel footer button:not(:disabled):hover{border-color:#39ff14;box-shadow:0 0 7px #39ff1455}
+.atz-delay-panel button:focus-visible{outline:2px solid #39ff14;outline-offset:3px}
+.atz-delay-panel button:disabled{opacity:.4;cursor:not-allowed}
+.atz-delay-panel .atz-knob{--atz-pointer-ink:#39ff14}
+.atz-delay-panel .atz-knob output{color:#39ff14}
+.atz-delay-panel [role=alert]{margin:0 0 12px;text-align:center;font-size:12px}
+@media(max-width:460px){.atz-delay-row{gap:12px}.atz-delay-row .atz-knob svg{max-width:80px;height:auto}}

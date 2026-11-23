@@ -1,4 +1,7 @@
+import {signedDbLabel} from '../utils/presentationFormat';
 import React, { useEffect, useRef } from 'react';
+import {useControlActivity} from '../utils/useControlActivity';
+import './knobStates.css';
 import { audioEngine } from '../audio/engine';
 import type { DelayMode } from '../audio/musicalDelay';
 
@@ -59,28 +62,29 @@ export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col 
       onChange={(e) => p.onChange(Number(e.target.value))} className="studio-fader-vertical cursor-pointer"
       style={{ writingMode: 'vertical-lr', direction: 'rtl', height: 144, width: 28, accentColor: '#45f882' }} />
     <EffectMeter />
-  </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{p.display}</output>
+  </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
 </div>;
 interface KnobProps { label: string; value: number; min?: number; max: number; step?: number; ticks?: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
 export const Knob: React.FC<KnobProps> = (p) => {
   const drag = useRef<{ x: number; y: number; value: number } | null>(null);
+  const activity=useControlActivity();
   const min = p.min ?? 0;
   const range = Math.max(1, p.max - min);
-  const set = (v: number) => { if (!p.disabled) p.onChange(Math.round(Math.max(min, Math.min(p.max, v)))); };
+  const set = (v: number) => { if (!p.disabled) { activity.pulse(); p.onChange(Math.round(Math.max(min, Math.min(p.max, v)))); } };
   const fraction = (p.value - min) / range;
   const angle = -135 + fraction * 270;
   const tickCount = p.ticks ?? (Math.min(20, range) + 1);
   const bipolar = min < 0 && p.max > 0;
   const keyStep = p.step ?? 1;
   const pixelsPerUnit = Math.max(0.65, 110 / range);
-  return <div className="atz-knob flex flex-col items-center gap-2 min-w-0" style={{ opacity: p.disabled ? 0.4 : 1 }}
+  return <div className={`atz-knob flex flex-col items-center gap-2 min-w-0${activity.active ? ' is-adjusting' : ''}`} style={{ opacity: p.disabled ? 0.4 : 1 }}
     onDoubleClick={() => set(p.defaultValue)}>
     <span className="text-xs font-semibold">{p.label}</span>
     <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
-      title="Glisser ou molette pour régler ; double-clic : valeur par défaut" style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
-      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; }}
+      style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
+      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; activity.begin(); }}
       onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / pixelsPerUnit); }}
-      onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }}
+      onPointerUp={() => { drag.current = null; activity.end(); }} onPointerCancel={() => { drag.current = null; activity.end(); }} onLostPointerCapture={() => { drag.current = null; activity.end(); }}
       onKeyDown={(e) => {
         if (['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Home', 'End'].includes(e.key)) {
           e.preventDefault();
@@ -96,13 +100,13 @@ export const Knob: React.FC<KnobProps> = (p) => {
               ? (i === 1 && p.value === 0) || (i === 0 && p.value < 0) || (i === 2 && p.value > 0)
               : fraction <= 0.5 ? (tickFraction >= fraction - 0.02 && tickFraction <= 0.51) : (tickFraction >= 0.49 && tickFraction <= fraction + 0.02))
             : tickFraction <= fraction + 1e-6;
-          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke={active ? '#45f882' : '#a987df'} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
+          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke="#39ff14" opacity={active?1:.75} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
         })}
         <circle cx="50" cy="50" r="31" fill="#3d2466" stroke="#bd93f9" strokeWidth="2" />
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />
         <line x1="50" y1="29" x2="50" y2="22" stroke="#45f882" strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${angle} 50 50)`} />
       </svg>
-    </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{p.display}</output>
+    </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
   </div>;
 };
 const modes: DelayMode[] = ['mono', 'stereo', 'ping-pong', 'off'];

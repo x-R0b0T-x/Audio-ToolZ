@@ -1,10 +1,13 @@
+import {WelcomeArtwork} from './WelcomeArtwork';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { FileAudio, FolderOpen, Mic, Plus, X } from 'lucide-react';
 import { findTrackAtSample } from '../audio/cueSheet';
 import { computeWaveformPeaks, formatTimecode } from '../audio/dsp';
 import type { AudioDocument, AudioSelection } from '../audio/types';
 import { BrandLogo } from './BrandLogo';
+import {EasterEggHost} from '../features/q7m4n2/EasterEgg';
 import { useWaveformInteractions } from '../utils/useWaveformInteractions';
+import {useOverviewNavigation} from '../utils/useOverviewNavigation';
 
 export type SelectionChangeReason =
   | 'new'
@@ -14,6 +17,8 @@ export type SelectionChangeReason =
   | 'cursor-drag';
 
 interface WaveformViewProps {
+  onRestartPlayback?: (sample:number)=>void;
+  isLooping?: boolean;
   documents: AudioDocument[];
   activeDocId: string | null;
   isPlaying: boolean;
@@ -40,8 +45,10 @@ interface WaveformViewProps {
   onStartRecord: () => void;
 }
 
-export const WaveformView: React.FC<WaveformViewProps> = ({
+const WaveformContent: React.FC<WaveformViewProps> = ({
   documents,
+  onRestartPlayback,
+  isLooping,
   activeDocId,
   isPlaying,
   isRecording,
@@ -85,8 +92,10 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
     null
   );
 
-  useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording,
-    onSelectionChange, onSelectionCommit, onViewRangeChange });
+  useWaveformInteractions({ canvas: mainCanvasRef, doc: activeDoc, isRecording, isLooping,
+    onSelectionChange, onSelectionCommit, onViewRangeChange, onRestartPlayback });
+
+  const overviewRangeRef=useOverviewNavigation({canvas:overviewCanvasRef,doc:activeDoc,isRecording,isLooping,onViewRangeChange});
 
   const readCssVar = (name: string, fallback: string): string => {
     if (typeof window === 'undefined') return fallback;
@@ -110,7 +119,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
     const playheadColor = readCssVar('--playhead', '#f8f8f2');
     const beatGridColor = readCssVar('--beat-grid', 'rgba(248, 248, 242, 0.34)');
     const beatBarColor = readCssVar('--beat-bar', 'rgba(248, 248, 242, 0.70)');
-    const textMuted = readCssVar('--text-muted', '#7f87a6');
+    const textMuted = '#ffffff';
     const borderSubtle = readCssVar('--border-subtle', '#35394b');
     const surfaceBg = readCssVar('--bg-surface', '#1f222d');
 
@@ -388,7 +397,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
               }
 
               if (isDownbeat) {
-                ctx.fillStyle = 'rgba(248, 248, 242, 0.56)';
+                ctx.fillStyle = '#ffffff';
                 ctx.font = '10px "JetBrains Mono", monospace';
                 ctx.textBaseline = 'top';
                 ctx.fillText(`${Math.floor(b / 4) + 1}`, tx + 4, 2);
@@ -443,7 +452,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
                 ctx.lineWidth = 1;
                 ctx.strokeRect(boxX + 0.5, badgeY + 0.5, boxW - 1, 16);
 
-                ctx.fillStyle = '#f1fa8c';
+                ctx.fillStyle = '#ffffff';
                 ctx.fillText(label, boxX + 5, badgeY + 3.5);
                 lastLabelRight = boxX + boxW;
               }
@@ -593,15 +602,17 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
               if (x0 > 0) ctx.fillRect(0, 0, x0, h);
               if (x1 < w) ctx.fillRect(x1, 0, w - x1, h);
             }
-            const vx0 = activeDoc.viewStartSample / total * w, vx1 = activeDoc.viewEndSample / total * w;
+            const vx0 = overviewRangeRef.current[0] / total * w, vx1 = overviewRangeRef.current[1] / total * w;
             ctx.fillStyle = selBg; ctx.fillRect(vx0, 0, Math.max(3, vx1 - vx0), h);
-            ctx.strokeStyle = selBorder; ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#39ff14'; ctx.lineWidth = 2;
+            ctx.shadowColor = '#39ff14'; ctx.shadowBlur = 7;
             ctx.strokeRect(vx0 + 0.5, 0.5, Math.max(3, vx1 - vx0) - 1, h - 1);
+            ctx.shadowBlur = 0;
             ctx.font = 'bold 9px monospace'; ctx.textBaseline = 'top';
             for (let ch = 0; ch < lanes; ch++) {
               const top = ch * laneH;
               ctx.fillStyle = 'rgba(19,21,28,.9)'; ctx.fillRect(2, top + 1, lanes === 1 ? 31 : 13, Math.min(12, laneH - 1));
-              ctx.fillStyle = ch === 0 ? waveL : waveR;
+              ctx.fillStyle = '#ffffff';
               ctx.fillText(lanes === 1 ? 'Mono' : ch === 0 ? 'G' : 'D', 4, top + 1);
             }
           }
@@ -610,6 +621,8 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
       }
     }
   }, [
+    overviewRangeRef.current[0],
+    overviewRangeRef.current[1],
     activeDoc,
     enabledChannels,
     getPlayheadSample,
@@ -900,7 +913,7 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
         style={{ backgroundColor: 'var(--bg-canvas)' }}
       >
         <div className="flex flex-col items-center gap-7">
-          <BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" />
+          <div data-atz-welcome-art className="flex flex-col items-center gap-3"><WelcomeArtwork/><BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" /></div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -1195,3 +1208,5 @@ export const WaveformView: React.FC<WaveformViewProps> = ({
     </main>
   );
 };
+
+export const WaveformView:React.FC<WaveformViewProps>=p=><EasterEggHost enabled={p.documents.length===0&&!p.isRecording}><WaveformContent {...p}/></EasterEggHost>;

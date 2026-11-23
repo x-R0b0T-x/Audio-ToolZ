@@ -107,6 +107,9 @@ export function parsePersistedUiState(
       visualMode:
         parsed.visualMode === 'spectrum' ||
         parsed.visualMode === 'oscilloscope' ||
+        parsed.visualMode === 'vectorscope' ||
+        parsed.visualMode === 'spectrogram' ||
+        parsed.visualMode === 'vu-meter' ||
         parsed.visualMode === 'colored-waveform'
           ? parsed.visualMode
           : DEFAULT_UI_STATE.visualMode,

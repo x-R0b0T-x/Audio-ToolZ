@@ -1,0 +1,16 @@
+/* Text policy only: SVG attributes, EQ band variables and meter colors are untouched. */
+:root{--text-primary:#fff;--text-secondary:#fff;--text-muted:#fff}
+#root :is(div,section,aside,header,footer,nav,main,span,p,label,small,strong,b,em,i,output,h1,h2,h3,h4,h5,h6,legend,summary,button,a,input,select,option,textarea,li,dt,dd,td,th,code,pre,time):not(:where(svg,svg *)){color:#fff!important}
+#root [data-atz-green-label]{color:#39ff14!important}
+#root [data-testid="header-brand-title"]>span:first-child,#root .atz-about-title>span:first-child{color:#fff!important}
+#root [data-testid="header-brand-title"]>span:nth-child(2),#root .atz-about-title>span:nth-child(2){color:#39ff14!important}
+#root [data-testid="header-brand-title"]>span:nth-child(3),#root .atz-about-title>span:nth-child(3){color:#b34dff!important}
+/* Explicit green exceptions, stronger than the global white text rule. */
+#root aside[aria-label="Fenêtre de contrôle flottante"] span.font-mono-tabular.justify-self-center,#root .atz-about-scroll h4{color:#39ff14!important}
+
+#root #about-changelog-title{color:#fff!important;font-weight:700!important}
+
+/* v1.6 explicit brand exceptions: stronger than the white text policy. */
+#root#root span[data-atz-brand="audio"]{color:#fff!important}
+#root#root span[data-atz-brand="tool"]{color:#39ff14!important}
+#root#root span[data-atz-brand="z"]{color:#b34dff!important}

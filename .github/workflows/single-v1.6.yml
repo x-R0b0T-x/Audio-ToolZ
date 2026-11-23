@@ -1,0 +1,11 @@
+name: Retired v1.6 duplicate ZIP workflow
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retired:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Use build-v1.6.yml; this workflow creates no artifacts.'

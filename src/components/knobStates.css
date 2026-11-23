@@ -1,0 +1,9 @@
+.atz-parameter,.atz-knob{--atz-knob-ink:#bd93f9;--atz-knob-light:none;--atz-pointer-ink:#fff;--atz-pointer-light:none}
+.atz-parameter:hover,.atz-parameter.is-adjusting,.atz-parameter:has(>button:focus-visible),.atz-knob:hover,.atz-knob.is-adjusting,.atz-knob:has([role=slider]:focus-visible){--atz-knob-ink:#39ff14;--atz-knob-light:drop-shadow(0 0 4px #39ff14);--atz-pointer-ink:#39ff14;--atz-pointer-light:drop-shadow(0 0 4px #39ff14)}
+.atz-parameter>button[role=slider]>svg>circle,.atz-knob [role=slider]>svg>circle{stroke:var(--atz-knob-ink)!important;filter:var(--atz-knob-light)!important}
+.atz-parameter>button[role=slider]>svg>line:not(:last-child),.atz-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;filter:var(--atz-knob-light)!important}
+.atz-parameter>button[role=slider]>svg>line:last-child,.atz-knob [role=slider]>svg>line:last-child{stroke:var(--atz-pointer-ink)!important;filter:var(--atz-pointer-light)!important}
+fieldset:disabled .atz-parameter,.atz-knob:has([aria-disabled=true]){--atz-knob-ink:#bd93f9!important;--atz-knob-light:none!important;--atz-pointer-ink:#fff!important;--atz-pointer-light:none!important}
+
+.atz-parameter,.atz-knob{--atz-pointer-ink:#39ff14}
+.atz-parameter>button[role=slider]>svg>line:not(:last-child),.atz-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;opacity:1!important;stroke-width:2!important;vector-effect:non-scaling-stroke;stroke-linecap:round}

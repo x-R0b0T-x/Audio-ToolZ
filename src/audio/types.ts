@@ -28,7 +28,10 @@ export interface CueTrackEntry {
 export type VisualAnalyzerMode =
   | 'oscilloscope'
   | 'spectrum'
-  | 'colored-waveform';
+  | 'colored-waveform'
+  | 'vectorscope'
+  | 'spectrogram'
+  | 'vu-meter';
 
 export interface AudioDocument {
   id: string;
@@ -64,8 +67,6 @@ export type FadeDirection = 'in' | 'out';
 export type FadeCurve = 'linear' | 'exponential' | 'scurve';
 
 export type EffectModalId =
-  | 'volume'
-  | 'normalize'
   | 'fade'
   | 'speed-pitch'
   | 'eq'

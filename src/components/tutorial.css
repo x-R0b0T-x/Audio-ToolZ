@@ -1,0 +1,50 @@
+.atz-tuto-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:12px;background:radial-gradient(ellipse at 20% 20%,#a532ff40,transparent 55%),#080615e6;opacity:1;transition:opacity 1.4s ease}
+.atz-tuto-backdrop.is-closing{opacity:0;pointer-events:none}
+.atz-tuto-backdrop .atz-party-wave{position:absolute;left:0;top:20%;width:100%;height:60%;opacity:.9;pointer-events:none;z-index:0}
+.atz-tuto{position:relative;z-index:1;display:flex;flex-direction:column;box-sizing:border-box;width:min(920px,100%);height:min(600px,100%);overflow:hidden;color:#f8f8f2;background:rgba(25,19,32,.76);border:1px solid #b34dff;border-radius:14px;box-shadow:-6px 0 18px #39ff1455,6px 0 18px #b34dff66,0 20px 60px #000a;font-family:system-ui,sans-serif;outline:none}
+.atz-tuto-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #b34dff44}
+.atz-tuto-head h2{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.atz-tuto-head small{margin-left:10px;font-size:12px;font-weight:500;color:#cfc8dc}
+.atz-tuto-w{color:#f8f8f2}.atz-tuto-g{color:#39ff14}.atz-tuto-v{color:#b34dff}
+.atz-tuto-close{width:32px;height:32px;padding:0;font-size:22px;line-height:1;color:#39ff14;background:transparent;border:1px solid #39ff1480;border-radius:7px;cursor:pointer}
+.atz-tuto-close:hover{box-shadow:0 0 8px #39ff1488}
+.atz-tuto-main{flex:1 1 0;min-height:0;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+.atz-tuto-art{min-height:0;min-width:0;display:grid;place-items:center;padding:14px 8px 14px 18px}
+.atz-tuto-art img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 0 8px #39ff14aa) drop-shadow(0 0 18px #b34dff88);animation:atz-tuto-in .35s ease both;user-select:none}
+.atz-tuto-copy{min-height:0;min-width:0;overflow-y:auto;box-sizing:border-box;padding:14px 22px 14px 8px;text-align:left;scrollbar-width:thin;scrollbar-color:#39ff14 #191320;animation:atz-tuto-in .35s ease both}
+.atz-tuto-copy:focus-visible{outline:2px solid #39ff14;outline-offset:-2px}
+.atz-tuto-copy h3{margin:0 0 8px;font-size:22px;line-height:1.2;color:#39ff14}
+.atz-tuto-copy p{margin:0 0 8px;font-size:14px;line-height:1.55}
+.atz-tuto-copy h4{margin:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#b34dff}
+.atz-tuto-copy ul{margin:0;padding-left:18px;font-size:13px;line-height:1.5}
+.atz-tuto-copy li{margin:0 0 4px}
+.atz-tuto-copy li::marker{color:#b34dff}
+.atz-tuto-copy strong{color:#e6c9ff}
+.atz-tuto-copy .atz-tuto-outro{margin-top:12px;font-weight:600;color:#39ff14}
+.atz-tuto-links{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.atz-tuto-foot{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-top:1px solid #b34dff44}
+.atz-tuto-skip{display:inline-flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
+.atz-tuto-skip input{width:16px;height:16px;accent-color:#39ff14;cursor:pointer}
+.atz-tuto-dots{display:flex;gap:7px}
+.atz-tuto-dots span{width:8px;height:8px;border-radius:50%;background:#b34dff55}
+.atz-tuto-dots span[data-active]{background:#39ff14;box-shadow:0 0 7px #39ff14}
+.atz-tuto-nav{display:flex;gap:8px}
+.atz-tuto-nav button,.atz-tuto-link{display:inline-flex;align-items:center;justify-content:center;padding:7px 14px;font-size:13px;color:#fff;text-decoration:none;background:#b34dff2e;border:1px solid #b34dff;border-radius:7px;cursor:pointer;transition:box-shadow .16s ease,border-color .16s ease}
+.atz-tuto-nav button:hover:not(:disabled),.atz-tuto-link:hover,.atz-tuto-link:focus-visible{border-color:#39ff14;box-shadow:0 0 9px #39ff14aa,0 0 18px #39ff1455}
+.atz-tuto-nav button:disabled{opacity:.35;cursor:default}
+.atz-tuto-nav .atz-tuto-primary{background:#b34dff59}
+.atz-tuto :is(button,input,a):focus-visible{outline:2px solid #39ff14;outline-offset:2px}
+@keyframes atz-tuto-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:720px){.atz-tuto-main{grid-template-columns:1fr;grid-template-rows:minmax(0,170px) minmax(0,1fr)}.atz-tuto-art{padding:8px 16px 0}.atz-tuto-copy{padding:10px 18px}}
+@media(prefers-reduced-motion:reduce){.atz-tuto-art img,.atz-tuto-copy{animation:none}.atz-tuto-nav button,.atz-tuto-link{transition:none}}
+.atz-tuto{background:#191320;border-color:#39ff14;box-shadow:0 0 8px #39ff14aa,0 0 24px #39ff1466,0 0 42px #39ff142b,0 20px 60px #000a}
+
+/* v1.6 final tutorial community buttons. */
+.atz-tuto-links{display:flex;flex-wrap:wrap;gap:12px;padding:5px}
+.atz-tuto-links .atz-tuto-link{border:1px solid #39ff14;border-radius:8px;color:#fff!important;background:#191320;box-shadow:0 0 4px #39ff1480,0 0 9px #b34dff60;transition:box-shadow .18s ease}
+.atz-tuto-links .atz-tuto-link:hover,.atz-tuto-links .atz-tuto-link:focus-visible{outline:2px solid #b34dff;outline-offset:2px;box-shadow:0 0 7px #39ff14bb,0 0 13px #b34dff99}
+/* v1.6 compact equal community buttons */
+.atz-tuto .atz-tuto-links{display:flex;flex-wrap:wrap;gap:8px;padding:4px}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 100px;width:100px;min-width:100px;max-width:100px;height:32px;min-height:32px;max-height:32px;padding:0 8px;white-space:nowrap;font-size:13px;color:#fff!important;background:#7928b5!important;border:1px solid #b34dff;border-radius:7px;outline:none;box-shadow:0 0 5px #b34dff66;transition:border-color .16s ease,box-shadow .16s ease}
+.atz-tuto .atz-tuto-links>a.atz-tuto-link:hover,.atz-tuto .atz-tuto-links>a.atz-tuto-link:focus-visible{background:#7928b5!important;border-color:#39ff14;color:#fff!important;outline:none;box-shadow:0 0 0 1px #39ff14,0 0 8px #39ff1488}
+@media(prefers-reduced-motion:reduce){.atz-tuto .atz-tuto-links>a.atz-tuto-link{transition:none}}
