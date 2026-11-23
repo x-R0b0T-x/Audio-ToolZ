@@ -1,0 +1,29 @@
+.atz-tuto-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:12px;background:radial-gradient(ellipse at 20% 20%,#a532ff40,transparent 55%),#080615e6}
+.atz-tuto{position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:min(720px,100%);height:min(640px,100%);overflow:hidden;color:#f8f8f2;background:#191320;border:1px solid #b34dff;border-radius:14px;box-shadow:-6px 0 18px #39ff1455,6px 0 18px #b34dff66,0 20px 60px #000a;font-family:system-ui,sans-serif;outline:none}
+.atz-tuto-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #b34dff44}
+.atz-tuto-head h2{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.atz-tuto-head small{margin-left:10px;font-size:12px;font-weight:500;color:#cfc8dc}
+.atz-tuto-w{color:#f8f8f2}.atz-tuto-g{color:#39ff14}.atz-tuto-v{color:#b34dff}
+.atz-tuto-close{width:32px;height:32px;padding:0;font-size:22px;line-height:1;color:#39ff14;background:transparent;border:1px solid #39ff1480;border-radius:7px;cursor:pointer}
+.atz-tuto-close:hover{box-shadow:0 0 8px #39ff1488}
+.atz-tuto-art{flex:1 1 0;min-height:0;display:grid;place-items:center;padding:10px 16px}
+.atz-tuto-art img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 0 8px #39ff14aa) drop-shadow(0 0 18px #b34dff88);animation:atz-tuto-in .35s ease both;user-select:none}
+.atz-tuto-copy{flex:none;height:182px;overflow-y:auto;box-sizing:border-box;padding:4px 28px 10px;text-align:center}
+.atz-tuto-copy h3{margin:0 0 6px;font-size:18px;color:#39ff14}
+.atz-tuto-copy p{margin:0 0 6px;font-size:14px;line-height:1.5}
+.atz-tuto-copy ul{margin:4px auto 0;padding-left:18px;max-width:560px;columns:2;column-gap:28px;text-align:left;font-size:13px;line-height:1.55}
+.atz-tuto-copy li::marker{color:#b34dff}
+.atz-tuto-foot{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-top:1px solid #b34dff44}
+.atz-tuto-skip{display:inline-flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
+.atz-tuto-skip input{width:16px;height:16px;accent-color:#39ff14;cursor:pointer}
+.atz-tuto-dots{display:flex;gap:7px}
+.atz-tuto-dots span{width:8px;height:8px;border-radius:50%;background:#b34dff55}
+.atz-tuto-dots span[data-active]{background:#39ff14;box-shadow:0 0 7px #39ff14}
+.atz-tuto-nav{display:flex;gap:8px}
+.atz-tuto-nav button{padding:7px 14px;font-size:13px;color:#fff;background:#b34dff1a;border:1px solid #b34dff88;border-radius:7px;cursor:pointer;transition:box-shadow .16s ease,border-color .16s ease}
+.atz-tuto-nav button:hover:not(:disabled){border-color:#39ff14;box-shadow:0 0 8px #39ff1466}
+.atz-tuto-nav button:disabled{opacity:.35;cursor:default}
+.atz-tuto-nav .atz-tuto-primary{background:#39ff1422;border-color:#39ff14}
+.atz-tuto :is(button,input):focus-visible{outline:2px solid #39ff14;outline-offset:2px}
+@keyframes atz-tuto-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.atz-tuto-art img{animation:none}.atz-tuto-nav button{transition:none}}
