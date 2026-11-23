@@ -11,13 +11,28 @@ function setup(over={}){
 test('shared loop state is a simple flag',()=>{
  assert.equal(isLoopActive(),false);setLoopActive(true);assert.equal(isLoopActive(),true);setLoopActive(0);assert.equal(isLoopActive(),false);
 });
-test('labels are matched exactly and disabled controls are skipped',()=>{
+test('labels are matched tolerantly and disabled controls are skipped',()=>{
  assert.equal(normalizeLabel('  Lecture \n'),'lecture');
  const controls=[{names:['Stop'],disabled:true,id:1},{names:[null,'Stop'],disabled:false,id:2},{names:['Stopper la piste'],disabled:false,id:3}];
  assert.equal(findTransportControl(controls,'stop').id,2);
  assert.equal(findTransportControl([{names:['Boucle infinie'],disabled:false}],'loop').names[0],'Boucle infinie');
  assert.equal(findTransportControl([{names:['Enregistrer'],disabled:false}],'loop'),null);
  assert.equal(findTransportControl(controls,'unknown'),null);
+});
+test('the loop button is found whether it is called Boucle or Lecture en boucle, and never taken for Play',()=>{
+ assert.equal(findTransportControl([{names:[null,'Lecture en boucle'],disabled:false,id:1}],'loop').id,1);
+ assert.equal(findTransportControl([{names:[null,'Boucle'],disabled:false,id:2}],'loop').id,2);
+ assert.equal(findTransportControl([{names:['Lecture en boucle'],disabled:false}],'play'),null);
+ assert.equal(findTransportControl([{names:['<< Envers'],disabled:false}],'play'),null);
+ assert.equal(findTransportControl([{names:['Lecture'],disabled:false,id:3}],'play').id,3);
+ assert.equal(findTransportControl([{names:['Lecture (Espace)'],disabled:false,id:4}],'play').id,4);
+});
+test('buttons without any text are found through their icon class',()=>{
+ assert.equal(findTransportControl([{names:[null,null,'','lucide lucide-play'],disabled:false,id:1}],'play').id,1);
+ assert.equal(findTransportControl([{names:[null,null,'','lucide lucide-repeat'],disabled:false,id:2}],'loop').id,2);
+ assert.equal(findTransportControl([{names:[null,null,'','lucide lucide-square'],disabled:false,id:3}],'stop').id,3);
+ assert.equal(findTransportControl([{names:[null,null,'','lucide lucide-pause'],disabled:false}],'stop'),null);
+ assert.equal(findTransportControl([{names:[null,null,'','lucide lucide-mic'],disabled:false}],'loop'),null);
 });
 test('space starts the loop button when stopped and stops when playing, keeping the effect window',()=>{
  const {state,gate}=setup();
@@ -62,17 +77,17 @@ test('missing transport buttons are swallowed without side effects and blur rele
 });
 test('the installed listeners run in the capture phase and click only the real transport buttons',()=>{
  const listeners={},clicks=[];
- const button=label=>({disabled:false,textContent:label,getAttribute:name=>name==='title'?label:null,click(){clicks.push(label);}});
+ const button=(label,icon)=>({disabled:false,textContent:'',getAttribute:name=>name==='title'?label:null,querySelector:()=>({getAttribute:()=>'lucide lucide-'+icon}),click(){clicks.push(label);}});
  const target={
   addEventListener(name,fn,capture){listeners[name]={fn,capture};},
   removeEventListener(name){delete listeners[name];},
-  document:{querySelector:selector=>selector==='.atz-advanced-backdrop'?{}:null,querySelectorAll:()=>[button('Lecture'),button('Boucle'),button('Stop')]},
+  document:{querySelector:selector=>selector==='.atz-advanced-backdrop'?{}:null,querySelectorAll:()=>[button('Lecture','play'),button('Lecture en boucle','repeat'),button('Stop','square')]},
  };
  let playing=false;
  const remove=installSpaceTransport({isPlaying:()=>playing,isRecording:()=>false},target);
  assert.equal(listeners.keydown.capture,true);assert.equal(listeners.keyup.capture,true);
- const e=key();listeners.keydown.fn(e);assert.deepEqual(clicks,['Boucle']);assert.ok(e.prevented>0);
- listeners.keyup.fn(key());playing=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Boucle','Stop']);
- listeners.keyup.fn(key());playing=false;listeners.keydown.fn(key());assert.deepEqual(clicks,['Boucle','Stop','Boucle']);
+ const e=key();listeners.keydown.fn(e);assert.deepEqual(clicks,['Lecture en boucle']);assert.ok(e.prevented>0);
+ listeners.keyup.fn(key());playing=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture en boucle','Stop']);
+ listeners.keyup.fn(key());playing=false;listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture en boucle','Stop','Lecture en boucle']);
  remove();assert.equal(Object.keys(listeners).length,0);
 });

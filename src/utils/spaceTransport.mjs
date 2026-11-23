@@ -1,9 +1,16 @@
-const WANTED={play:'lecture',loop:'boucle',stop:'stop'};
+const RULES={
+ play:{icons:['lucide-play'],test:label=>label==='lecture'||label==='play'||(label.startsWith('lecture ')&&!label.includes('boucle')&&!label.includes('envers')&&!label.includes('arrière')&&!label.includes('arriere'))},
+ loop:{icons:['lucide-repeat'],test:label=>label.includes('boucle')||label==='loop'||label.startsWith('loop ')},
+ stop:{icons:['lucide-square'],test:label=>label==='stop'||label.startsWith('stop ')||label==='arrêt'||label==='arret'},
+};
 const CONTROLS='aside[aria-label="Fenêtre de contrôle flottante"] button';
 export function normalizeLabel(value){return String(value??'').replace(/\s+/g,' ').trim().toLowerCase();}
 export function findTransportControl(controls,action){
- const wanted=WANTED[action];if(!wanted)return null;
- return controls.find(control=>!control.disabled&&control.names.some(name=>{const label=normalizeLabel(name);return label===wanted||label.startsWith(wanted+' ');}))??null;
+ const rule=RULES[action];if(!rule)return null;
+ return controls.find(control=>!control.disabled&&control.names.some(name=>{
+  const label=normalizeLabel(name);
+  return Boolean(label)&&(rule.test(label)||label.split(' ').some(part=>rule.icons.includes(part)));
+ }))??null;
 }
 function isPlainSpace(event){
  return (event.code==='Space'||event.key===' '||event.key==='Spacebar')&&!event.ctrlKey&&!event.altKey&&!event.metaKey&&!event.shiftKey;
@@ -37,7 +44,7 @@ export function installSpaceTransport(deps,target=window){
   effectOpen:()=>Boolean(doc.querySelector('.atz-advanced-backdrop')),
   recording:deps.isRecording,
   playing:deps.isPlaying,
-  controls:()=>Array.from(doc.querySelectorAll(CONTROLS)).map(element=>({element,disabled:Boolean(element.disabled)||element.getAttribute('aria-disabled')==='true',names:[element.getAttribute('aria-label'),element.getAttribute('title'),element.textContent]})),
+  controls:()=>Array.from(doc.querySelectorAll(CONTROLS)).map(element=>({element,disabled:Boolean(element.disabled)||element.getAttribute('aria-disabled')==='true',names:[element.getAttribute('aria-label'),element.getAttribute('title'),element.textContent,element.querySelector?.('svg')?.getAttribute('class')]})),
   activate:control=>control.element.click(),
  });
  const down=event=>{gate.keydown(event);};
