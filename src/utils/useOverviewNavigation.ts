@@ -2,6 +2,7 @@ import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {RefObject} from 'react';
 import type {AudioDocument} from '../audio/types';
 import {overviewPan,overviewZoom} from './workspaceMath.mjs';
+import {setLoopActive} from './loopState.mjs';
 export {overviewRange,kickPulseAt} from './workspaceMath.mjs';
 type Options={canvas:RefObject<HTMLCanvasElement|null>;doc:AudioDocument|null;isRecording:boolean;isLooping?:boolean;onViewRangeChange:(start:number,end:number)=>void};
 type Drag={id:number;x:number;start:number;length:number;width:number;total:number;moved:boolean};
@@ -18,10 +19,9 @@ export function useOverviewNavigation(options:Options){
   const next:[number,number]=[shownStart,shownEnd];
   handle.current=next;setRange(old=>old[0]===next[0]&&old[1]===next[1]?old:next);
  },[options.doc?.id,shownStart,shownEnd]);
- useEffect(()=>{
-  const canvas=options.canvas.current;if(!canvas)return;
-  canvas.setAttribute('data-atz-loop',hasLoop?'true':'false');
-  return()=>canvas.removeAttribute('data-atz-loop');
+ useLayoutEffect(()=>{
+  setLoopActive(hasLoop);
+  return()=>setLoopActive(false);
  },[options.doc?.id,hasLoop]);
  useEffect(()=>{
   const canvas=latest.current.canvas.current;

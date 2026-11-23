@@ -1,3 +1,4 @@
+import {isLoopActive} from './loopState.mjs';
 const WANTED={play:'lecture',loop:'boucle',stop:'stop'};
 const CONTROLS='aside[aria-label="Fenêtre de contrôle flottante"] button';
 export function normalizeLabel(value){return String(value??'').replace(/\s+/g,' ').trim().toLowerCase();}
@@ -35,7 +36,7 @@ export function installSpaceTransport(deps,target=window){
  const doc=target.document;
  const gate=createSpaceTransport({
   effectOpen:()=>Boolean(doc.querySelector('.atz-advanced-backdrop')),
-  loopActive:()=>Boolean(doc.querySelector('[data-atz-loop="true"]')),
+  loopActive:()=>isLoopActive(),
   recording:deps.isRecording,
   playing:deps.isPlaying,
   controls:()=>Array.from(doc.querySelectorAll(CONTROLS)).map(element=>({element,disabled:Boolean(element.disabled)||element.getAttribute('aria-disabled')==='true',names:[element.getAttribute('aria-label'),element.getAttribute('title'),element.textContent]})),

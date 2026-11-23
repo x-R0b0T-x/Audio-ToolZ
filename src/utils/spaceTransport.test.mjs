@@ -1,5 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {createSpaceTransport,findTransportControl,installSpaceTransport,normalizeLabel} from './spaceTransport.mjs';
+import {isLoopActive,setLoopActive} from './loopState.mjs';
 function key(over={}){return Object.assign({code:'Space',key:' ',repeat:false,ctrlKey:false,altKey:false,metaKey:false,shiftKey:false,prevented:0,stopped:0,preventDefault(){this.prevented++;},stopPropagation(){},stopImmediatePropagation(){this.stopped++;}},over);}
 function setup(over={}){
  const state={open:true,playing:false,recording:false,loop:false,clicks:[],...over};
@@ -7,6 +8,9 @@ function setup(over={}){
  const gate=createSpaceTransport({effectOpen:()=>state.open,loopActive:()=>state.loop,recording:()=>state.recording,playing:()=>state.playing,controls:()=>controls,activate:control=>{state.clicks.push(control.id);state.playing=control.id!=='Stop';}});
  return {state,gate,controls};
 }
+test('shared loop state is a simple flag that survives re-rendered elements',()=>{
+ assert.equal(isLoopActive(),false);setLoopActive(true);assert.equal(isLoopActive(),true);setLoopActive(0);assert.equal(isLoopActive(),false);
+});
 test('labels are matched exactly and disabled controls are skipped',()=>{
  assert.equal(normalizeLabel('  Lecture \n'),'lecture');
  const controls=[{names:['Stop'],disabled:true,id:1},{names:[null,'Stop'],disabled:false,id:2},{names:['Stopper la piste'],disabled:false,id:3}];
@@ -56,20 +60,20 @@ test('a missing or disabled transport button is swallowed without side effects a
  const e=key();assert.equal(gate.keydown(e),true);assert.ok(e.prevented>0);assert.deepEqual(state.clicks,[]);
  gate.reset();controls[0].disabled=false;gate.keydown(key());assert.deepEqual(state.clicks,['Lecture']);
 });
-test('the installed listeners run in the capture phase and click only the real transport buttons',()=>{
+test('the installed listeners run in the capture phase and use the shared loop state',()=>{
  const listeners={},clicks=[];
- let loop=false;
  const button=label=>({disabled:false,textContent:label,getAttribute:name=>name==='title'?label:null,click(){clicks.push(label);}});
  const target={
   addEventListener(name,fn,capture){listeners[name]={fn,capture};},
   removeEventListener(name){delete listeners[name];},
-  document:{querySelector:selector=>selector==='.atz-advanced-backdrop'||(selector==='[data-atz-loop="true"]'&&loop)?{}:null,querySelectorAll:()=>[button('Lecture'),button('Boucle'),button('Stop')]},
+  document:{querySelector:selector=>selector==='.atz-advanced-backdrop'?{}:null,querySelectorAll:()=>[button('Lecture'),button('Boucle'),button('Stop')]},
  };
  let playing=false;
+ setLoopActive(false);
  const remove=installSpaceTransport({isPlaying:()=>playing,isRecording:()=>false},target);
  assert.equal(listeners.keydown.capture,true);assert.equal(listeners.keyup.capture,true);
  const e=key();listeners.keydown.fn(e);assert.deepEqual(clicks,['Lecture']);assert.ok(e.prevented>0);
  listeners.keyup.fn(key());playing=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture','Stop']);
- listeners.keyup.fn(key());playing=false;loop=true;listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture','Stop','Boucle']);
- remove();assert.equal(Object.keys(listeners).length,0);
+ listeners.keyup.fn(key());playing=false;setLoopActive(true);listeners.keydown.fn(key());assert.deepEqual(clicks,['Lecture','Stop','Boucle']);
+ setLoopActive(false);remove();assert.equal(Object.keys(listeners).length,0);
 });
