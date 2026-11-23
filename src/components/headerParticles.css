@@ -1,5 +1,5 @@
 .atz-header-emitter{position:relative;overflow:visible;isolation:isolate}
 .atz-header-particles{position:absolute;inset:0;pointer-events:none!important;user-select:none;z-index:0}
-.atz-header-particle{position:absolute;display:block;width:3px;height:3px;border-radius:50%;pointer-events:none!important;box-shadow:0 0 4px currentColor;animation:atz-header-drift .9s ease-out both}
-@keyframes atz-header-drift{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:.8}100%{opacity:0;transform:translate(var(--atz-particle-x),var(--atz-particle-y)) scale(.15)}}
+.atz-header-particle{position:absolute;display:block;border-radius:50%;pointer-events:none!important;box-shadow:0 0 3px currentColor,0 0 7px currentColor;animation:atz-header-drift var(--atz-particle-life) cubic-bezier(.15,.5,.35,1) both}
+@keyframes atz-header-drift{0%{opacity:0;transform:translate(0,0) scale(.65)}8%{opacity:.95}35%{opacity:.8}70%{opacity:.32}100%{opacity:0;transform:translate(var(--atz-particle-x),var(--atz-particle-y)) scale(.05)}}
 @media(prefers-reduced-motion:reduce){.atz-header-particles{display:none}.atz-header-particle{animation:none}}
