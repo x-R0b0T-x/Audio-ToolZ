@@ -1,86 +1,11 @@
-name: Audio ToolZ v1.6 - single ZIP candidate
+name: Retired v1.6 duplicate ZIP workflow
 on:
-  push:
-    branches: [v1.6-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/scripts/**', '.github/workflows/single-v1.6.yml']
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: single-v16-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
-  windows:
-    if: github.ref == 'refs/heads/v1.6-dev'
-    runs-on: windows-latest
+  retired:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Prepare clean candidate
-        run: python .github/scripts/prepare-clean-16.py
-      - name: Integrate live peaks and playback restart
-        run: python .github/scripts/finishing-playback.py
-      - name: Integrate optional tempo and reactive artwork
-        run: python .github/scripts/optional-bpm.py
-      - name: Finalize existing candidate corrections
-        run: python .github/scripts/finalize-candidate-16.py
-      - name: Correct and verify tutorial community buttons
-        run: python .github/scripts/fix-tutorial-buttons-16.py
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install PNG validator
-        run: python -m pip install Pillow==12.0.0
-      - name: Restore application icons
-        shell: pwsh
-        run: |
-          if (-not (Test-Path public/icon.ico) -or -not (Test-Path public/icon.png)) {
-            git restore --source=6af5c11 -- public/icon.ico public/icon.png
-            if ($LASTEXITCODE -ne 0) { throw 'Icons unavailable' }
-          }
-      - name: Install dependencies
-        run: |
-          npm install
-          npm install --no-save @tauri-apps/cli@2
-      - name: Verify live preview
-        run: node .github/scripts/check-live-preview.cjs
-      - name: Validate artwork
-        run: python .github/scripts/verify-about-ring.py
-      - name: Preview and native loop tests
-        run: node --test src/audio/effectsIntegration.test.mjs src/utils/eqGestures.test.mjs src/features/q7m4n2/clickCounter.test.mjs src/audio/bufferLoop.test.mjs src/components/aboutLight.test.mjs src/utils/finalUi.test.mjs
-      - name: Audio and UI regression tests
-        run: npx tsx --test src/audio/advancedDsp.test.ts src/audio/limiterCeiling.test.ts src/audio/controlPolish.test.ts src/audio/effectsIntegration.test.ts src/utils/controlWheel.test.ts src/components/effectUiMath.test.ts src/utils/overviewNavigation.test.ts src/audio/musicalDelayRouting.test.ts src/utils/finalCleanup.test.ts src/utils/playbackFinal.test.ts src/audio/optionalBpm.test.ts
-      - name: TypeScript check
-        run: npm run lint
-      - name: Build portable application
-        run: npx tauri build --no-bundle
-      - name: Audit packaged files and media
-        shell: pwsh
-        run: |
-          $unwanted = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -match '\.(map|tsx?|test\.mjs|py|md)$' })
-          if ($unwanted.Count -gt 0) { throw 'Development files found in production assets' }
-          $media = @(@{source='src/features/q7m4n2/333.png';pattern='333-*.png'},@{source='src/features/q7m4n2/assets/music.ogg';pattern='music-*.ogg'})
-          foreach ($item in $media) {
-            $bundled = @(Get-ChildItem dist -Recurse -File | Where-Object { $_.Name -like $item.pattern })
-            if ($bundled.Count -ne 1) { throw 'Bundled media unavailable' }
-            if ((Get-FileHash $item.source -Algorithm SHA256).Hash -ne (Get-FileHash $bundled[0].FullName -Algorithm SHA256).Hash) { throw 'Bundled media changed' }
-          }
-      - name: Record generated candidate source hashes
-        shell: pwsh
-        run: |
-          '## Sources transformées utilisées pour cette compilation' >> $env:GITHUB_STEP_SUMMARY
-          Get-FileHash src/components/Tutorial.tsx,src/components/tutorial.css,src/components/InfoModal.tsx,src/components/TopMenuBar.tsx,src/textReadability.css -Algorithm SHA256 | Format-Table -AutoSize | Out-String | Add-Content $env:GITHUB_STEP_SUMMARY
-      - name: Package and verify single ZIP using Windows Shell extraction
-        run: python .github/scripts/package-single-16.py
-      - name: Upload exact ZIP without an outer archive
-        uses: actions/upload-artifact@v7
-        with:
-          path: single-output/audio tools v1.6.zip
-          archive: false
-          if-no-files-found: error
+      - run: echo 'Use build-v1.6.yml; this workflow creates no artifacts.'
