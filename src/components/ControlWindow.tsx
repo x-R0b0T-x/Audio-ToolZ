@@ -1,4 +1,3 @@
-import mixArtworkUrl from '../medias/mix.png?url';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FastForward,
@@ -518,7 +517,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
           </span>
         </div>
       ) : (
-        <div className="p-3 space-y-2.5">
+        <div className="p-3 space-y-2">
           <div className="grid grid-cols-12 gap-3 items-start">
             <div className="col-span-5 space-y-1.5">
               <div className="grid grid-cols-3 gap-1">
@@ -573,7 +572,6 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   icon={<Square className="w-3 h-3" />}
                 />
               </div>
-              <img data-atz-control-art src={mixArtworkUrl} alt="ATX aux commandes du mixage" draggable={false} style={{display:"block",width:"100%",height:"76px",objectFit:"contain",padding:"4px",boxSizing:"border-box"}} />
             </div>
 
             <div className="col-span-7 space-y-2">
@@ -639,10 +637,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
 
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                Analyseur temps réel
-              </span>
+            <div className="flex items-center justify-start mb-0.5">
               <button
                 type="button"
                 data-atz-control="visual-mode"

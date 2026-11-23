@@ -1,3 +1,4 @@
+import welcomeArtworkUrl from '../medias/mix.png?url';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { FileAudio, FolderOpen, Mic, Plus, X } from 'lucide-react';
 import { findTrackAtSample } from '../audio/cueSheet';
@@ -912,7 +913,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
         style={{ backgroundColor: 'var(--bg-canvas)' }}
       >
         <div className="flex flex-col items-center gap-7">
-          <BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" />
+          <div data-atz-welcome-art className="flex flex-col items-center gap-3"><img src={welcomeArtworkUrl} alt="ATZ vous souhaite la bienvenue" draggable={false} style={{display:"block",width:"min(220px,40vw)",height:"min(170px,25vh)",objectFit:"contain",pointerEvents:"none"}} /><BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" /></div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button

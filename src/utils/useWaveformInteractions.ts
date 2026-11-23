@@ -1,3 +1,4 @@
+import {loopBoundaryHit} from './loopBoundaryHit';
 import {restartAfterLoop} from './peakTrail';
 import {loopSelection} from './finalUiMath.mjs';
 import { useEffect, useRef } from 'react';
@@ -76,6 +77,8 @@ export function useWaveformInteractions(options: Options) {
       if (event.button === 2) {
         begin('resize-end', 2, event, selection); return;
       }
+      const boundary = loopBoundaryHit(event.clientX,left,rect.right,doc.viewStartSample,doc.viewEndSample,selection.startSample,selection.endSample);
+      if (boundary) { begin(boundary,0,event,selection); return; }
       if(latest.current.isLooping&&latest.current.onRestartPlayback){
         const frame=dragFrame(doc.viewStartSample,doc.viewEndSample,total,left,width,event.clientX,0);
         const point=Math.min(total-1,snap(frame.sample,width,length,event.altKey));

@@ -49,6 +49,16 @@ Windows x64 portable : audio tools v1.6.zip, sans fichier de contrôle séparé 
 
 Un seul fichier : `audio tools v1.6.zip`. Une extraction donne directement le dossier `Audio ToolZ` avec `Audio ToolZ.exe`, `logo.ico` et `desktop.ini`. Les empreintes SHA-256 restent dans le résumé de compilation, pas dans le téléchargement.
 
-Contrôle : illustration mix.png à la place des deux vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux violets devenant verts au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
+Accueil : illustration mix.png sans document ; Contrôle sans robot ni vumètres, analyseur conservé ; oscilloscope par défaut sans préférence, puis dernier choix mémorisé. Dernière page du didacticiel : Telegram, Github, Paypal, trois boutons égaux restant violets avec contour lumineux vert au survol. Delay en temps musicaux avec détection BPM, sans réglage libre en millisecondes.
 
 Ce candidat nécessite une validation visuelle Windows avant fusion, tag et publication ; la validation de 414ae3f ne vaut pas validation de ces modifications.
+
+
+### Dernières finitions v1.6
+
+- Bornes de boucle saisissables au clic gauche, même pendant la lecture ; création au clic droit et suppression au double-clic conservées.
+- Robot statique sur l’accueil sans document, retiré de Contrôle.
+- Sélecteur de visualisation aligné à gauche sans libellé redondant ; zone de visualisation conservée.
+- Particules vertes/violettes discrètes autour du titre pendant la lecture, sans synchronisation BPM/volume ; préférence de réduction des animations respectée.
+- Boutons du didacticiel toujours violets ; seul le contour et son halo deviennent verts au survol.
+- Tests, compilation, ZIP et rendu Windows à valider sur ce candidat.
