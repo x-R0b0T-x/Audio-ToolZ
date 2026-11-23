@@ -1,5 +1,7 @@
-.atz-tuto-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:12px;background:radial-gradient(ellipse at 20% 20%,#a532ff40,transparent 55%),#080615e6}
-.atz-tuto{position:relative;display:flex;flex-direction:column;box-sizing:border-box;width:min(920px,100%);height:min(600px,100%);overflow:hidden;color:#f8f8f2;background:#191320;border:1px solid #b34dff;border-radius:14px;box-shadow:-6px 0 18px #39ff1455,6px 0 18px #b34dff66,0 20px 60px #000a;font-family:system-ui,sans-serif;outline:none}
+.atz-tuto-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:12px;background:radial-gradient(ellipse at 20% 20%,#a532ff40,transparent 55%),#080615e6;opacity:1;transition:opacity 1.4s ease}
+.atz-tuto-backdrop.is-closing{opacity:0;pointer-events:none}
+.atz-tuto-backdrop .atz-party-wave{position:absolute;left:0;top:20%;width:100%;height:60%;opacity:.9;pointer-events:none;z-index:0}
+.atz-tuto{position:relative;z-index:1;display:flex;flex-direction:column;box-sizing:border-box;width:min(920px,100%);height:min(600px,100%);overflow:hidden;color:#f8f8f2;background:rgba(25,19,32,.76);border:1px solid #b34dff;border-radius:14px;box-shadow:-6px 0 18px #39ff1455,6px 0 18px #b34dff66,0 20px 60px #000a;font-family:system-ui,sans-serif;outline:none}
 .atz-tuto-head{flex:none;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #b34dff44}
 .atz-tuto-head h2{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
 .atz-tuto-head small{margin-left:10px;font-size:12px;font-weight:500;color:#cfc8dc}
@@ -19,6 +21,7 @@
 .atz-tuto-copy li::marker{color:#b34dff}
 .atz-tuto-copy strong{color:#e6c9ff}
 .atz-tuto-copy .atz-tuto-outro{margin-top:12px;font-weight:600;color:#39ff14}
+.atz-tuto-links{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
 .atz-tuto-foot{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-top:1px solid #b34dff44}
 .atz-tuto-skip{display:inline-flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
 .atz-tuto-skip input{width:16px;height:16px;accent-color:#39ff14;cursor:pointer}
@@ -26,11 +29,11 @@
 .atz-tuto-dots span{width:8px;height:8px;border-radius:50%;background:#b34dff55}
 .atz-tuto-dots span[data-active]{background:#39ff14;box-shadow:0 0 7px #39ff14}
 .atz-tuto-nav{display:flex;gap:8px}
-.atz-tuto-nav button{padding:7px 14px;font-size:13px;color:#fff;background:#b34dff1a;border:1px solid #b34dff88;border-radius:7px;cursor:pointer;transition:box-shadow .16s ease,border-color .16s ease}
-.atz-tuto-nav button:hover:not(:disabled){border-color:#39ff14;box-shadow:0 0 8px #39ff1466}
+.atz-tuto-nav button,.atz-tuto-link{display:inline-flex;align-items:center;justify-content:center;padding:7px 14px;font-size:13px;color:#fff;text-decoration:none;background:#b34dff2e;border:1px solid #b34dff;border-radius:7px;cursor:pointer;transition:box-shadow .16s ease,border-color .16s ease}
+.atz-tuto-nav button:hover:not(:disabled),.atz-tuto-link:hover,.atz-tuto-link:focus-visible{border-color:#39ff14;box-shadow:0 0 9px #39ff14aa,0 0 18px #39ff1455}
 .atz-tuto-nav button:disabled{opacity:.35;cursor:default}
-.atz-tuto-nav .atz-tuto-primary{background:#39ff1422;border-color:#39ff14}
-.atz-tuto :is(button,input):focus-visible{outline:2px solid #39ff14;outline-offset:2px}
+.atz-tuto-nav .atz-tuto-primary{background:#b34dff59}
+.atz-tuto :is(button,input,a):focus-visible{outline:2px solid #39ff14;outline-offset:2px}
 @keyframes atz-tuto-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(max-width:720px){.atz-tuto-main{grid-template-columns:1fr;grid-template-rows:minmax(0,170px) minmax(0,1fr)}.atz-tuto-art{padding:8px 16px 0}.atz-tuto-copy{padding:10px 18px}}
-@media(prefers-reduced-motion:reduce){.atz-tuto-art img,.atz-tuto-copy{animation:none}.atz-tuto-nav button{transition:none}}
+@media(prefers-reduced-motion:reduce){.atz-tuto-art img,.atz-tuto-copy{animation:none}.atz-tuto-nav button,.atz-tuto-link{transition:none}}

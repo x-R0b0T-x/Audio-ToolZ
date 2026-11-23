@@ -1,5 +1,6 @@
 import {installDescriptions} from './utils/finalUi';
 import {installPreviewLoopGuard} from './utils/previewLoopGuard';
+import {installContextMenuGuard} from './utils/contextMenuGuard';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {Tutorial} from './components/Tutorial';
@@ -12,6 +13,7 @@ import './textReadability.css';
 const root = document.getElementById('root')!;
 createRoot(root).render(<App />);
 installPreviewLoopGuard();
+installContextMenuGuard();
 installControlGestures(root);
 installTextExceptions(root);
 
