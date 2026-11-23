@@ -8,12 +8,21 @@ type Drag={id:number;x:number;start:number;length:number;width:number;total:numb
 export function useOverviewNavigation(options:Options){
  const latest=useRef(options);latest.current=options;
  const viewStart=options.doc?.viewStartSample??0,viewEnd=options.doc?.viewEndSample??0;
- const [range,setRange]=useState<[number,number]>([viewStart,viewEnd]);
+ const loopStart=options.doc?.selection.startSample??0,loopEnd=options.doc?.selection.endSample??0;
+ const hasLoop=loopEnd>loopStart;
+ const shownStart=hasLoop?loopStart:viewStart,shownEnd=hasLoop?loopEnd:viewEnd;
+ const [range,setRange]=useState<[number,number]>([shownStart,shownEnd]);
  const handle=useRef<[number,number]>(range);handle.current=range;
+ const view=useRef<[number,number]>([viewStart,viewEnd]);view.current=[viewStart,viewEnd];
  useLayoutEffect(()=>{
-  const next:[number,number]=[viewStart,viewEnd];
+  const next:[number,number]=[shownStart,shownEnd];
   handle.current=next;setRange(old=>old[0]===next[0]&&old[1]===next[1]?old:next);
- },[options.doc?.id,viewStart,viewEnd]);
+ },[options.doc?.id,shownStart,shownEnd]);
+ useEffect(()=>{
+  const canvas=options.canvas.current;if(!canvas)return;
+  canvas.setAttribute('data-atz-loop',hasLoop?'true':'false');
+  return()=>canvas.removeAttribute('data-atz-loop');
+ },[options.doc?.id,hasLoop]);
  useEffect(()=>{
   const canvas=latest.current.canvas.current;
   if(!canvas||!options.doc||options.isRecording)return;
@@ -24,13 +33,17 @@ export function useOverviewNavigation(options:Options){
    const [start,end]=handle.current,left=start/total*r.width;
    return x>=r.left+left&&x<=r.left+Math.min(r.width,Math.max(left+3,end/total*r.width));
   };
-  const publish=(next:[number,number])=>{handle.current=next;setRange(next);latest.current.onViewRangeChange(...next);};
+  const publish=(next:[number,number])=>{
+   const s=latest.current.doc?.selection;
+   if(!(s&&s.endSample>s.startSample)){handle.current=next;setRange(next);}
+   latest.current.onViewRangeChange(...next);
+  };
   const stop=()=>{const old=drag;drag=null;if(old&&canvas.hasPointerCapture(old.id))canvas.releasePointerCapture(old.id);canvas.style.cursor='grab';};
   const down=(e:PointerEvent)=>{
    e.preventDefault();e.stopImmediatePropagation();
    if(e.button!==0||drag||!hit(e.clientX,e.clientY))return;
    const d=latest.current.doc,r=canvas.getBoundingClientRect();if(!d||r.width<=0)return;
-   const [start,end]=handle.current;
+   const [start,end]=view.current;if(end<=start)return;
    drag={id:e.pointerId,x:e.clientX,start,length:end-start,width:r.width,total:d.channels[0]?.length??0,moved:false};
    canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing';
   };
@@ -46,13 +59,14 @@ export function useOverviewNavigation(options:Options){
   const wheel=(e:WheelEvent)=>{
    e.preventDefault();e.stopImmediatePropagation();if(drag||!hit(e.clientX,e.clientY)||!e.deltaY)return;
    const total=latest.current.doc?.channels[0]?.length??0;if(!total)return;
-   const [start,end]=handle.current,unit=e.deltaMode===1?32:e.deltaMode===2?240:1;
+   const [start,end]=view.current,unit=e.deltaMode===1?32:e.deltaMode===2?240:1;
+   if(end<=start)return;
    publish(overviewZoom(total,start,end,e.deltaY*unit));
   };
   const suppress=(e:Event)=>{e.preventDefault();e.stopImmediatePropagation();};
   const leave=()=>{if(!drag)canvas.style.cursor='default';};
   const oldTouch=canvas.style.touchAction;canvas.style.touchAction='none';
-  canvas.title='Glisser avec le bouton gauche pour déplacer la vue ; molette vers le haut pour zoomer, vers le bas pour dézoomer.';
+  canvas.title='Glisser avec le bouton gauche pour naviguer dans le morceau ; molette vers le haut pour zoomer, vers le bas pour dézoomer.';
   canvas.addEventListener('pointerdown',down,true);canvas.addEventListener('pointermove',move,true);canvas.addEventListener('pointerup',up,true);
   canvas.addEventListener('pointercancel',stop,true);canvas.addEventListener('lostpointercapture',stop,true);canvas.addEventListener('pointerleave',leave);
   canvas.addEventListener('wheel',wheel,{passive:false,capture:true});

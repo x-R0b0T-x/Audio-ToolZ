@@ -41,12 +41,13 @@ test('kick envelope has a continuous rise and release and works again after loop
  let level=0;for(let n=0;n<60;n++){const next=smoothPulse(level,1,1/60);assert.ok(next>=level&&next<=1);level=next;}
  assert.ok(level>.99);assert.ok(smoothPulse(level,0,1/60)>0);
 });
-test('overview handle mirrors the main view and never touches the loop or playback',()=>{
+test('overview handle shows the loop size and navigates the view without touching the loop or playback',()=>{
  const code=readFileSync('src/utils/useOverviewNavigation.ts','utf8');
  assert.ok(code.includes('e.button!==0'));assert.ok(code.includes("'grabbing'"));assert.ok(code.includes("'grab'"));assert.ok(code.includes('setPointerCapture'));
- assert.ok(code.includes('options.doc?.viewStartSample'));assert.ok(code.includes('options.doc?.viewEndSample'));
+ assert.ok(code.includes('const hasLoop=loopEnd>loopStart'));assert.ok(code.includes('hasLoop?loopStart:viewStart'));assert.ok(code.includes('hasLoop?loopEnd:viewEnd'));
+ assert.ok(code.includes('const [start,end]=view.current'));assert.ok(code.includes('data-atz-loop'));
  assert.ok(code.includes('overviewPan(drag.total,drag.start,drag.length'));assert.ok(code.includes('moved:false'));assert.ok(code.includes('if(drag.moved)move(e);stop();'));
- assert.ok(!code.includes('doc.selection'));assert.ok(!code.includes('overviewRange(total,selected'));assert.ok(!code.includes('options.isLooping,'));assert.ok(!code.includes('audioEngine'));assert.ok(!code.includes('onSelectionChange'));
+ assert.ok(!code.includes('doc.selection'));assert.ok(!code.includes('options.isLooping,'));assert.ok(!code.includes('audioEngine'));assert.ok(!code.includes('onSelectionChange'));
  const view=readFileSync('src/components/WaveformView.tsx','utf8');
  assert.ok(view.includes('useOverviewNavigation({canvas:overviewCanvasRef'));assert.ok(view.includes('data-testid="snap-kicks-toggle"'));assert.ok(!view.includes('SnapIndicatorPortal'));assert.ok(view.includes('overviewRangeRef.current[0]'));
  const sync=readFileSync('src/utils/finalUi.ts','utf8');assert.ok(sync.includes('smoothPulse(level,desired,elapsed)'));assert.ok(sync.includes(':0;'));assert.ok(!sync.includes('now*rate/1000'));

@@ -17,7 +17,8 @@ export function createSpaceTransport(env){
    swallow(event);
    if(event.repeat||held)return true;
    held=true;
-   const control=findTransportControl(env.controls(),env.playing()?'stop':'loop');
+   const action=env.playing()?'stop':env.loopActive()?'loop':'play';
+   const control=findTransportControl(env.controls(),action);
    if(control)env.activate(control);
    return true;
   },
@@ -34,6 +35,7 @@ export function installSpaceTransport(deps,target=window){
  const doc=target.document;
  const gate=createSpaceTransport({
   effectOpen:()=>Boolean(doc.querySelector('.atz-advanced-backdrop')),
+  loopActive:()=>Boolean(doc.querySelector('[data-atz-loop="true"]')),
   recording:deps.isRecording,
   playing:deps.isPlaying,
   controls:()=>Array.from(doc.querySelectorAll(CONTROLS)).map(element=>({element,disabled:Boolean(element.disabled)||element.getAttribute('aria-disabled')==='true',names:[element.getAttribute('aria-label'),element.getAttribute('title'),element.textContent]})),
