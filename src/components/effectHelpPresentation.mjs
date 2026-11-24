@@ -1,5 +1,5 @@
 export function presentEffectHelp(title,topics){
- const base=topics.filter(([label])=>!['Fermer','Redimensionner la fenêtre d’effet'].includes(label)).map(t=>[...t]);
+ const base=topics.filter(([label])=>!['Fermer','Redimensionner la fenêtre d’effet','Appliquer','Annuler'].includes(label)).map(t=>[...t]);
  if(!/reverb/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return {title,topics:base};
  const result=base.filter(([label])=>!['Préécouter avec la queue','Arrêter'].includes(label)).map(([label,text])=>{
   if(label==='Vitesse de modulation')return ['Vitesse',text];if(label==='Amortissement aigu')return ['Amort. aigu',text];if(label==='Réflexions')return ['Réflex.',text];if(label==='Réverbération')return ['Réverb.',text];
