@@ -1,4 +1,4 @@
-name: Audio ToolZ v1.7-dev - Z-Reverbe Windows test
+name: Audio ToolZ v1.7-dev - Windows validation
 on:
   push:
     branches: [v.1.7-dev]
@@ -32,8 +32,8 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Reverb DSP tests
-        run: node --test src/audio/reverb.test.mjs
+      - name: Reverb DSP and refinement tests
+        run: node --test src/audio/reverb.test.mjs src/audio/reverbRefinements.test.mjs src/utils/headerWaveMath.test.mjs src/components/devBuildCorrections.test.mjs
       - name: TypeScript check
         run: npm run lint
       - name: Build portable Windows application
@@ -43,7 +43,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dev-output | Out-Null
           Copy-Item src-tauri/target/release/audio-toolz.exe 'dev-output/Audio ToolZ v1.7-dev.exe'
-          @('Audio ToolZ - Z-Reverbe development test', 'Source commit: ${{ github.sha }}', 'Open audio, then Effets > Z-Reverbe.', 'Preview includes the rendered tail. Apply, then export the entire document to keep the tail.', 'Development snapshot: application version metadata is still 1.6.') | Set-Content dev-output/BUILD.txt
+          @('Audio ToolZ v1.7-dev - development build', 'Source commit: ${{ github.sha }}', 'Tests and TypeScript validation passed before this executable was built.', 'Export the entire document to preserve the reverb tail.', 'Offline reverb rendering can still delay parameter changes.') | Set-Content dev-output/BUILD.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Audio.ToolZ.v1.7-dev
