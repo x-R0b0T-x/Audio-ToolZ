@@ -8,4 +8,10 @@ mkdirSync('audit-output',{recursive:true});
 const report={filesScanned:files.length,robotTypos,colors,note:'Color inventory for review; analyzer, meter, warning and record colors are not automatically replaced.'};
 writeFileSync('audit-output/review-audit.json',JSON.stringify(report,null,2));
 console.log(JSON.stringify({filesScanned:files.length,robotTypos:robotTypos.length,colorLocations:colors.length}));
-if(robotTypos.length)process.exitCode=1;
+const escapeData=value=>String(value).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A');
+const escapeProperty=value=>escapeData(value).replace(/:/g,'%3A').replace(/,/g,'%2C');
+for(const entry of robotTypos){
+ console.error(`${entry.path}:${entry.line}: nom du robot attendu : ATZ\n${entry.text}`);
+ if(process.env.GITHUB_ACTIONS==='true')console.error(`::error file=${escapeProperty(entry.path)},line=${entry.line},title=Robot spelling::${escapeData(`Nom attendu : ATZ. Ligne detectee : ${entry.text}`)}`);
+}
+if(robotTypos.length){console.error('Audit bloque : corriger les lignes ci-dessus. Rapport complet : audit-output/review-audit.json');process.exitCode=1;}
