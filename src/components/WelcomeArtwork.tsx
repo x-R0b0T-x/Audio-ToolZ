@@ -1,7 +1,16 @@
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore} from 'react';
+import waitImage from '../medias/wait.png?url';
+import {FileOpeningMessage} from './FileOpeningOverlay';
+import {subscribeFileOpening,getOpeningSnapshot,registerWelcomeArtwork} from '../utils/fileOpening.mjs';
 import artwork from '../medias/mix.png?url';
 type Bounds={x:number;y:number;width:number;height:number};
 export function WelcomeArtwork(){
+ const loading=useSyncExternalStore(subscribeFileOpening,getOpeningSnapshot,()=>0)>0;
+ useLayoutEffect(registerWelcomeArtwork,[]);
+ const source=loading?waitImage:artwork;
+ return <div className="zonyx-welcome-presentation" aria-busy={loading}><ArtworkFrame key={source} source={source} description={loading?'ZØNYX patiente pendant le chargement':'ZØNYX vous souhaite la bienvenue'}/>{loading&&<FileOpeningMessage/>}</div>;
+}
+function ArtworkFrame({source,description}:{source:string;description:string}){
   const stage=useRef<HTMLDivElement>(null),image=useRef<HTMLImageElement>(null);
   const bounds=useRef<Bounds|null>(null),current=useRef({width:340,height:180,offset:0});
   const [layout,setLayout]=useState(current.current);
@@ -22,7 +31,7 @@ export function WelcomeArtwork(){
       let parent=node.parentElement,target:DOMRect|null=null;
       while(parent&&parent!==document.body){
         const buttons=Array.from(parent.querySelectorAll('button'));
-        const first=buttons.find(button=>/charger|ouvrir/i.test(button.textContent||''));
+        const first=buttons.find(button=>/sélectionner|charger|ouvrir/i.test(button.textContent||''));
         const last=buttons.find(button=>/enregistrer/i.test(button.textContent||''));
         if(first&&last){const a=first.getBoundingClientRect(),b=last.getBoundingClientRect();target=new DOMRect(a.left,a.top,b.right-a.left,Math.max(a.height,b.height));break;}
         parent=parent.parentElement;
@@ -40,5 +49,5 @@ export function WelcomeArtwork(){
     return()=>{cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',schedule);refresh.current=()=>{};};
   },[]);
   const crop=bounds.current,scale=crop?layout.width/crop.width:1;
-  return <div ref={stage} data-zonyx-fitted-welcome style={{position:'relative',flexShrink:0,width:layout.width,height:layout.height,overflow:'hidden',transform:`translateX(${layout.offset}px)`}}><img ref={image} src={artwork} alt="ZØNYX vous souhaite la bienvenue" draggable={false} onLoad={()=>refresh.current()} style={crop?{position:'absolute',maxWidth:'none',width:(image.current?.naturalWidth||crop.width)*scale,left:-crop.x*scale,top:-crop.y*scale}:{width:'100%',height:'100%',objectFit:'contain'}}/></div>;
+  return <div ref={stage} data-zonyx-fitted-welcome style={{position:'relative',flexShrink:0,width:layout.width,height:layout.height,overflow:'hidden',transform:`translateX(${layout.offset}px)`}}><img ref={image} src={source} alt={description} draggable={false} onLoad={()=>refresh.current()} style={crop?{position:'absolute',maxWidth:'none',width:(image.current?.naturalWidth||crop.width)*scale,left:-crop.x*scale,top:-crop.y*scale}:{width:'100%',height:'100%',objectFit:'contain'}}/></div>;
 }

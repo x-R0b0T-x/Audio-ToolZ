@@ -109,7 +109,9 @@ export function installControlGestures(root: HTMLElement): () => void {
   const accumulated = new WeakMap<Element, number>();
   const wheel = (event: WheelEvent) => {
     if (!(event.target instanceof Element) || event.ctrlKey || !event.deltaY) return;
-    const field = event.target.closest('input[type="range"], input[type="number"], [role="slider"]');
+    const stereo = event.target.closest('.zonyx-rv-stereo');
+    if (stereo && event.target.closest('.zonyx-value-entry input')) return;
+    const field = event.target.closest('input[type="range"], input[type="number"], [role="slider"]') ?? stereo?.querySelector('[role="slider"]');
     if (!(field instanceof HTMLElement) || !root.contains(field) || field.matches(':disabled, [aria-disabled="true"]')) return;
     if (field instanceof HTMLInputElement && field.readOnly) return;
     event.preventDefault(); event.stopPropagation();
@@ -118,7 +120,7 @@ export function installControlGestures(root: HTMLElement): () => void {
     const sum = (Math.sign(old) === Math.sign(delta) ? old : 0) + delta;
     if (Math.abs(sum) < 40) { accumulated.set(field, sum); return; }
     accumulated.set(field, 0);
-    const direction = sum < 0 ? 1 : -1;
+    const direction = (sum < 0 ? 1 : -1) * (field.closest('.zonyx-rv-stereo') ? -1 : 1);
     if (field instanceof HTMLInputElement) {
       const step = field.step && field.step !== 'any' ? Number(field.step) : 1;
       const value = Number(field.value);

@@ -23,6 +23,8 @@ export const RELEASE_ADDITIONS = [
  "Application Windows portable, sans installation."
 ];
 export const RELEASE_FIXES = [
+ "Retours de test v1.7-dev : Z-Fondus allégé, valeurs de Z-Reverbe violettes et blanches, molette Stéréo corrigée.",
+ "Chargement : remplacement du robot d’accueil par wait.png, texte explicite et trois points animés ; libellés Curseur et Sélection en vert.",
  "Corrections des tests d’aide pour vérifier les rubriques réellement demandées, les titres centrés et la couleur commune.",
  "Fermeture de Z-Reverbe : restauration du signal original sans laisser la préécoute réverbérée active.",
  "Niveaux de Z-Reverbe limités à 100 %, bouton Tempo stabilisé et repères Stéréo repositionnés.",
