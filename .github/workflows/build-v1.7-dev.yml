@@ -2,34 +2,38 @@ name: Audio ToolZ v1.7-dev - Windows validation
 on:
   push:
     branches: [v.1.7-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/workflows/build-v1.7-dev.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/finish_v17.py', '.github/maintenance/package-v17.py', '.github/workflows/build-v1.7-dev.yml']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: reverb-dev-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   windows:
-    if: github.ref == 'refs/heads/v.1.7-dev'
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ' && github.ref == 'refs/heads/v.1.7-dev'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: v.1.7-dev
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
+      - name: Apply reviewed development corrections
+        shell: pwsh
+        run: |
+          python .github/maintenance/finish_v17.py
+          if ($LASTEXITCODE -ne 0) { throw 'Finishing failed' }
+          git add -A -- src .github/maintenance/package-v17.py .github/diagnostics/finishing-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
       - name: Audit tracked source and robot spelling
         run: node src/utils/reviewAudit.mjs
-      - name: Upload source review report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Audio.ToolZ.v1.7-dev.source-audit
-          path: audit-output/
-          if-no-files-found: warn
       - name: Restore application icons if missing
         shell: pwsh
         run: |
@@ -41,52 +45,70 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
-      - name: Resolve and verify Symphonia 0.6.1
+      - name: Verify locked Symphonia 0.6.1
         shell: pwsh
         run: |
-          $metadata = cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 | ConvertFrom-Json
-          if ($LASTEXITCODE -ne 0) { throw 'Cargo dependency resolution failed' }
+          $raw = & cargo metadata --locked --manifest-path src-tauri/Cargo.toml --format-version 1
+          if ($LASTEXITCODE -ne 0) { throw 'Locked Cargo resolution failed' }
+          $metadata = $raw | ConvertFrom-Json
           $symphonia = @($metadata.packages | Where-Object { $_.name -eq 'symphonia' })
           if ($symphonia.Count -ne 1 -or $symphonia[0].version -ne '0.6.1') { throw 'Expected exactly Symphonia 0.6.1' }
-      - name: Build frontend assets for Rust application tests
+          $raw | Set-Content audit-output/locked-metadata.json -Encoding utf8
+      - name: All source Node regression tests
+        shell: pwsh
+        run: |
+          $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
+          if ($tests.Count -eq 0) { throw 'No regression tests found' }
+          node --test @tests
+          if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed' }
+      - name: TypeScript check
+        run: npm run lint
+      - name: Build frontend assets for Rust tests
         run: npm run build
       - name: Symphonia decoder regression tests
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml audio_fallback::tests -- --nocapture
-      - name: Audio UI and global transport regression tests
-        run: node --test src/audio/reverb.test.mjs src/audio/reverbRefinements.test.mjs src/utils/headerWaveMath.test.mjs src/components/devBuildCorrections.test.mjs src/utils/spaceTransport.test.mjs
-      - name: TypeScript check
-        run: npm run lint
       - name: Build portable Windows application
         run: npx tauri build --no-bundle
-      - name: Prepare and verify portable folder
+      - name: Commit only tested development sources locally
         shell: pwsh
         run: |
-          $folder = 'dev-output/Audio ToolZ'
-          New-Item -ItemType Directory -Force "$folder/validation" | Out-Null
-          Copy-Item src-tauri/target/release/audio-toolz.exe "$folder/Audio ToolZ.exe"
-          Copy-Item src/medias/logo.ico "$folder/Audio ToolZ.ico"
-          @('[.ShellClassInfo]', 'IconResource=Audio ToolZ.ico,0') | Set-Content "$folder/Desktop.ini" -Encoding Unicode
-          attrib +h +s "$folder/Desktop.ini"
-          attrib +r "$folder"
-          Copy-Item src-tauri/Cargo.lock "$folder/validation/Cargo.lock"
-          Copy-Item audit-output/review-audit.json "$folder/validation/review-audit.json"
-          @('Audio ToolZ v1.7-dev - development build', 'Source commit: ${{ github.sha }}', 'Symphonia 0.6.1 verified by cargo metadata.', 'Automated tests and TypeScript validation passed before packaging.', 'Visual Windows behavior still requires manual validation.') | Set-Content "$folder/BUILD.txt"
-          Get-FileHash "$folder/Audio ToolZ.exe" -Algorithm SHA256 | Format-List | Out-File "$folder/validation/SHA256.txt"
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $zip = Join-Path $env:RUNNER_TEMP 'Audio-ToolZ-portable-check.zip'
-          if (Test-Path $zip) { Remove-Item $zip }
-          [System.IO.Compression.ZipFile]::CreateFromDirectory((Resolve-Path dev-output).Path, $zip)
-          $archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
-          try {
-            $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\','/') })
-            foreach ($required in @('Audio ToolZ/Audio ToolZ.exe','Audio ToolZ/Audio ToolZ.ico','Audio ToolZ/Desktop.ini')) {
-              if ($names -notcontains $required) { throw "Missing portable entry: $required" }
-            }
-            if (@($names | Where-Object { $_ -notlike 'Audio ToolZ/*' }).Count) { throw 'Unexpected entry outside Audio ToolZ/' }
-          } finally { $archive.Dispose() }
-      - uses: actions/upload-artifact@v4
+          if ((git branch --show-current) -ne 'v.1.7-dev') { throw 'Wrong branch' }
+          if ((git rev-parse HEAD) -ne $env:GITHUB_SHA) { throw 'Unexpected checkout' }
+          git diff --exit-code -- src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) { throw 'Rust lock changed unexpectedly' }
+          python -c "import json;from pathlib import Path;p=Path('.github/diagnostics/finishing-v17.json');r=json.loads(p.read_text(encoding='utf-8'));r['validation']='node-tests-typescript-frontend-decoder-tests-and-windows-build-passed';p.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot update validation report' }
+          git add -- .github/diagnostics/finishing-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot stage validation report' }
+          git diff --cached --quiet
+          $result = $LASTEXITCODE
+          if ($result -gt 1) { throw 'Cannot inspect staged changes' }
+          if ($result -eq 1) {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'fix: finish v1.7-dev interface loading and portable packaging'
+            if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
+          }
+          exit 0
+      - name: Package and verify Windows Shell extraction
+        run: python .github/maintenance/package-v17.py
+      - name: Publish validated development sources
+        shell: pwsh
+        run: |
+          git push origin HEAD:refs/heads/v.1.7-dev
+          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; newer changes were not overwritten' }
+      - name: Upload exact portable ZIP without wrapping
+        uses: actions/upload-artifact@v7
         with:
-          name: Audio.ToolZ.v1.7-dev
-          path: dev-output/
-          include-hidden-files: true
+          path: single-output/Audio ToolZ v1.7-dev.zip
+          archive: false
           if-no-files-found: error
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio.ToolZ.v1.7-dev.validation
+          path: |
+            audit-output/
+            .github/diagnostics/finishing-v17.json
+          if-no-files-found: warn
