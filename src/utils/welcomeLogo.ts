@@ -11,12 +11,12 @@ export function installWelcomeLogo(root:HTMLElement):()=>void{
   for(let area=picker.parentElement;area&&area!==root;area=area.parentElement){
    if(!Array.from(area.querySelectorAll('button')).some(b=>/enregistrer/i.test(b.textContent??'')))continue;
    const candidates=Array.from(area.querySelectorAll<SVGSVGElement>('svg')).filter(svg=>!svg.closest(excluded));
-   const svg=candidates.find(s=>s.classList.contains('atz-brand-logo')||s.querySelector('circle'))??candidates[0];
+   const svg=candidates.find(s=>s.classList.contains('zonyx-brand-logo')||s.querySelector('circle'))??candidates[0];
    const image=Array.from(area.querySelectorAll<HTMLImageElement>('img')).find(img=>!img.closest(excluded)&&/logo|icon/i.test(img.src));
    const node=svg??image,parent=node?.parentElement;if(!node||!parent)continue;
    source=node;const oldVisibility=node.style.visibility,oldPosition=parent.style.position;
    if(getComputedStyle(parent).position==='static')parent.style.position='relative';
-   const img=document.createElement('img');overlay=img;img.src=logoUrl;img.alt='';img.setAttribute('aria-hidden','true');img.draggable=false;img.className='atz-welcome-vinyl';
+   const img=document.createElement('img');overlay=img;img.src=logoUrl;img.alt='';img.setAttribute('aria-hidden','true');img.draggable=false;img.className='zonyx-welcome-vinyl';
    Object.assign(img.style,{position:'absolute',maxWidth:'none',objectFit:'contain'});
    const measure=()=>{const a=node.getBoundingClientRect(),b=parent.getBoundingClientRect();Object.assign(img.style,{left:`${a.left-b.left-parent.clientLeft+parent.scrollLeft}px`,top:`${a.top-b.top-parent.clientTop+parent.scrollTop}px`,width:`${a.width}px`,height:`${a.height}px`});};
    node.style.visibility='hidden';parent.appendChild(img);measure();resize=new ResizeObserver(measure);resize.observe(node);resize.observe(parent);

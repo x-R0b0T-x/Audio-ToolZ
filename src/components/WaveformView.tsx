@@ -913,7 +913,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
         style={{ backgroundColor: 'var(--bg-canvas)' }}
       >
         <div className="flex flex-col items-center gap-7">
-          <div data-atz-welcome-art className="flex flex-col items-center gap-3"><WelcomeArtwork/><BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" /></div>
+          <div data-zonyx-welcome-art className="flex flex-col items-center gap-3"><WelcomeArtwork/><BrandLogo size={84} showWordmark wordmarkClassName="text-4xl" /></div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -977,7 +977,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
           return (
             <div
               key={doc.id}
-              className="atz-doc-tab group flex items-center gap-1.5 px-3 py-1.5 rounded-t-md border-t border-x text-xs font-medium shrink-0"
+              className="zonyx-doc-tab group flex items-center gap-1.5 px-3 py-1.5 rounded-t-md border-t border-x text-xs font-medium shrink-0"
               style={{
                 backgroundColor: isActive
                   ? 'var(--bg-canvas)'
@@ -993,7 +993,7 @@ const WaveformContent: React.FC<WaveformViewProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectDocument(doc.id)}
-                className="atz-doc-tab-btn inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                className="zonyx-doc-tab-btn inline-flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
               >
                 <FileAudio
                   className="w-3.5 h-3.5 shrink-0"

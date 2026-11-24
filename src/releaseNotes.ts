@@ -1,5 +1,5 @@
 export const RELEASE_ADDITIONS = [
- "v1.7-dev : je vous accompagne dans le guide d’accueil et les aides, avec un ton personnel et chaleureux. — ATZ",
+ "v1.7-dev : je vous accompagne dans le guide d’accueil et les aides, avec un ton personnel et chaleureux. — ZØNYX",
  "Guide d’accueil : titre Audio ToolZ centré, sans libellé Présentation, et catalogue des six effets actualisé.",
  "Effets : Z-Delay, Z-Égaliseur, Z-Fondus, Z-Limit/Comp, Z-Pitcher et Z-Reverbe ; noms blancs dans le menu et titres colorés centrés dans leurs fenêtres.",
  "Z-Reverbe : niveaux Direct, Réflexions et Réverbération, traîne conservée à l’application et fonds noirs pour les faders.",
@@ -7,7 +7,7 @@ export const RELEASE_ADDITIONS = [
  "Aides : nom de l’effet seul, en gras et centré ; rubriques Appliquer et Annuler retirées, sans modifier les boutons de traitement.",
  "Aides : même vert de référence pour les textes et le halo ; suppression de la phrase demandant de déplier les rubriques.",
  "Décodeur audio de secours migré vers Symphonia 0.6.1, avec adaptation Rust et tests de décodage WAV.",
- "Historique v1.6 : nouveaux outils audio, didacticiel avec ATZ et refonte graphique.",
+ "Historique v1.6 : nouveaux outils audio, didacticiel avec ZØNYX et refonte graphique.",
  "Onde électrique vert néon attachée au titre, en courbes continues : amplitude pilotée par le niveau RMS stéréo, sans BPM ni kicks ; aucun signal en pause, à l’arrêt ou pendant le silence.",
  "Six visualisations : oscilloscope, spectre, waveform colorée, vectorscope stéréo, spectrogramme et vumètre à aiguille stéréo.",
  "Égaliseur trois bandes de la 1.5 remplacé par un égaliseur paramétrique à sept bandes indépendantes.",

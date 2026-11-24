@@ -1,3 +1,4 @@
+import './utils/mascotIdentity.mjs';
 import {useEffect} from 'react';
 import {installDescriptions} from './utils/finalUi';
 import {installPreviewLoopGuard} from './utils/previewLoopGuard';
@@ -22,6 +23,6 @@ installTextExceptions(root);
 installDescriptions(root);
 installWelcomeLogo(root);
 const tutorialHost = document.createElement('div');
-tutorialHost.id = 'atz-tutorial-root';
+tutorialHost.id = 'zonyx-tutorial-root';
 document.body.appendChild(tutorialHost);
 createRoot(tutorialHost).render(<Tutorial />);

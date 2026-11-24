@@ -40,5 +40,5 @@ export function WelcomeArtwork(){
     return()=>{cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('resize',schedule);refresh.current=()=>{};};
   },[]);
   const crop=bounds.current,scale=crop?layout.width/crop.width:1;
-  return <div ref={stage} data-atz-fitted-welcome style={{position:'relative',flexShrink:0,width:layout.width,height:layout.height,overflow:'hidden',transform:`translateX(${layout.offset}px)`}}><img ref={image} src={artwork} alt="ATZ vous souhaite la bienvenue" draggable={false} onLoad={()=>refresh.current()} style={crop?{position:'absolute',maxWidth:'none',width:(image.current?.naturalWidth||crop.width)*scale,left:-crop.x*scale,top:-crop.y*scale}:{width:'100%',height:'100%',objectFit:'contain'}}/></div>;
+  return <div ref={stage} data-zonyx-fitted-welcome style={{position:'relative',flexShrink:0,width:layout.width,height:layout.height,overflow:'hidden',transform:`translateX(${layout.offset}px)`}}><img ref={image} src={artwork} alt="ZØNYX vous souhaite la bienvenue" draggable={false} onLoad={()=>refresh.current()} style={crop?{position:'absolute',maxWidth:'none',width:(image.current?.naturalWidth||crop.width)*scale,left:-crop.x*scale,top:-crop.y*scale}:{width:'100%',height:'100%',objectFit:'contain'}}/></div>;
 }

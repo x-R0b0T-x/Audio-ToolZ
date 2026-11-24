@@ -463,7 +463,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
-            data-atz-control-size
+            data-zonyx-control-size
             aria-label={collapsed ? 'Déplier la fenêtre de contrôle' : 'Réduire la fenêtre de contrôle'}
             title={collapsed ? 'Déplier' : 'Réduire'}
             className="p-1 rounded hover:bg-[var(--bg-hover)] cursor-pointer"
@@ -591,7 +591,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={12}
                   step={0.5}
                   value={volumeDb}
-                  data-atz-default="0"
+                  data-zonyx-default="0"
                   onDoubleClick={() => onVolumeChange(0)}
                   onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"
@@ -610,7 +610,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={1}
                   step={0.05}
                   value={balance}
-                  data-atz-default="0"
+                  data-zonyx-default="0"
                   onDoubleClick={() => onBalanceChange(0)}
                   onChange={(e) => onBalanceChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"
@@ -629,7 +629,7 @@ export const ControlWindow: React.FC<ControlWindowProps> = ({
                   max={2.0}
                   step={0.05}
                   value={speedRatio}
-                  data-atz-default="1"
+                  data-zonyx-default="1"
                   onDoubleClick={() => onSpeedChange(1)}
                   onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
                   className="w-full studio-slider"

@@ -23,24 +23,24 @@ function measure(src:string):Promise<Bounds>{
 export function AboutRobot({src}:{src:string}){
  const slotRef=useRef<HTMLDivElement>(null);
  useEffect(()=>{
-  const slot=slotRef.current,hero=slot?.closest<HTMLElement>('.atz-about-hero')??null,actions=hero?.querySelector<HTMLElement>('.atz-about-actions')??null;
+  const slot=slotRef.current,hero=slot?.closest<HTMLElement>('.zonyx-about-hero')??null,actions=hero?.querySelector<HTMLElement>('.zonyx-about-actions')??null;
   if(!slot||!hero||!actions)return;
   let bounds=FULL,alive=true;
   const apply=()=>{
    const links=actions.querySelectorAll('a'),first=links[0],last=links[links.length-1];
    const block=first&&last?last.getBoundingClientRect().bottom-first.getBoundingClientRect().top:actions.getBoundingClientRect().height;
    const fit=fitRobot(bounds,block,slot.getBoundingClientRect().width);
-   hero.style.setProperty('--atz-fit-size',`${fit.size.toFixed(1)}px`);
-   hero.style.setProperty('--atz-dx',`${fit.dx.toFixed(1)}px`);
-   hero.style.setProperty('--atz-dy',`${fit.dy.toFixed(1)}px`);
-   hero.style.setProperty('--atz-ox',`${fit.ox.toFixed(2)}%`);
-   hero.style.setProperty('--atz-oy',`${fit.oy.toFixed(2)}%`);
-   hero.style.setProperty('--atz-room',`${fit.room}px`);
+   hero.style.setProperty('--zonyx-fit-size',`${fit.size.toFixed(1)}px`);
+   hero.style.setProperty('--zonyx-dx',`${fit.dx.toFixed(1)}px`);
+   hero.style.setProperty('--zonyx-dy',`${fit.dy.toFixed(1)}px`);
+   hero.style.setProperty('--zonyx-ox',`${fit.ox.toFixed(2)}%`);
+   hero.style.setProperty('--zonyx-oy',`${fit.oy.toFixed(2)}%`);
+   hero.style.setProperty('--zonyx-room',`${fit.room}px`);
   };
   apply();
   void measure(src).then(found=>{if(!alive)return;bounds=found;apply();});
   const observer=new ResizeObserver(apply);observer.observe(slot);observer.observe(actions);
   return()=>{alive=false;observer.disconnect();};
  },[src]);
- return <div ref={slotRef} className="atz-about-robot"><img src={src} alt="Robot violet aux yeux verts"/></div>;
+ return <div ref={slotRef} className="zonyx-about-robot"><img src={src} alt="Robot violet aux yeux verts"/></div>;
 }

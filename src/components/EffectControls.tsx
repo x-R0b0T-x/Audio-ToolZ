@@ -77,7 +77,7 @@ export const Knob: React.FC<KnobProps> = (p) => {
   const bipolar = min < 0 && p.max > 0;
   const keyStep = p.step ?? 1;
   const pixelsPerUnit = Math.max(0.65, 110 / range);
-  return <div className={`atz-knob flex flex-col items-center gap-2 min-w-0${activity.active ? ' is-adjusting' : ''}`} style={{ opacity: p.disabled ? 0.4 : 1 }}
+  return <div className={`zonyx-knob flex flex-col items-center gap-2 min-w-0${activity.active ? ' is-adjusting' : ''}`} style={{ opacity: p.disabled ? 0.4 : 1 }}
     onDoubleClick={() => set(p.defaultValue)}>
     <span className="text-xs font-semibold">{p.label}</span>
     <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
@@ -117,7 +117,7 @@ export const DelayModeSwitch: React.FC<{ value: DelayMode; onChange: (mode: Dela
     onChange(modes[next]);
     group.current?.querySelectorAll<HTMLButtonElement>('button[role="radio"]')[next]?.focus();
   };
-  return <div ref={group} role="radiogroup" aria-label="Mode du délai" aria-orientation="vertical" className="atz-delay-mode"
+  return <div ref={group} role="radiogroup" aria-label="Mode du délai" aria-orientation="vertical" className="zonyx-delay-mode"
     onDoubleClick={() => select(3)}
     onKeyDown={(e) => {
       if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
@@ -127,8 +127,8 @@ export const DelayModeSwitch: React.FC<{ value: DelayMode; onChange: (mode: Dela
       select(next);
     }}>
     {modes.map((mode, i) => <button type="button" role="radio" key={mode} aria-checked={value === mode}
-      tabIndex={value === mode ? 0 : -1} className="atz-delay-mode-position" onClick={() => onChange(mode)}>
-      <span className="atz-delay-mode-contact" aria-hidden="true" /><span>{['Mono', 'Stéréo', 'Ping-pong', 'Off'][i]}</span>
+      tabIndex={value === mode ? 0 : -1} className="zonyx-delay-mode-position" onClick={() => onChange(mode)}>
+      <span className="zonyx-delay-mode-contact" aria-hidden="true" /><span>{['Mono', 'Stéréo', 'Ping-pong', 'Off'][i]}</span>
     </button>)}
   </div>;
 };

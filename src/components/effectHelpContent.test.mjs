@@ -22,6 +22,6 @@ test('each call returns an independent topic list',()=>{
 test('encoded forbidden spelling keeps the negative assertion effective',()=>{
  const wrongName=String.fromCharCode(65,84,88);
  for(const value of [wrongName,wrongName.toLowerCase(),'tu','toi','ton','tes'])assert.match(value,forbiddenAddress);
- for(const value of ['ATZ','vous','votre','tonalité','texture'])assert.doesNotMatch(value,forbiddenAddress);
+ for(const value of ['ZØNYX','vous','votre','tonalité','texture'])assert.doesNotMatch(value,forbiddenAddress);
  assert.doesNotMatch(forbiddenAddress.source,new RegExp('\\b'+wrongName+'\\b','u'));
 });

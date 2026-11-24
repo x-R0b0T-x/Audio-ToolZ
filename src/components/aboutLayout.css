@@ -1,23 +1,23 @@
-@property --atz-halo-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
-#root .atz-about-dialog .atz-about-body{overflow-x:hidden;overflow-y:auto}
-#root .atz-about-dialog .atz-about-changes{flex:1 0 140px;min-height:140px}
-#root .atz-about-dialog .atz-about-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(150px,1fr);gap:16px;align-items:center;width:100%;min-height:0;box-sizing:border-box;padding:var(--atz-room,24px) 12px var(--atz-room,24px) 40px}
-#root .atz-about-dialog .atz-about-hero .atz-about-robot{--atz-art-size:var(--atz-fit-size,150px);position:relative;z-index:0;align-self:stretch;width:100%;min-width:0;height:auto;min-height:96px;overflow:visible}
-#root .atz-about-dialog .atz-about-hero .atz-about-robot>img{position:absolute;left:calc(50% + var(--atz-dx,0px));top:calc(50% + var(--atz-dy,0px));width:var(--atz-art-size);height:var(--atz-art-size);max-width:none;margin:calc(var(--atz-art-size)/-2) 0 0 calc(var(--atz-art-size)/-2);object-fit:contain;transform-origin:var(--atz-ox,50%) var(--atz-oy,50%);will-change:transform;pointer-events:none}
-#root .atz-about-dialog .atz-about-actions{position:relative;z-index:1;min-width:150px;padding:10px 4px;gap:16px}
-#root .atz-about-dialog .atz-about-actions>a{position:relative;isolation:isolate;overflow:visible;background:#191320;border-color:#b34dffcc;filter:none}
-#root .atz-about-dialog .atz-about-actions>a::before{content:'';position:absolute;inset:-2px;padding:2px;border-radius:inherit;pointer-events:none;z-index:-1;box-shadow:none;background:conic-gradient(from var(--atz-halo-angle),#39ff14 0deg 60deg,rgba(57,255,20,0) 100deg 180deg,#b34dff 180deg 240deg,rgba(179,77,255,0) 280deg 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;filter:drop-shadow(0 0 2px rgba(57,255,20,.75));animation:atz-about-ring 1.6s linear infinite}
-@keyframes atz-about-ring{to{--atz-halo-angle:360deg}}
-#root .atz-about-dialog .atz-about-actions>a:hover,#root .atz-about-dialog .atz-about-actions>a:focus-visible{border-color:#39ff14;box-shadow:inset 0 0 0 1px #39ff14bf;outline:none}
-.atz-about-resize{color:#39ff14;opacity:.8;transition:opacity 140ms ease,filter 140ms ease}
-.atz-about-resize::before{content:'';position:absolute;inset:0;background:currentColor;clip-path:polygon(100% 0,100% 100%,0 100%);pointer-events:none}
-#root .atz-about-resize{color:#39ff14;opacity:1;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 6px #39ff1499)}
-#root .atz-about-resize:hover{filter:drop-shadow(0 0 5px #39ff14) drop-shadow(0 0 9px #39ff14)}
-#root .atz-about-resize:active,#root .atz-about-resize[data-resizing='true']{filter:drop-shadow(0 0 7px #39ff14) drop-shadow(0 0 12px #39ff14) brightness(1.2)}
-#atz-header-kick-slot{min-height:32px;align-items:center;padding:0 5px}
-#atz-header-kick-slot [data-testid="snap-kicks-toggle"]{position:static!important;margin:0!important;transform:none!important;white-space:nowrap;line-height:1.3;border-radius:6px;color:#39ff14!important;font-size:11px;min-height:28px;padding:4px 10px;flex:none}
-@media(prefers-reduced-motion:reduce){.atz-about-resize{transition:none}#root .atz-about-dialog .atz-about-actions>a::before{animation:none}}
+@property --zonyx-halo-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+#root .zonyx-about-dialog .zonyx-about-body{overflow-x:hidden;overflow-y:auto}
+#root .zonyx-about-dialog .zonyx-about-changes{flex:1 0 140px;min-height:140px}
+#root .zonyx-about-dialog .zonyx-about-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(150px,1fr);gap:16px;align-items:center;width:100%;min-height:0;box-sizing:border-box;padding:var(--zonyx-room,24px) 12px var(--zonyx-room,24px) 40px}
+#root .zonyx-about-dialog .zonyx-about-hero .zonyx-about-robot{--zonyx-art-size:var(--zonyx-fit-size,150px);position:relative;z-index:0;align-self:stretch;width:100%;min-width:0;height:auto;min-height:96px;overflow:visible}
+#root .zonyx-about-dialog .zonyx-about-hero .zonyx-about-robot>img{position:absolute;left:calc(50% + var(--zonyx-dx,0px));top:calc(50% + var(--zonyx-dy,0px));width:var(--zonyx-art-size);height:var(--zonyx-art-size);max-width:none;margin:calc(var(--zonyx-art-size)/-2) 0 0 calc(var(--zonyx-art-size)/-2);object-fit:contain;transform-origin:var(--zonyx-ox,50%) var(--zonyx-oy,50%);will-change:transform;pointer-events:none}
+#root .zonyx-about-dialog .zonyx-about-actions{position:relative;z-index:1;min-width:150px;padding:10px 4px;gap:16px}
+#root .zonyx-about-dialog .zonyx-about-actions>a{position:relative;isolation:isolate;overflow:visible;background:#191320;border-color:#b34dffcc;filter:none}
+#root .zonyx-about-dialog .zonyx-about-actions>a::before{content:'';position:absolute;inset:-2px;padding:2px;border-radius:inherit;pointer-events:none;z-index:-1;box-shadow:none;background:conic-gradient(from var(--zonyx-halo-angle),#39ff14 0deg 60deg,rgba(57,255,20,0) 100deg 180deg,#b34dff 180deg 240deg,rgba(179,77,255,0) 280deg 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;filter:drop-shadow(0 0 2px rgba(57,255,20,.75));animation:zonyx-about-ring 1.6s linear infinite}
+@keyframes zonyx-about-ring{to{--zonyx-halo-angle:360deg}}
+#root .zonyx-about-dialog .zonyx-about-actions>a:hover,#root .zonyx-about-dialog .zonyx-about-actions>a:focus-visible{border-color:#39ff14;box-shadow:inset 0 0 0 1px #39ff14bf;outline:none}
+.zonyx-about-resize{color:#39ff14;opacity:.8;transition:opacity 140ms ease,filter 140ms ease}
+.zonyx-about-resize::before{content:'';position:absolute;inset:0;background:currentColor;clip-path:polygon(100% 0,100% 100%,0 100%);pointer-events:none}
+#root .zonyx-about-resize{color:#39ff14;opacity:1;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 6px #39ff1499)}
+#root .zonyx-about-resize:hover{filter:drop-shadow(0 0 5px #39ff14) drop-shadow(0 0 9px #39ff14)}
+#root .zonyx-about-resize:active,#root .zonyx-about-resize[data-resizing='true']{filter:drop-shadow(0 0 7px #39ff14) drop-shadow(0 0 12px #39ff14) brightness(1.2)}
+#zonyx-header-kick-slot{min-height:32px;align-items:center;padding:0 5px}
+#zonyx-header-kick-slot [data-testid="snap-kicks-toggle"]{position:static!important;margin:0!important;transform:none!important;white-space:nowrap;line-height:1.3;border-radius:6px;color:#39ff14!important;font-size:11px;min-height:28px;padding:4px 10px;flex:none}
+@media(prefers-reduced-motion:reduce){.zonyx-about-resize{transition:none}#root .zonyx-about-dialog .zonyx-about-actions>a::before{animation:none}}
 /* Symmetric side columns keep Audio ToolZ centered independently of Close. */
-#root .atz-about-dialog>div:first-child{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center}
-#root .atz-about-dialog #about-title{grid-column:2;grid-row:1;justify-self:center;text-align:center;margin:0}
-#root .atz-about-dialog>div:first-child>button{grid-column:3;grid-row:1;justify-self:end;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+#root .zonyx-about-dialog>div:first-child{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center}
+#root .zonyx-about-dialog #about-title{grid-column:2;grid-row:1;justify-self:center;text-align:center;margin:0}
+#root .zonyx-about-dialog>div:first-child>button{grid-column:3;grid-row:1;justify-self:end;display:flex;align-items:center;justify-content:center;width:32px;height:32px}

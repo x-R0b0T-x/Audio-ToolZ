@@ -1,9 +1,9 @@
-.atz-parameter,.atz-knob{--atz-knob-ink:#bd93f9;--atz-knob-light:none;--atz-pointer-ink:#fff;--atz-pointer-light:none}
-.atz-parameter:hover,.atz-parameter.is-adjusting,.atz-parameter:has(>button:focus-visible),.atz-knob:hover,.atz-knob.is-adjusting,.atz-knob:has([role=slider]:focus-visible){--atz-knob-ink:#39ff14;--atz-knob-light:drop-shadow(0 0 4px #39ff14);--atz-pointer-ink:#39ff14;--atz-pointer-light:drop-shadow(0 0 4px #39ff14)}
-.atz-parameter>button[role=slider]>svg>circle,.atz-knob [role=slider]>svg>circle{stroke:var(--atz-knob-ink)!important;filter:var(--atz-knob-light)!important}
-.atz-parameter>button[role=slider]>svg>line:not(:last-child),.atz-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;filter:var(--atz-knob-light)!important}
-.atz-parameter>button[role=slider]>svg>line:last-child,.atz-knob [role=slider]>svg>line:last-child{stroke:var(--atz-pointer-ink)!important;filter:var(--atz-pointer-light)!important}
-fieldset:disabled .atz-parameter,.atz-knob:has([aria-disabled=true]){--atz-knob-ink:#bd93f9!important;--atz-knob-light:none!important;--atz-pointer-ink:#fff!important;--atz-pointer-light:none!important}
+.zonyx-parameter,.zonyx-knob{--zonyx-knob-ink:#bd93f9;--zonyx-knob-light:none;--zonyx-pointer-ink:#fff;--zonyx-pointer-light:none}
+.zonyx-parameter:hover,.zonyx-parameter.is-adjusting,.zonyx-parameter:has(>button:focus-visible),.zonyx-knob:hover,.zonyx-knob.is-adjusting,.zonyx-knob:has([role=slider]:focus-visible){--zonyx-knob-ink:#39ff14;--zonyx-knob-light:drop-shadow(0 0 4px #39ff14);--zonyx-pointer-ink:#39ff14;--zonyx-pointer-light:drop-shadow(0 0 4px #39ff14)}
+.zonyx-parameter>button[role=slider]>svg>circle,.zonyx-knob [role=slider]>svg>circle{stroke:var(--zonyx-knob-ink)!important;filter:var(--zonyx-knob-light)!important}
+.zonyx-parameter>button[role=slider]>svg>line:not(:last-child),.zonyx-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;filter:var(--zonyx-knob-light)!important}
+.zonyx-parameter>button[role=slider]>svg>line:last-child,.zonyx-knob [role=slider]>svg>line:last-child{stroke:var(--zonyx-pointer-ink)!important;filter:var(--zonyx-pointer-light)!important}
+fieldset:disabled .zonyx-parameter,.zonyx-knob:has([aria-disabled=true]){--zonyx-knob-ink:#bd93f9!important;--zonyx-knob-light:none!important;--zonyx-pointer-ink:#fff!important;--zonyx-pointer-light:none!important}
 
-.atz-parameter,.atz-knob{--atz-pointer-ink:#39ff14}
-.atz-parameter>button[role=slider]>svg>line:not(:last-child),.atz-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;opacity:1!important;stroke-width:2!important;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.zonyx-parameter,.zonyx-knob{--zonyx-pointer-ink:#39ff14}
+.zonyx-parameter>button[role=slider]>svg>line:not(:last-child),.zonyx-knob [role=slider]>svg>line:not(:last-child){stroke:#39ff14!important;opacity:1!important;stroke-width:2!important;vector-effect:non-scaling-stroke;stroke-linecap:round}

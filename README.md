@@ -12,7 +12,7 @@
 
 Préparer un échantillon, affiner une boucle, corriger un niveau, sculpter un son ou assembler plusieurs morceaux : Audio ToolZ réunit ces outils dans un espace de travail à interface française, avec documents en onglets, édition sur forme d’onde et préécoute des effets.
 
-La v1.6 est une grosse mise à jour : égaliseur paramétrique à sept bandes, fenêtre compresseur/limiteur, didacticiel avec ATZ et refonte graphique violet et vert néon.
+La v1.6 est une grosse mise à jour : égaliseur paramétrique à sept bandes, fenêtre compresseur/limiteur, didacticiel avec ZØNYX et refonte graphique violet et vert néon.
 
 ## Audio ToolZ en image
 
@@ -28,7 +28,7 @@ Cette illustration de présentation est conservée ; elle ne remplace pas une ca
 | --- | --- |
 | Égaliseur paramétrique à sept bandes | Réglez fréquence, gain et largeur Q, choisissez les formes de filtre et consultez le spectre ainsi que la réponse globale. |
 | Compresseur et limiteur | Travaillez la dynamique avec les modes COMP et LIMIT, le plafond, l’enveloppe et l’affichage de la réduction de gain. |
-| Didacticiel avec ATZ | Découvrez l’application avec la mascotte et retrouvez les liens vers la communauté et le soutien au projet. |
+| Didacticiel avec ZØNYX | Découvrez l’application avec la mascotte et retrouvez les liens vers la communauté et le soutien au projet. |
 | Refonte graphique | Retrouvez une interface harmonisée, des potards violets gradués et des accents vert néon. |
 | Préécoute pendant la lecture | Ajustez les effets en lecture normale, sans imposer de boucle, sur la sélection ou le morceau entier. |
 | Delay musical compact | Réglez temps musicaux, répétitions, volume et panoramique ; détectez le BPM directement dans le panneau. |
@@ -86,7 +86,7 @@ Les traitements et l’encodage sont réalisés localement, sans envoyer le cont
 ## Prise en main
 
 1. Téléchargez le paquet Windows et extrayez le dossier complet.
-2. Lancez `Audio ToolZ.exe` et consultez le didacticiel avec ATZ.
+2. Lancez `Audio ToolZ.exe` et consultez le didacticiel avec ZØNYX.
 3. Ouvrez un fichier audio et lancez sa lecture.
 4. Sélectionnez un passage si nécessaire ; sinon les effets ciblent le morceau entier.
 5. Ajustez vos effets avec la préécoute, appliquez le traitement, puis exportez votre travail.

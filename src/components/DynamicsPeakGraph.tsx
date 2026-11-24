@@ -58,5 +58,5 @@ export function DynamicsPeakGraph(props:Props){
   };
   frame=requestAnimationFrame(draw);return()=>cancelAnimationFrame(frame);
  },[]);
- return <div className="atz-graph-block"><div className="atz-graph detailed"><canvas ref={canvas} role="img" aria-label="Crêtes d’entrée et de sortie, réduction de gain, seuil et plafond en temps réel"/></div></div>;
+ return <div className="zonyx-graph-block"><div className="zonyx-graph detailed"><canvas ref={canvas} role="img" aria-label="Crêtes d’entrée et de sortie, réduction de gain, seuil et plafond en temps réel"/></div></div>;
 }

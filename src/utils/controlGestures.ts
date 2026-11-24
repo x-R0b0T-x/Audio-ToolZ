@@ -29,8 +29,8 @@ function nativeField(target: Element, boundary: Element): HTMLInputElement | HTM
   return null;
 }
 export function defaultValue(field: HTMLInputElement | HTMLSelectElement): string | boolean | null {
-  if (field.hasAttribute('data-atz-default')) {
-    const value = field.getAttribute('data-atz-default')!;
+  if (field.hasAttribute('data-zonyx-default')) {
+    const value = field.getAttribute('data-zonyx-default')!;
     return field instanceof HTMLInputElement && field.type === 'checkbox' ? value === 'true' : value;
   }
   if (field instanceof HTMLInputElement && ['text','file','hidden'].includes(field.type)) return null;

@@ -2,13 +2,13 @@
 
 ## 1.6 — Une grosse mise à jour
 
-La v1.6 marque une évolution importante d’Audio ToolZ : une chaîne de traitement enrichie, un égaliseur paramétrique à sept bandes, une interface retravaillée et un didacticiel accompagné par ATZ, la mascotte.
+La v1.6 marque une évolution importante d’Audio ToolZ : une chaîne de traitement enrichie, un égaliseur paramétrique à sept bandes, une interface retravaillée et un didacticiel accompagné par ZØNYX, la mascotte.
 
 ## Les nouveautés phares
 
 - Égaliseur paramétrique à sept bandes indépendantes, en remplacement des trois bandes de la v1.5 : fréquence, gain, largeur Q, formes et pentes compatibles, spectre d’entrée et courbe de réponse globale.
 - Compresseur et limiteur réunis dans une fenêtre dédiée : modes COMP et LIMIT, gain d’entrée, plafond, attaque, relâchement, enveloppe et visualisation de la réduction de gain. Le limiteur traite les crêtes d’échantillons ; il ne revendique pas de limitation true peak suréchantillonnée.
-- Didacticiel intégré avec ATZ pour accompagner la prise en main, avec accès à Telegram, Github et Paypal sur la dernière page.
+- Didacticiel intégré avec ZØNYX pour accompagner la prise en main, avec accès à Telegram, Github et Paypal sur la dernière page.
 - Refonte graphique violet et vert néon : potards gradués, indicateurs lumineux, boutons harmonisés, accueil illustré et fenêtre À propos réorganisée.
 - Six visualisations : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme et Vumètre à aiguille stéréo. Le dernier choix est mémorisé ; sans préférence, l’oscilloscope est utilisé. Le vumètre indique un niveau RMS en dBFS avec inertie visuelle, pas un instrument VU analogique calibré.
 

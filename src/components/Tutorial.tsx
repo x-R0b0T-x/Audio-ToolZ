@@ -2,7 +2,7 @@ import {useCallback,useEffect,useRef,useState,type MouseEvent} from 'react';
 import {audioEngine} from '../audio/engine';
 import {fadeOutDecodedLoops} from '../audio/bufferLoop.mjs';
 import {NeonWave} from '../features/q7m4n2/NeonWave';
-import musicUrl from '../medias/ATZ.ogg?url';
+import musicUrl from '../medias/ZØNYX.ogg?url';
 import img1 from '../medias/01.png?url';
 import img2 from '../medias/02.png?url';
 import img3 from '../medias/03.png?url';
@@ -10,18 +10,18 @@ import img4 from '../medias/04.png?url';
 import img5 from '../medias/05.png?url';
 import './tutorial.css';
 
-export const TUTORIAL_EVENT='atz:show-tutorial';
-const KEY='atz-tutorial-hidden';
+export const TUTORIAL_EVENT='zonyx:show-tutorial';
+const KEY='zonyx-tutorial-hidden';
 const FADE_SECONDS=1.4;
 type Item=[string,string];
 type Section={heading?:string;items:Item[]};
 type Links={heading:string;text:string;items:{label:string;href:string}[]};
 type Step={image:string;alt:string;title:string;intro:string[];sections?:Section[];links?:Links;outro?:string};
 const STEPS:Step[]=[
- {image:img1,alt:"ATZ, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
-  intro:["Salut, je suis ATZ, votre compagnon dans Audio ToolZ ! Je suis là pour vous accompagner.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
+ {image:img1,alt:"ZØNYX, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
+  intro:["Salut, je suis ZØNYX, votre compagnon dans Audio ToolZ ! Je suis là pour vous accompagner.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
   outro:"Prêt ? Suivez-moi !"},
- {image:img2,alt:"ATZ règle des boutons",title:"Un atelier complet, pensé pour la précision",
+ {image:img2,alt:"ZØNYX règle des boutons",title:"Un atelier complet, pensé pour la précision",
   intro:["Ici, c’est mon coin préféré : tout se règle, et tout s’écoute en direct pendant la lecture, avant même d’appliquer l’effet."],
   sections:[
    {heading:"Précision et boucles",items:[
@@ -40,7 +40,7 @@ const STEPS:Step[]=[
     ["Réduction de bruit spectrale :","pour nettoyer une prise."],
     ["Oscilloscope, spectre et forme d’onde colorée :","pour voir ce que vous entendez."]]}
   ]},
- {image:img3,alt:"ATZ se gratte la tête, l’air confus",title:"Pas de panique !",
+ {image:img3,alt:"ZØNYX se gratte la tête, l’air confus",title:"Pas de panique !",
   intro:["Une fausse manip, ça arrive même aux pros. Prenez votre temps : vous pouvez essayer un réglage, l’écouter et revenir en arrière. Je vous accompagne, un réglage à la fois."],
   sections:[{items:[
    ["Annuler / Rétablir (Ctrl+Z / Ctrl+Y) :","revenez en arrière pas à pas, puis revenez en avant si vous changez d’avis."],
@@ -48,7 +48,7 @@ const STEPS:Step[]=[
    ["Préécoute avant de valider :","réglez un effet en écoutant le résultat en direct, sans rien appliquer tant que vous n’êtes pas satisfait."],
    ["Mon petit conseil :","pensez à exporter votre travail avant de fermer le logiciel pour conserver le résultat."]]}],
   outro:"Pas de stress : je vous laisse explorer à votre rythme."},
- {image:img4,alt:"ATZ lève les pouces, très content",title:"Sauvegardez dans la qualité de votre choix",
+ {image:img4,alt:"ZØNYX lève les pouces, très content",title:"Sauvegardez dans la qualité de votre choix",
   intro:["Les bons réglages sont trouvés ? Parfait ! Je vous accompagne pour l’export, et vous gardez le choix de la qualité."],
   sections:[
    {heading:"À l’ouverture",items:[
@@ -63,14 +63,14 @@ const STEPS:Step[]=[
     ["Mixes et fichiers .cue :","assemblez des pistes, importez ou exportez un .cue, détectez les silences (Auto-Cue) et découpez en WAV."],
     ["Enregistrement :","capturez directement depuis votre micro ou votre carte son."]]}
   ]},
- {image:img5,alt:"ATZ vous montre du doigt en souriant",title:"À vous de jouer !",
+ {image:img5,alt:"ZØNYX vous montre du doigt en souriant",title:"À vous de jouer !",
   intro:["Je vous ai montré les principaux outils. Maintenant, à vous de jouer !"],
   sections:[{items:[
    ["Ouvrir un fichier audio :","Ctrl+O, ou créez un document vierge avec Ctrl+N."],
    ["Sélectionnez, bouclez, écoutez :","puis ouvrez un effet depuis le menu Effets et réglez-le en direct."],
    ["Besoin de me retrouver ?","Outils, Paramètres, puis « Afficher le didacticiel »."]]}],
-  links:{heading:"Un dernier mot d’ATZ",text:"Si Audio ToolZ vous plaît, retrouvez-moi avec la communauté sur Telegram pour suivre les nouveautés. Une étoile sur GitHub m’aide aussi beaucoup ! Vous pouvez également soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
-  outro:"Bon son, et à très vite ! — ATZ"}
+  links:{heading:"Un dernier mot d’ZØNYX",text:"Si Audio ToolZ vous plaît, retrouvez-moi avec la communauté sur Telegram pour suivre les nouveautés. Une étoile sur GitHub m’aide aussi beaucoup ! Vous pouvez également soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
+  outro:"Bon son, et à très vite ! — ZØNYX"}
 ];
 const readHidden=()=>{try{return window.localStorage.getItem(KEY)==='1';}catch{return false;}};
 const writeHidden=(hidden:boolean)=>{try{if(hidden)window.localStorage.setItem(KEY,'1');else window.localStorage.removeItem(KEY);}catch{/* stockage indisponible */}};
@@ -138,16 +138,16 @@ export function Tutorial(){
  },[open,close]);
  if(!open)return null;
  const current=STEPS[step],last=step===STEPS.length-1;
- return <div className={`atz-tuto-backdrop${closing?' is-closing':''}`}>
+ return <div className={`zonyx-tuto-backdrop${closing?' is-closing':''}`}>
   <NeonWave samples={samples} pulse={pulse}/>
-  <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="atz-tuto-title" className="atz-tuto">
-   <header className="atz-tuto-head">
-    <h2 id="atz-tuto-title"><span className="atz-tuto-w">Audio </span><span className="atz-tuto-g">Tool</span><span className="atz-tuto-v">Z</span></h2>
-    <button type="button" className="atz-tuto-close" aria-label="Fermer le guide d’accueil" onClick={close}>×</button>
+  <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="zonyx-tuto-title" className="zonyx-tuto">
+   <header className="zonyx-tuto-head">
+    <h2 id="zonyx-tuto-title"><span className="zonyx-tuto-w">Audio </span><span className="zonyx-tuto-g">Tool</span><span className="zonyx-tuto-v">Z</span></h2>
+    <button type="button" className="zonyx-tuto-close" aria-label="Fermer le guide d’accueil" onClick={close}>×</button>
    </header>
-   <div className="atz-tuto-main">
-    <div className="atz-tuto-art"><img key={step} src={current.image} alt={current.alt} draggable={false}/></div>
-    <div className="atz-tuto-copy" key={step} aria-live="polite" tabIndex={0}>
+   <div className="zonyx-tuto-main">
+    <div className="zonyx-tuto-art"><img key={step} src={current.image} alt={current.alt} draggable={false}/></div>
+    <div className="zonyx-tuto-copy" key={step} aria-live="polite" tabIndex={0}>
      <h3>{current.title}</h3>
      {current.intro.map(line=><p key={line}>{line}</p>)}
      {current.sections?.map((section,index)=><section key={section.heading??index}>
@@ -157,17 +157,17 @@ export function Tutorial(){
      {current.links&&<section>
       <h4>{current.links.heading}</h4>
       <p>{current.links.text}</p>
-      <div className="atz-tuto-links">{current.links.items.map(link=><a key={link.href} className="atz-tuto-link" href={link.href} target="_blank" rel="noopener noreferrer" onClick={openExternal}>{link.label}</a>)}</div>
+      <div className="zonyx-tuto-links">{current.links.items.map(link=><a key={link.href} className="zonyx-tuto-link" href={link.href} target="_blank" rel="noopener noreferrer" onClick={openExternal}>{link.label}</a>)}</div>
      </section>}
-     {current.outro&&<p className="atz-tuto-outro">{current.outro}</p>}
+     {current.outro&&<p className="zonyx-tuto-outro">{current.outro}</p>}
     </div>
    </div>
-   <footer className="atz-tuto-foot">
-    <label className="atz-tuto-skip"><input type="checkbox" checked={skip} onChange={e=>setSkip(e.target.checked)}/>Ne plus afficher au démarrage</label>
-    <div className="atz-tuto-dots" role="img" aria-label={`Étape ${step+1} sur ${STEPS.length}`}>{STEPS.map((_,i)=><span key={i} data-active={i===step?'true':undefined}/>)}</div>
-    <div className="atz-tuto-nav">
+   <footer className="zonyx-tuto-foot">
+    <label className="zonyx-tuto-skip"><input type="checkbox" checked={skip} onChange={e=>setSkip(e.target.checked)}/>Ne plus afficher au démarrage</label>
+    <div className="zonyx-tuto-dots" role="img" aria-label={`Étape ${step+1} sur ${STEPS.length}`}>{STEPS.map((_,i)=><span key={i} data-active={i===step?'true':undefined}/>)}</div>
+    <div className="zonyx-tuto-nav">
      <button type="button" disabled={step===0} onClick={()=>setStep(s=>Math.max(0,s-1))}>Précédent</button>
-     <button type="button" className="atz-tuto-primary" onClick={()=>{if(last)close();else setStep(s=>s+1);}}>{last?'Terminer':'Suivant'}</button>
+     <button type="button" className="zonyx-tuto-primary" onClick={()=>{if(last)close();else setStep(s=>s+1);}}>{last?'Terminer':'Suivant'}</button>
     </div>
    </footer>
   </div>
