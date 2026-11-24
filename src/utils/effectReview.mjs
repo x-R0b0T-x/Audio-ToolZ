@@ -1,4 +1,4 @@
-export function normalizeEffectName(name){const aliases={'égaliseur paramétrique 7 bandes':'Z-égaliseur','z-égaliseur':'Z-égaliseur','limiteur / compresseur':'Z-Limit/Comp'};return aliases[name.trim().toLowerCase()]??name;}
+export function normalizeEffectName(name){const aliases={'égaliseur paramétrique 7 bandes':'Z-Égaliseur','z-égaliseur':'Z-Égaliseur','limiteur / compresseur':'Z-Limit/Comp'};return aliases[name.trim().toLowerCase()]??name;}
 export function formatEqFrequency(value){return Number.isFinite(value)?`Fréquence : ${Math.round(value).toLocaleString('fr-FR')} Hz`:'Fréquence : — Hz';}
 export function clampReverbLevels(settings){return Object.fromEntries(['direct','reflections','reverb'].map(k=>[k,Number.isFinite(settings[k])?Math.max(0,Math.min(100,settings[k])):0]));}
 export function restoreUnappliedPreview(engine,channels,rate){if(!engine.isPlaying)return;try{if(engine.replacePreviewAudio(channels,rate))return;}catch{}engine.stop(true);}

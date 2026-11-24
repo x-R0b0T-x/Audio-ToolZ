@@ -1,0 +1,12 @@
+/* Balanced action columns center headings on the whole window, not the free space. */
+.atz-tuto-head{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center}
+.atz-tuto-head>h2{grid-column:2;grid-row:1;justify-self:center;text-align:center}
+.atz-tuto-head>.atz-tuto-close{grid-column:3;grid-row:1;justify-self:end}
+#root .atz-advanced>header{display:grid;grid-template-columns:80px minmax(0,1fr) 80px;align-items:center}
+#root .atz-advanced>header>h2{grid-column:2;grid-row:1;justify-self:center;text-align:center;min-width:0;overflow-wrap:anywhere;margin:0}
+#root .atz-advanced>header>.atz-effect-header-actions{grid-column:3;grid-row:1;justify-self:end}
+/* Keep the green thumbs and white graduations; only the fader backgrounds change. */
+#root .atz-reverb .atz-rv-faders{background:#000}
+#root .atz-reverb .atz-rv-fader-track{background-color:#000}
+#root .atz-reverb .atz-rv-faders input::-webkit-slider-runnable-track{background:#000}
+#root .atz-reverb .atz-rv-faders input::-moz-range-track{background:#000}

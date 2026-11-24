@@ -19,7 +19,7 @@ type Links={heading:string;text:string;items:{label:string;href:string}[]};
 type Step={image:string;alt:string;title:string;intro:string[];sections?:Section[];links?:Links;outro?:string};
 const STEPS:Step[]=[
  {image:img1,alt:"ATZ, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
-  intro:["Salut, je suis ATZ, la mascotte d’Audio ToolZ ! Je suis là pour vous présenter et vous accompagner dans ce merveilleux logiciel d’édition audio.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre en quelques étapes de quoi il est capable. Vous allez voir : il y a de quoi s’amuser."],
+  intro:["Salut, je suis ATZ, votre compagnon dans Audio ToolZ ! Je suis là pour vous accompagner.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
   outro:"Prêt ? Suivez-moi !"},
  {image:img2,alt:"ATZ règle des boutons",title:"Un atelier complet, pensé pour la précision",
   intro:["Ici, c’est mon coin préféré : tout se règle, et tout s’écoute en direct pendant la lecture, avant même d’appliquer l’effet."],
@@ -31,23 +31,25 @@ const STEPS:Step[]=[
    {heading:"Rythme",items:[
     ["Détection du BPM :","repères de kicks, grille de tempo et aimantation des sélections pour couper pile sur le temps."]]},
    {heading:"Son et effets",items:[
-    ["Égaliseur paramétrique à 7 bandes :","fréquence, gain, largeur Q, formes de filtre, avec spectre d’entrée et courbe de réponse."],
-    ["Compresseur et limiteur :","modes COMP et LIMIT, enveloppe, plafond et réduction de gain bien visibles."],
-    ["Delay musical :","calé sur le tempo, en Mono, Stéréo ou Ping-pong, avec répétitions et panoramique."],
-    ["Vitesse, hauteur (pitch) et fondus :","changez le tempo ou la tonalité, et adoucissez vos entrées et sorties."],
+    ["Z-Égaliseur :","je vous aide à équilibrer le son avec sept bandes : fréquence, gain, largeur Q et formes de filtre, avec spectre d’entrée et courbe de réponse."],
+    ["Z-Limit/Comp :","contrôlez la dynamique en modes COMP et LIMIT, avec enveloppe, plafond et réduction de gain visibles."],
+    ["Z-Delay :","ajoutez des échos calés sur le tempo en Mono, Stéréo ou Ping-pong, avec répétitions et panoramique."],
+    ["Z-Pitcher :","modifiez la vitesse ou la hauteur du passage. Je vous conseille de comparer le résultat avant de valider."],
+    ["Z-Fondus :","adoucissez le début ou la fin d’un passage avec un fondu linéaire, exponentiel ou en S."],
+    ["Z-Reverbe :","donnez de l’espace au son avec le signal Direct, les premières réflexions et la traîne de réverbération."],
     ["Réduction de bruit spectrale :","pour nettoyer une prise."],
     ["Oscilloscope, spectre et forme d’onde colorée :","pour voir ce que vous entendez."]]}
   ]},
  {image:img3,alt:"ATZ se gratte la tête, l’air confus",title:"Pas de panique !",
-  intro:["Une fausse manip, ça arrive même aux pros. Ici, rien n’est définitif : vous pouvez tester, essayer, vous tromper, et recommencer."],
+  intro:["Une fausse manip, ça arrive même aux pros. Prenez votre temps : vous pouvez essayer un réglage, l’écouter et revenir en arrière. Je vous accompagne, un réglage à la fois."],
   sections:[{items:[
    ["Annuler / Rétablir (Ctrl+Z / Ctrl+Y) :","revenez en arrière pas à pas, puis revenez en avant si vous changez d’avis."],
    ["Votre fichier d’origine reste intact :","vous travaillez sur une copie en mémoire, l’original n’est pas modifié pendant que vous éditez."],
    ["Préécoute avant de valider :","réglez un effet en écoutant le résultat en direct, sans rien appliquer tant que vous n’êtes pas satisfait."],
-   ["Le réflexe du pro :","pensez à exporter votre travail avant de fermer le logiciel, c’est lui qui le met à l’abri."]]}],
-  outro:"Pas de stress : on est là pour explorer."},
+   ["Mon petit conseil :","pensez à exporter votre travail avant de fermer le logiciel pour conserver le résultat."]]}],
+  outro:"Pas de stress : je vous laisse explorer à votre rythme."},
  {image:img4,alt:"ATZ lève les pouces, très content",title:"Sauvegardez dans la qualité de votre choix",
-  intro:["Les bons réglages sont trouvés ? Parfait, alors on exporte, et c’est vous qui décidez de la qualité."],
+  intro:["Les bons réglages sont trouvés ? Parfait ! Je vous accompagne pour l’export, et vous gardez le choix de la qualité."],
   sections:[
    {heading:"À l’ouverture",items:[
     ["Beaucoup de formats pris en charge :","MP3, FLAC, WAV (PCM), AAC, ALAC, Vorbis… selon vos fichiers et leurs conteneurs."]]},
@@ -62,12 +64,12 @@ const STEPS:Step[]=[
     ["Enregistrement :","capturez directement depuis votre micro ou votre carte son."]]}
   ]},
  {image:img5,alt:"ATZ vous montre du doigt en souriant",title:"À vous de jouer !",
-  intro:["Vous avez fait le tour du propriétaire. Maintenant, c’est à vous de jouer !"],
+  intro:["Je vous ai montré les principaux outils. Maintenant, à vous de jouer !"],
   sections:[{items:[
    ["Ouvrir un fichier audio :","Ctrl+O, ou créez un document vierge avec Ctrl+N."],
    ["Sélectionnez, bouclez, écoutez :","puis ouvrez un effet depuis le menu Effets et réglez-le en direct."],
-   ["Besoin de revoir tout ça ?","Outils, Paramètres, puis « Afficher le didacticiel »."]]}],
-  links:{heading:"Un dernier mot d’ATZ",text:"Si Audio ToolZ vous plaît, rejoignez la communauté Telegram et abonnez-vous pour ne rien rater des nouveautés. Et si vous avez un petit moment, une étoile sur GitHub, ça m’aide énormément ! Vous pouvez aussi soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
+   ["Besoin de me retrouver ?","Outils, Paramètres, puis « Afficher le didacticiel »."]]}],
+  links:{heading:"Un dernier mot d’ATZ",text:"Si Audio ToolZ vous plaît, retrouvez-moi avec la communauté sur Telegram pour suivre les nouveautés. Une étoile sur GitHub m’aide aussi beaucoup ! Vous pouvez également soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
   outro:"Bon son, et à très vite ! — ATZ"}
 ];
 const readHidden=()=>{try{return window.localStorage.getItem(KEY)==='1';}catch{return false;}};
@@ -140,8 +142,8 @@ export function Tutorial(){
   <NeonWave samples={samples} pulse={pulse}/>
   <div ref={dialog} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="atz-tuto-title" className="atz-tuto">
    <header className="atz-tuto-head">
-    <h2 id="atz-tuto-title"><span className="atz-tuto-w">Audio </span><span className="atz-tuto-g">Tool</span><span className="atz-tuto-v">Z</span><small>Présentation</small></h2>
-    <button type="button" className="atz-tuto-close" aria-label="Fermer la présentation" onClick={close}>×</button>
+    <h2 id="atz-tuto-title"><span className="atz-tuto-w">Audio </span><span className="atz-tuto-g">Tool</span><span className="atz-tuto-v">Z</span></h2>
+    <button type="button" className="atz-tuto-close" aria-label="Fermer le guide d’accueil" onClick={close}>×</button>
    </header>
    <div className="atz-tuto-main">
     <div className="atz-tuto-art"><img key={step} src={current.image} alt={current.alt} draggable={false}/></div>
