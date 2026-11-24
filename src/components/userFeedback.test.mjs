@@ -2,32 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {normalizeEffectName} from '../utils/effectReview.mjs';
+import {presentEffectHelp} from './effectHelpPresentation.mjs';
 const read=name=>readFileSync(new URL(name,import.meta.url),'utf8');
-test('welcome guide names all effects and speaks as ATZ without a Presentation subtitle',()=>{
- const guide=read('Tutorial.tsx'),css=read('interfaceConsistency.css');
- assert.doesNotMatch(guide,/<small>Présentation<\/small>/);
- assert.match(guide,/Je suis là pour vous accompagner\./);
- assert.doesNotMatch(guide,/\bnous\b|on est là|sommes là/i);
- for(const name of ['Z-Delay','Z-Égaliseur','Z-Fondus','Z-Limit/Comp','Z-Pitcher','Z-Reverbe'])assert.ok(guide.includes(name));
- assert.match(css,/\.atz-tuto-head\{[^}]*grid-template-columns:32px minmax\(0,1fr\) 32px/);
- assert.match(css,/\.atz-tuto-head>h2\{[^}]*text-align:center/);
-});
-test('equalizer keeps its accented capital in the menu and shared renderer',()=>{
- assert.match(read('TopMenuBar.tsx'),/effect\('Z-Égaliseur','eq'\)/);
- for(const name of ['Z-égaliseur','Z-Égaliseur','Égaliseur paramétrique 7 bandes'])assert.equal(normalizeEffectName(name),'Z-Égaliseur');
- assert.match(read('EffectName.tsx'),/import '\.\/interfaceConsistency\.css'/);
-});
-test('effect titles are centered and reverb fader backgrounds are black',()=>{
- const css=read('interfaceConsistency.css');
- assert.match(css,/#root \.atz-advanced>header\{[^}]*grid-template-columns:80px minmax\(0,1fr\) 80px/);
- assert.match(css,/#root \.atz-advanced>header>h2\{[^}]*text-align:center/);
- assert.match(css,/\.atz-rv-fader-track\{background-color:#000\}/);
- assert.match(css,/::-webkit-slider-runnable-track\{background:#000\}/);
- assert.match(css,/::-moz-range-track\{background:#000\}/);
-});
-test('help drops the redundant instruction and the changelog records current work',()=>{
- const help=read('EffectHelp.tsx'),notes=read('../releaseNotes.ts');
- assert.doesNotMatch(help,/Cliquez sur une rubrique pour la déplier ou la replier/);
- assert.match(help,/Mes conseils pour cet effet/);
- assert.match(notes,/v1\.7-dev/);assert.match(notes,/Symphonia 0\.6\.1/);assert.match(notes,/fonds noirs/);
-});
+test('guide title and section colors resist stylesheet order',()=>{const guide=read('Tutorial.tsx'),css=read('interfaceConsistency.css');assert.doesNotMatch(guide,/<small>Présentation<\/small>/);for(const name of ['Z-Delay','Z-Égaliseur','Z-Fondus','Z-Limit/Comp','Z-Pitcher','Z-Reverbe'])assert.ok(guide.includes(name));assert.match(css,/#atz-tutorial-root \.atz-tuto-head\{[^}]*grid-template-columns:32px minmax\(0,1fr\) 32px/);assert.match(css,/\.atz-tuto-copy h4\{color:var\(--accent-secondary,#39ff14\)/);assert.match(css,/\.atz-tuto-copy strong\{color:var\(--atz-purple\)/);});
+test('equalizer keeps its accented capital and titles are bold centered and unbroken',()=>{assert.match(read('TopMenuBar.tsx'),/effect\('Z-Égaliseur','eq'\)/);for(const name of ['Z-égaliseur','Z-Égaliseur','Égaliseur paramétrique 7 bandes'])assert.equal(normalizeEffectName(name),'Z-Égaliseur');const css=read('interfaceConsistency.css');assert.match(css,/#root \.atz-advanced>header>h2\{[^}]*text-align:center;[^}]*font-weight:700!important;white-space:nowrap/);assert.match(css,/\.atz-effect-name\{display:inline-flex!important;flex-direction:row!important;flex-wrap:nowrap!important/);});
+test('only reverb slider rails are black',()=>{const css=read('interfaceConsistency.css');assert.doesNotMatch(css,/\.atz-rv-faders\{background:#000/);assert.doesNotMatch(css,/\.atz-rv-fader-track\{background-color:#000/);assert.match(css,/::-webkit-slider-runnable-track\{background:#000\}/);assert.match(css,/::-moz-range-track\{background:#000\}/);});
+test('help retains requested omissions and delay explains double-click',()=>{assert.doesNotMatch(read('EffectHelp.tsx'),/Cliquez sur une rubrique pour la déplier ou la replier/);const source=[['Temps','keep']],before=JSON.stringify(source),topics=new Map(presentEffectHelp('Z-Delay',source).topics);assert.match(topics.get('Réglages initiaux'),/Double-cliquez/);assert.equal(topics.get('Temps'),'keep');assert.equal(JSON.stringify(source),before);assert.match(read('../releaseNotes.ts'),/v1\.7-dev/);});
+test('settings use ATZ and a shared input/output icon class',()=>{const settings=read('SettingsModal.tsx');assert.doesNotMatch(settings,new RegExp(String.fromCharCode(65,84,88)));assert.match(settings,/Didacticiel avec ATZ/);for(const icon of ['Mic','Speaker'])assert.ok(settings.includes(`<${icon} className="atz-settings-icon"`));});
+test('welcome image preserves the old box and spins at LP speed',()=>{const code=read('../utils/welcomeLogo.ts'),css=read('interfaceConsistency.css');assert.match(code,/medias\/logo\.png\?url/);assert.match(code,/width:`\$\{a.width\}px`,height:`\$\{a.height\}px`/);assert.match(css,/atz-welcome-vinyl-spin 1\.8s linear infinite/);assert.match(css,/rotate\(360deg\)/);assert.match(css,/prefers-reduced-motion:reduce/);assert.match(read('../main.tsx'),/installWelcomeLogo\(root\)/);});

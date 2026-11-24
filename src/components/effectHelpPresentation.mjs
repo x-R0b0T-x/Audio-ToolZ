@@ -1,6 +1,6 @@
 export function presentEffectHelp(title,topics){
  const base=topics.filter(([label])=>!['Fermer','Redimensionner la fenêtre d’effet','Appliquer','Annuler'].includes(label)).map(t=>[...t]);
- if(!/reverb/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return {title,topics:base};
+ if(!/reverb/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,''))){if(/delay/i.test(title))base.push(['Réglages initiaux','Double-cliquez sur un potentiomètre pour retrouver sa valeur initiale. Double-cliquez sur le sélecteur de mode pour revenir sur Off. Cela ne change pas la zone audio traitée.']);return {title,topics:base};}
  const result=base.filter(([label])=>!['Préécouter avec la queue','Arrêter'].includes(label)).map(([label,text])=>{
   if(label==='Vitesse de modulation')return ['Vitesse',text];if(label==='Amortissement aigu')return ['Amort. aigu',text];if(label==='Réflexions')return ['Réflex.',text];if(label==='Réverbération')return ['Réverb.',text];
   if(label==='Largeur')return ['Stéréo','À midi (0), vous conservez la largeur normale de la réverbération. À gauche, côté Large, vous élargissez son image ; à droite, côté Mono, vous la resserrez jusqu’au mono. Le signal Direct reste inchangé. Double-cliquez pour revenir au centre.'];
