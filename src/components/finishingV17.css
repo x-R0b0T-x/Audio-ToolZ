@@ -1,0 +1,21 @@
+#root#root .zonyx-advanced>header{display:grid;grid-template-columns:80px minmax(0,1fr) 80px;align-items:center}
+#root#root .zonyx-advanced>header>h2{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;margin:0;min-width:0;font-weight:700!important;white-space:nowrap!important;text-align:center}
+#root#root .zonyx-advanced>header>.zonyx-effect-header-actions{grid-column:3;grid-row:1;justify-self:end}
+#root#root .zonyx-delay-mode-position>span:last-child{color:#fff!important;font-weight:700;text-decoration:none!important}
+#root#root .zonyx-delay-mode-position:nth-child(-n+3)[aria-checked=true]>span:last-child{color:#39ff14!important}
+#root#root .zonyx-delay-mode-position:last-child[aria-checked=true]{border-color:transparent;background:transparent;box-shadow:none!important}
+#root#root .zonyx-delay-mode-position:last-child .zonyx-delay-mode-contact{border-color:#9368c8;background:#34394b;box-shadow:none}
+#root#root .zonyx-control-group[aria-label=Compression]{padding-top:0;margin-top:0}
+.zonyx-help-dialog .zonyx-help-topic .zonyx-help-link{font-weight:700!important;text-decoration:none!important;border-bottom:0}
+.zonyx-help-dialog .zonyx-help-link::before{content:'→';display:inline-block;margin-right:.5em;color:var(--zonyx-help-green,#39ff14)}
+#root#root .zonyx-advanced .zonyx-hint,#root#root .zonyx-advanced [class*="accent-secondary"]{font-weight:700;text-decoration:none}
+#root#root .zonyx-advanced .zonyx-hint::before{content:'→ '}
+#root#root .zonyx-rv-stereo .zonyx-parameter>button svg{transform:scaleX(-1)}
+#root#root .zonyx-rv-exact{display:none;position:absolute;right:25px;top:calc(9px + (1 - var(--zonyx-level))*134px);transform:translateY(-50%);z-index:5;padding:2px 5px;border:1px solid #39ff14;border-radius:3px;background:#167d22;color:white!important;text-align:center;font:700 11px/16px system-ui;pointer-events:none;white-space:nowrap}
+#root#root .zonyx-rv-fader-track:focus-within .zonyx-rv-exact{display:block}
+#root#root .zonyx-rv-info{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:10px;height:30px;font-size:11px;font-variant-numeric:tabular-nums}
+#root#root .zonyx-rv-info>span{text-align:right}
+#root img.zonyx-welcome-vinyl{pointer-events:auto!important;filter:none!important;box-shadow:none!important}
+.zonyx-opening{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:#110d18d9;color:#fff;font:600 15px/1.5 system-ui;text-align:center}
+.zonyx-opening>div{max-width:90vw;padding:24px;border:1px solid #9563c8;border-radius:12px;background:#241733}
+.zonyx-opening img{display:block;width:min(200px,50vw);height:auto;margin:auto}.zonyx-opening p{margin:16px 0 0}

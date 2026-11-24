@@ -1,4 +1,6 @@
 export const RELEASE_ADDITIONS = [
+ "v1.7-dev : écran d’ouverture local avec wait.png, page de conseils avec ZØNYX, titres et modes du délai corrigés.",
+ "Z-Reverbe : valeurs précises, Stéréo de 0 à 100 %, ligne de réglage fixe et source transférée une seule fois au worker.",
  "v1.7-dev : je vous accompagne dans le guide d’accueil et les aides, avec un ton personnel et chaleureux. — ZØNYX",
  "Guide d’accueil : titre Audio ToolZ centré, sans libellé Présentation, et catalogue des six effets actualisé.",
  "Effets : Z-Delay, Z-Égaliseur, Z-Fondus, Z-Limit/Comp, Z-Pitcher et Z-Reverbe ; noms blancs dans le menu et titres colorés centrés dans leurs fenêtres.",
@@ -25,7 +27,7 @@ export const RELEASE_FIXES = [
  "Fermeture de Z-Reverbe : restauration du signal original sans laisser la préécoute réverbérée active.",
  "Niveaux de Z-Reverbe limités à 100 %, bouton Tempo stabilisé et repères Stéréo repositionnés.",
  "Préécoute et application pendant une lecture normale, sans boucle obligatoire, sur la sélection ou le morceau entier.",
- "Le BPM sert au calcul des temps musicaux de Z-Delay ; les autres effets ne dépendent pas de cette détection.",
+ "Le BPM synchronise les temps musicaux de Z-Delay et le prédélai de Z-Reverbe lorsque son bouton Tempo est activé.",
  "Reprise du dernier réglage de préécoute au démarrage de la lecture ; ouvrir un effet ne démarre pas la lecture.",
  "Z-Delay initialisé sur Off, zéro répétition, volume d’effet à zéro et panoramique au centre ; aucune durée libre en millisecondes dans l’interface finale.",
  "Ping-pong conservé : panoramique décentré pour choisir le premier côté ; répétitions mono identiques au centre.",

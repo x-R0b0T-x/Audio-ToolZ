@@ -1,8 +1,10 @@
 import {renderReverb,type ReverbSettings} from './reverb.mjs';
-type Request={id:number;channels:Float32Array[];sampleRate:number;settings:Partial<ReverbSettings>};
+type Request={kind:'init';channels:Float32Array[];sampleRate:number}|{kind:'render';id:number;settings:Partial<ReverbSettings>};
+let source:Float32Array[]|null=null,rate=0;
 self.onmessage=(event:MessageEvent<Request>)=>{
- const {id,channels,sampleRate,settings}=event.data;
+ const request=event.data;if(request.kind==='init'){source=request.channels;rate=request.sampleRate;return;}const {id,settings}=request,channels=source,sampleRate=rate;
  try{
+  if(!channels)throw new Error('Reverb source not initialized');
   const rendered=renderReverb(channels,sampleRate,settings),hop=Math.max(1,Math.round(sampleRate*.01));
   const length=rendered.channels[0]?.length??0,meter=new Float32Array(Math.ceil(length/hop));let peak=0;
   for(let block=0;block<meter.length;block++){

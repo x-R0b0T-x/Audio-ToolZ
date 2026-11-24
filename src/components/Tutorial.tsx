@@ -8,6 +8,7 @@ import img2 from '../medias/02.png?url';
 import img3 from '../medias/03.png?url';
 import img4 from '../medias/04.png?url';
 import img5 from '../medias/05.png?url';
+import professor from '../medias/pro.png?url';
 import './tutorial.css';
 
 export const TUTORIAL_EVENT='zonyx:show-tutorial';
@@ -19,7 +20,7 @@ type Links={heading:string;text:string;items:{label:string;href:string}[]};
 type Step={image:string;alt:string;title:string;intro:string[];sections?:Section[];links?:Links;outro?:string};
 const STEPS:Step[]=[
  {image:img1,alt:"ZØNYX, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
-  intro:["Salut, je suis ZØNYX, votre compagnon dans Audio ToolZ ! Je suis là pour vous accompagner.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
+  intro:["Salut, moi c’est ZØNYX ! Je vous accompagne pour donner vie à vos sons.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
   outro:"Prêt ? Suivez-moi !"},
  {image:img2,alt:"ZØNYX règle des boutons",title:"Un atelier complet, pensé pour la précision",
   intro:["Ici, c’est mon coin préféré : tout se règle, et tout s’écoute en direct pendant la lecture, avant même d’appliquer l’effet."],
@@ -40,6 +41,7 @@ const STEPS:Step[]=[
     ["Réduction de bruit spectrale :","pour nettoyer une prise."],
     ["Oscilloscope, spectre et forme d’onde colorée :","pour voir ce que vous entendez."]]}
   ]},
+ {image:professor,alt:'ZØNYX vous guide dans les effets',title:'Je suis là pour vous guider',intro:['Un réglage vous intrigue ? Cliquez sur le « ? » en haut à droite de la fenêtre d’effet : je vous guide pas à pas.','Je vous explique le rôle des commandes et vous aide à explorer les réglages, à votre rythme.']},
  {image:img3,alt:"ZØNYX se gratte la tête, l’air confus",title:"Pas de panique !",
   intro:["Une fausse manip, ça arrive même aux pros. Prenez votre temps : vous pouvez essayer un réglage, l’écouter et revenir en arrière. Je vous accompagne, un réglage à la fois."],
   sections:[{items:[
@@ -69,7 +71,7 @@ const STEPS:Step[]=[
    ["Ouvrir un fichier audio :","Ctrl+O, ou créez un document vierge avec Ctrl+N."],
    ["Sélectionnez, bouclez, écoutez :","puis ouvrez un effet depuis le menu Effets et réglez-le en direct."],
    ["Besoin de me retrouver ?","Outils, Paramètres, puis « Afficher le didacticiel »."]]}],
-  links:{heading:"Un dernier mot d’ZØNYX",text:"Si Audio ToolZ vous plaît, retrouvez-moi avec la communauté sur Telegram pour suivre les nouveautés. Une étoile sur GitHub m’aide aussi beaucoup ! Vous pouvez également soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
+  links:{heading:"Un dernier mot de ZØNYX",text:"Si Audio ToolZ vous plaît, retrouvez-moi avec la communauté sur Telegram pour suivre les nouveautés. Une étoile sur GitHub m’aide aussi beaucoup ! Vous pouvez également soutenir le projet par un don via PayPal.",items:[{label:"Telegram",href:"https://t.me/Audio_ToolZ"},{label:"Github",href:"https://github.com/x-R0b0T-x/Audio-ToolZ"},{label:"Paypal",href:"https://www.paypal.com/ncp/payment/GAUJE54VM28T8"}]},
   outro:"Bon son, et à très vite ! — ZØNYX"}
 ];
 const readHidden=()=>{try{return window.localStorage.getItem(KEY)==='1';}catch{return false;}};

@@ -2,7 +2,7 @@ const shared=[
  ['Appliquer','Validez le traitement pour modifier votre document audio. Vous pouvez ensuite utiliser Annuler dans le menu Édition pour revenir en arrière.'],
  ['Annuler','Fermez la fenêtre sans appliquer les réglages en cours au document.'],
  ['Fermer','Fermez la fenêtre d’effet sans valider les réglages en cours.'],
- ['Redimensionner la fenêtre d’effet','Faites glisser le triangle en bas à droite. Double-cliquez dessus pour retrouver la taille initiale ; utilisez les flèches lorsqu’il est sélectionné pour ajuster la taille.']
+ ['Redimensionner la fenêtre d’effet','Faites glisser le triangle en bas à droite ; utilisez les flèches lorsqu’il est sélectionné pour ajuster la taille.']
 ];
 const reverb=[
  ['Taille','Modifiez les dimensions acoustiques de la pièce et sa représentation. Une petite taille donne un espace resserré ; une grande taille espace les réflexions. Réglez séparément la Décroissance pour choisir leur durée.'],

@@ -8,7 +8,7 @@ import './aboutLayout.css';
 import './aboutFx.css';
 
 interface InfoModalProps { open: boolean; onClose: () => void; }
-export const APP_VERSION = 'v1.6';
+export const APP_VERSION = 'v1.7-dev';
 const DEFAULT_WIDTH = 500;
 const WAVE_PATH = Array.from({ length: 4 }, (_, i) => { const o = i * 200; return `M${o} 50 H${o + 55} L${o + 65} 46 L${o + 75} 50 L${o + 85} 50 L${o + 93} 14 L${o + 105} 88 L${o + 115} 36 L${o + 123} 50 H${o + 200}`; }).join(' ');
 

@@ -1,5 +1,7 @@
 import './utils/mascotIdentity.mjs';
 import {useEffect} from 'react';
+import {FileOpeningOverlay} from './components/FileOpeningOverlay';
+import './components/finishingV17.css';
 import {installDescriptions} from './utils/finalUi';
 import {installPreviewLoopGuard} from './utils/previewLoopGuard';
 import {installContextMenuGuard} from './utils/contextMenuGuard';
@@ -15,7 +17,7 @@ import './textReadability.css';
 import './components/interfaceConsistency.css';
 function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7-dev';},[]);return null;}
 const root = document.getElementById('root')!;
-createRoot(root).render(<><App /><BuildTitle /></>);
+createRoot(root).render(<><App /><BuildTitle /><FileOpeningOverlay /></>);
 installPreviewLoopGuard();
 installContextMenuGuard();
 installControlGestures(root);

@@ -1,0 +1,32 @@
+{
+  "baseCommit": "ec49a8c890951416ad7d199202071aaa8970a95b",
+  "files": [
+    ".github/maintenance/package-v17.py",
+    "src/App.tsx",
+    "src/audio/reverb.worker.ts",
+    "src/components/AdvancedEffects.tsx",
+    "src/components/EffectControls.tsx",
+    "src/components/EffectModal.tsx",
+    "src/components/EffectPanel.tsx",
+    "src/components/FileOpeningOverlay.tsx",
+    "src/components/InfoModal.tsx",
+    "src/components/ReverbModal.tsx",
+    "src/components/Tutorial.tsx",
+    "src/components/effectHelpContent.mjs",
+    "src/components/effectHelpPresentation.mjs",
+    "src/components/finishingV17.css",
+    "src/components/userFeedback.test.mjs",
+    "src/main.tsx",
+    "src/medias/wait.png",
+    "src/releaseNotes.ts",
+    "src/utils/fileOpening.d.mts",
+    "src/utils/fileOpening.mjs",
+    "src/utils/finishingV17.test.mjs",
+    "src/utils/welcomeLogo.ts"
+  ],
+  "validation": "node-tests-typescript-frontend-decoder-tests-and-windows-build-passed",
+  "pending": [
+    "variable-tempo-detection-grid-and-effect-synchronization",
+    "manual-Windows-visual-and-listening-review"
+  ]
+}

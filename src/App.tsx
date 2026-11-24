@@ -1,4 +1,5 @@
 import {useBeatSync} from './utils/finalUi';
+import {withFileOpening} from './utils/fileOpening.mjs';
 import { installMenuHover } from './utils/uiPolish';
 import './polish.css';
 import { decodeAudioFallback } from './utils/desktop';
@@ -63,7 +64,7 @@ function makeDocId(): string {
 export default function App() {
   useEffect(() => {
     const root = document.getElementById('root');
-    document.title = 'Audio ToolZ v1.6';
+    document.title = 'Audio ToolZ v1.7-dev';
     return root ? installMenuHover(root) : undefined;
   }, []);
   const [documents, setDocuments] = useState<AudioDocument[]>([]);
@@ -675,7 +676,7 @@ export default function App() {
   );
 
   const decodeAndOpenFile = useCallback(
-    async (file: File, recentToken?: string) => {
+    async (file: File, recentToken?: string) => withFileOpening(async () => {
       try {
         const buffer = await file.arrayBuffer();
         const decoded = await audioEngine.decodeFile(buffer).catch(async (error) => {
@@ -719,7 +720,7 @@ export default function App() {
           true
         );
       }
-    },
+    }),
     [showToast]
   );
 
@@ -727,7 +728,7 @@ export default function App() {
     try {
       const api = desktop();
       if (!api) return;
-      const payload = await api.openRecent(id);
+      const payload = await withFileOpening(()=>api.openRecent(id));
       await decodeAndOpenFile(fileFromDesktop(payload), payload.token);
     } catch {
       showToast('Fichier recent introuvable, deplace ou inaccessible.', true);
@@ -738,7 +739,7 @@ export default function App() {
     const api = desktop();
     if (api) {
       try {
-        for (const payload of await api.pickAudioFiles()) {
+        for (const payload of await withFileOpening(()=>api.pickAudioFiles())) {
           await decodeAndOpenFile(fileFromDesktop(payload), payload.token);
         }
       } catch { showToast('Impossible de lire le fichier choisi.', true); }

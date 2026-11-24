@@ -55,7 +55,7 @@ interface FaderProps {
   min: number; max: number; step: number; display: string; onChange: (value: number) => void;
 }
 export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col items-center gap-2 min-w-0"
-  onDoubleClick={(e) => { e.preventDefault(); p.onChange(p.defaultValue); }} title="Double-clic : valeur par défaut">
+  onDoubleClick={(e) => { e.preventDefault(); p.onChange(p.defaultValue); }}>
   <span className="text-xs font-semibold">{p.label}</span><span className="text-[10px] text-[var(--text-muted)]">{p.detail || ' '}</span>
   <div className="flex items-center gap-2">
     <input type="range" aria-label={p.label} min={p.min} max={p.max} step={p.step} value={p.value}

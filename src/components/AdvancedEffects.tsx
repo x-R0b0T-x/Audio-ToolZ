@@ -29,7 +29,7 @@ export function AdvancedEffects(props: Props) {
   const worker = useRef<Worker | null>(null), serial = useRef(0), busy = useRef(false), desired = useRef<RenderRequest | null>(null);
   const applyId = useRef(-1), rendered = useRef<{ id: number; channels: Float32Array[] } | null>(null);
   const callbacks = useRef(props); callbacks.current = props;
-  const label = eq ? 'Z-égaliseur' : params.mode === 'limiter' ? 'Limiteur' : 'Compresseur';
+  const label = eq ? 'Z-Égaliseur' : params.mode === 'limiter' ? 'Limiteur' : 'Compresseur';
   const commit = useRef((channels: Float32Array[]) => {});
   commit.current = channels => callbacks.current.onApply(channels.map((segment, i) => {
     const full = new Float32Array(doc.channels[i]); full.set(segment, range.startSample); return full;
@@ -76,7 +76,7 @@ export function AdvancedEffects(props: Props) {
     <EffectParameter label={caption} value={params[key]} initial={dynamicsDefault(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
   const graph = eq ? <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/> : <DynamicsPeakGraph original={doc.channels} output={output} offset={range.startSample} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll}/>;
   return <div className="zonyx-advanced-backdrop"><EffectPanel className={`zonyx-advanced ${eq ? 'zonyx-equalizer' : 'zonyx-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
-    <header><div><h2 id="advanced-title">{eq ? label : 'Z-Limit/Comp'}</h2></div><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
+    <header><h2 id="advanced-title">{eq ? label : 'Z-Limit/Comp'}</h2><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
     <main><fieldset className="zonyx-effect-body" disabled={applying} inert={applying}>
       {eq ? <><div className="zonyx-eq-layout">{graph}<div className="zonyx-eq-rack" role="group" aria-label="Sept bandes de l’égaliseur">
         {bands.map((b, i) => <div className="zonyx-band" key={i} style={{ color: colors[i], borderColor: colors[i] }} role="group" aria-label={`Bande de ${b.frequency} Hz`}>
@@ -91,7 +91,7 @@ export function AdvancedEffects(props: Props) {
         {graph}<div className="zonyx-dynamics-controls">
           <div className="zonyx-control-group zonyx-mode" role="group" aria-label="Mode" onDoubleClick={() => setParams(old => ({ ...old, mode: props.effect === 'compressor' ? 'compressor' : 'limiter' }))}><span>MODE</span>{(['limiter', 'compressor'] as const).map(mode => <button type="button" key={mode} aria-pressed={params.mode === mode} onClick={() => setParams(old => ({ ...old, mode }))}>{mode === 'limiter' ? 'LIMIT' : 'COMP'}</button>)}</div>
           <div className="zonyx-control-group" role="group" aria-label="Niveau">{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{control('ceiling','Plafond',CEILING_RANGE.min,CEILING_RANGE.max,.5,.1,1,'dBFS')}{params.mode==='compressor'&&control('threshold','Seuil',-60,0,.5,.1,1,'dBFS')}</div>
-          {params.mode === 'compressor' && <div className="zonyx-control-group" role="group" aria-label="Compression"><span>COMPRESSION</span>{control('ratio', 'Ratio', 1, 20, .5, .1, 1, ':1')}{control('knee', 'Coude', 0, 24, .5, .1, 1, 'dB')}{control('makeup', 'Compens.', -24, 24, .5, .1, 1, 'dB')}</div>}
+          {params.mode === 'compressor' && <div className="zonyx-control-group" role="group" aria-label="Compression">{control('ratio', 'Ratio', 1, 20, .5, .1, 1, ':1')}{control('knee', 'Coude', 0, 24, .5, .1, 1, 'dB')}{control('makeup', 'Compens.', -24, 24, .5, .1, 1, 'dB')}</div>}
           <div className="zonyx-control-group" role="group" aria-label="Enveloppe">{control('attack', 'Attaque', 0, 100, 1, .1, 1, 'ms')}{control('release', 'Relâch.', 10, 2000, 20, 1, 0, 'ms')}</div>
           <div className="zonyx-control-group" role="group" aria-label="Défilement"><EffectParameter label="Défilement" value={scroll} initial={0} spec={{min:-3,max:3,step:.25,fine:.05,digits:2}} onChange={setScroll}/></div>
         </div><p className="zonyx-hint">Sortie : clair → orange pour les niveaux forts · Réduction de gain : violet · Ligne verte : seuil/plafond en direct · Limiteur sur crêtes d’échantillons, pas true peak</p>
