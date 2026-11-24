@@ -1,4 +1,4 @@
-import json,os,subprocess
+import json,os,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 REPORT='.github/diagnostics/review-v17.json'
@@ -11,6 +11,7 @@ def change(p,old,new):
 def main():
  def git(*args):return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
  if os.environ.get('GITHUB_REPOSITORY')!='x-R0b0T-x/Audio-ToolZ' or git('branch','--show-current')!='v.1.7-dev' or git('rev-parse','HEAD')!=os.environ.get('GITHUB_SHA'):raise RuntimeError('Wrong development snapshot')
+ subprocess.run([sys.executable,str(ROOT/'.github/maintenance/test_review_transport.py')],cwd=ROOT,check=True)
  if (ROOT/REPORT).exists():print('Review corrections already applied');return
  subprocess.run(['git','diff','--exit-code','--','src'],cwd=ROOT,check=True)
  p='src/components/EffectModal.tsx'
@@ -63,14 +64,14 @@ export function FileOpeningOverlay(){
  change(p,'export function WelcomeArtwork(){',"export function WelcomeArtwork(){\n const loading=useSyncExternalStore(subscribeFileOpening,getOpeningSnapshot,()=>0)>0;\n useLayoutEffect(registerWelcomeArtwork,[]);\n const source=loading?waitImage:artwork;\n return <div className=\"zonyx-welcome-presentation\" aria-busy={loading}><ArtworkFrame key={source} source={source} description={loading?'ZØNYX patiente pendant le chargement':'ZØNYX vous souhaite la bienvenue'}/>{loading&&<FileOpeningMessage/>}</div>;\n}\nfunction ArtworkFrame({source,description}:{source:string;description:string}){")
  change(p,'src={artwork} alt="ZØNYX vous souhaite la bienvenue"','src={source} alt={description}')
  change(p,'/charger|ouvrir/i','/sélectionner|charger|ouvrir/i')
- labels=set()
+ labels=set();label_details={}
  for p in ['src/App.tsx','src/components/WaveformView.tsx','src/components/ControlWindow.tsx']:
   original=read(p)
   node="import fs from 'node:fs';import {markStatusLabels} from './.github/maintenance/statusLabels.mjs';process.stdout.write(JSON.stringify(markStatusLabels(fs.readFileSync(0,'utf8'))));"
-  result=subprocess.run(['node','--input-type=module','--eval',node],cwd=ROOT,input=original,text=True,capture_output=True,check=True)
-  transformed=json.loads(result.stdout);labels.update(transformed['labels'])
+  result=subprocess.run(['node','--input-type=module','--eval',node],cwd=ROOT,input=original,text=True,encoding='utf-8',errors='strict',capture_output=True,check=True)
+  transformed=json.loads(result.stdout);labels.update(transformed['labels']);label_details[p]=transformed['labels']
   if transformed['source']!=original:pending[p]=transformed['source']
- if labels!={'Curseur','Sélection'}:raise RuntimeError('Both main-window position labels must be found')
+ if labels!={'Curseur','Sélection'}:raise RuntimeError('Both main-window position labels must be found; detected='+json.dumps(label_details,ensure_ascii=True))
  p='src/releaseNotes.ts'
  change(p,'export const RELEASE_FIXES = [','export const RELEASE_FIXES = [\n "Retours de test v1.7-dev : Z-Fondus allégé, valeurs de Z-Reverbe violettes et blanches, molette Stéréo corrigée.",\n "Chargement : remplacement du robot d’accueil par wait.png, texte explicite et trois points animés ; libellés Curseur et Sélection en vert.",')
  pending['src/utils/reviewV17.test.mjs']=r"""import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
@@ -86,5 +87,8 @@ test('stereo wheel inversion leaves all other controls unchanged',()=>{const sou
  for p,text in pending.items():(ROOT/p).write_text(text,encoding='utf-8')
  report={'baseCommit':os.environ['GITHUB_SHA'],'files':sorted(pending),'validation':'pending','pending':['variable-tempo-detection-grid-and-effect-synchronization','manual-Windows-visual-and-listening-review','user-approval-before-main']}
  (ROOT/REPORT).write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
- print(json.dumps({'preparedFiles':len(pending),'labels':sorted(labels)},ensure_ascii=False))
-if __name__=='__main__':main()
+ print(json.dumps({'preparedFiles':len(pending),'labels':sorted(labels)},ensure_ascii=True))
+if __name__=='__main__':
+ for stream in (sys.stdout,sys.stderr):
+  if hasattr(stream,'reconfigure'):stream.reconfigure(encoding='utf-8',errors='backslashreplace')
+ main()
