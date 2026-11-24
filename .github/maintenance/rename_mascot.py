@@ -8,7 +8,7 @@ WORDS=[''.join(map(chr,c)) for c in CODES]
 CAPS=sorted(set(WORDS+[s.capitalize() for s in WORDS]),key=lambda s:(-len(s),s))
 LOWER=[s.lower() for s in WORDS if s.lower()!=IDENTIFIER]
 PATTERN=re.compile('|'.join(map(re.escape,CAPS))+r'|(?<![A-Za-z0-9])(?:'+'|'.join(map(re.escape,LOWER))+')')
-OPAQUE=re.compile(r'''(data:[^\s'"<>]*?;base64,[A-Za-z0-9+/_=\r\n-]+|[A-Za-z0-9+/_=-]{120,})''')
+OPAQUE=re.compile(r"(data:[^\s'\"<>]*?;base64,[A-Za-z0-9+/_=\r\n-]+|[A-Za-z0-9+/_=-]{120,})")
 EXCLUDED={'.github','node_modules','dist','target','vendor','third_party'}
 
 def renamed(value):
@@ -55,8 +55,10 @@ test('a failed write cannot delete the saved value',()=>{const s=storage([[previ
 """
 
 def updated_audit(text):
+    newline='\r\n' if '\r\n' in text else '\n'
+    text=text.replace('\r\n','\n')
     header="import {rewriteMascotText} from './mascotIdentity.mjs';\n"
-    if header in text:return text
+    if header in text:return text.replace('\n',newline)
     text,count=re.subn(r'^const typo=.*?,robotTypos=\[\],colors=\[\];$', 'const robotTypos=[],colors=[];',text,flags=re.M)
     old='typo.lastIndex=0;if(typo.test(lines[i]))'
     if count!=1 or old not in text:raise RuntimeError('Audit source changed; manual review required')
@@ -64,13 +66,13 @@ def updated_audit(text):
     lines=text.splitlines(keepends=True)
     for i,line in enumerate(lines):
         if line.startswith('const files='):
-            ending='\r\n' if line.endswith('\r\n') else '\n'
-            line=line.rstrip('\r\n')
+            ending='\n' if line.endswith('\n') else ''
+            line=line.rstrip('\n')
             if not line.endswith(';'):raise RuntimeError('Unexpected audit declaration')
             lines[i]=line[:-1]+r".filter(p=>!p.startsWith('.github/')&&!/(?:^|\/)(?:vendor|third_party)\//.test(p));"+ending
             break
     else:raise RuntimeError('Missing audit file list')
-    return header+''.join(lines)
+    return (header+''.join(lines)).replace('\n',newline)
 
 def apply(root):
     tracked=subprocess.check_output(['git','ls-files','-z'],cwd=root).decode('utf-8').split('\0')
@@ -130,22 +132,38 @@ def self_test():
     assert renamed('Audio ToolZ formatZero')=='Audio ToolZ formatZero'
     payload='data:image/png;base64,'+'A'*160+WORDS[1]+'A'*160
     assert transformed(payload)==payload
-    with tempfile.TemporaryDirectory() as directory:
-        root=Path(directory);subprocess.run(['git','init','-b','v.1.7-dev'],cwd=root,check=True,capture_output=True)
-        files={'src/main.tsx':"import './components/Tutorial';\n",'src/components/Tutorial.tsx':f"export const title='{WORDS[1]}';export const image='../medias/{WORDS[1]}.ogg';export const key='{WORDS[1].lower()}-tutorial-hidden';\n",'src/index.css':'.'+WORDS[1].lower()+'-control{color:green}',f'src/medias/{WORDS[1]}.ogg':b'\x00\xffunchanged-audio','.github/diagnostics/archive.txt':WORDS[1]}
-        for name,data in files.items():
-            path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data if isinstance(data,bytes) else data.encode('utf-8'))
-        subprocess.run(['git','add','-A'],cwd=root,check=True,capture_output=True)
-        report=apply(root)
-        assert report['filesRenamed']==1
-        assert (root/f'src/medias/{NAME}.ogg').read_bytes()==b'\x00\xffunchanged-audio'
-        assert (root/'.github/diagnostics/archive.txt').read_text()==WORDS[1]
-        assert (root/'src/main.tsx').read_text().startswith("import './utils/mascotIdentity.mjs';")
-        result=subprocess.run(['node','--test','src/utils/mascotIdentity.test.mjs'],cwd=root,capture_output=True,text=True)
-        if result.returncode:raise RuntimeError(result.stdout+result.stderr)
-        subprocess.run(['git','add','-A'],cwd=root,check=True,capture_output=True)
-        assert apply(root)['changed'] is False
-        print(json.dumps({'fixtureFilesChanged':report['filesChanged'],'fixtureFilesRenamed':report['filesRenamed'],'idempotence':True,'nodeTests':result.stdout},ensure_ascii=False))
+    audit_path=Path(__file__).resolve().parents[2]/'src/utils/reviewAudit.mjs'
+    audit=audit_path.read_text(encoding='utf-8')
+    results=[]
+    for label,newline in [('LF','\n'),('CRLF','\r\n')]:
+        source=audit.replace('\r\n','\n').replace('\n',newline)
+        prepared=transformed(source)
+        patched=updated_audit(prepared)
+        assert updated_audit(patched)==patched
+        if label=='CRLF':assert '\n' not in patched.replace('\r\n','')
+        else:assert '\r' not in patched
+        try:updated_audit('const unsupportedAudit=true;'+newline)
+        except RuntimeError:pass
+        else:raise AssertionError('Unknown audit formats must still be rejected')
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);subprocess.run(['git','init','-b','v.1.7-dev'],cwd=root,check=True,capture_output=True)
+            files={'src/main.tsx':"import './components/Tutorial';\n",'src/components/Tutorial.tsx':f"export const title='{WORDS[1]}';export const image='../medias/{WORDS[1]}.ogg';export const key='{WORDS[1].lower()}-tutorial-hidden';\n",'src/utils/reviewAudit.mjs':source,'src/index.css':'.'+WORDS[1].lower()+'-control{color:green}',f'src/medias/{WORDS[1]}.ogg':b'\x00\xffunchanged-audio','.github/diagnostics/archive.md':WORDS[1]}
+            for name,data in files.items():
+                path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data if isinstance(data,bytes) else data.encode('utf-8'))
+            subprocess.run(['git','add','-A'],cwd=root,check=True,capture_output=True)
+            report=apply(root)
+            assert report['filesRenamed']==1
+            assert (root/f'src/medias/{NAME}.ogg').read_bytes()==b'\x00\xffunchanged-audio'
+            assert (root/'.github/diagnostics/archive.md').read_text()==WORDS[1]
+            assert (root/'src/main.tsx').read_text().startswith("import './utils/mascotIdentity.mjs';")
+            assert (root/'src/utils/reviewAudit.mjs').read_bytes()==patched.encode('utf-8')
+            subprocess.run(['git','add','-A'],cwd=root,check=True,capture_output=True)
+            for command in [['node','--test','src/utils/mascotIdentity.test.mjs'],['node','src/utils/reviewAudit.mjs']]:
+                result=subprocess.run(command,cwd=root,capture_output=True,text=True)
+                if result.returncode:raise RuntimeError(result.stdout+result.stderr)
+            assert apply(root)['changed'] is False
+            results.append({'lineEndings':label,'filesChanged':report['filesChanged'],'filesRenamed':report['filesRenamed'],'nodeTests':'passed','audit':'passed','idempotence':True})
+    print(json.dumps({'fixtures':results},ensure_ascii=False))
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--self-test',action='store_true');parser.add_argument('--apply',action='store_true');args=parser.parse_args()
