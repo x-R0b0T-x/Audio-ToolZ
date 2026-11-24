@@ -32,6 +32,22 @@ jobs:
         run: |
           npm install
           npm install --no-save @tauri-apps/cli@2
+      - name: Resolve and verify Symphonia 0.6.1
+        shell: pwsh
+        run: |
+          # Resolve the exact new dependency and refresh the working-tree Cargo.lock.
+          $metadata = cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1 | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cargo dependency resolution failed' }
+          $symphonia = @($metadata.packages | Where-Object { $_.name -eq 'symphonia' })
+          if ($symphonia.Count -ne 1 -or $symphonia[0].version -ne '0.6.1') {
+            throw 'Expected exactly Symphonia 0.6.1 in the resolved dependencies'
+          }
+          New-Item -ItemType Directory -Force dev-output | Out-Null
+          @('symphonia 0.6.1', 'Source commit: ${{ github.sha }}') | Set-Content dev-output/SYMPHONIA.txt
+      - name: Build frontend assets for Rust application tests
+        run: npm run build
+      - name: Symphonia decoder regression tests
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml audio_fallback::tests -- --nocapture
       - name: Reverb DSP and refinement tests
         run: node --test src/audio/reverb.test.mjs src/audio/reverbRefinements.test.mjs src/utils/headerWaveMath.test.mjs src/components/devBuildCorrections.test.mjs
       - name: TypeScript check
@@ -41,9 +57,9 @@ jobs:
       - name: Prepare test artifact
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force dev-output | Out-Null
           Copy-Item src-tauri/target/release/audio-toolz.exe 'dev-output/Audio ToolZ v1.7-dev.exe'
-          @('Audio ToolZ v1.7-dev - development build', 'Source commit: ${{ github.sha }}', 'Tests and TypeScript validation passed before this executable was built.', 'Export the entire document to preserve the reverb tail.', 'Offline reverb rendering can still delay parameter changes.') | Set-Content dev-output/BUILD.txt
+          Copy-Item src-tauri/Cargo.lock dev-output/Cargo.lock
+          @('Audio ToolZ v1.7-dev - development build', 'Source commit: ${{ github.sha }}', 'Symphonia 0.6.1 verified by cargo metadata.', 'Rust decoder tests, audio tests and TypeScript validation passed before packaging.', 'Export the entire document to preserve the reverb tail.', 'Offline reverb rendering can still delay parameter changes.') | Set-Content dev-output/BUILD.txt
       - uses: actions/upload-artifact@v4
         with:
           name: Audio.ToolZ.v1.7-dev
