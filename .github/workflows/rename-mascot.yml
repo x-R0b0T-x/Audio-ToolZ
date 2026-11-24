@@ -5,6 +5,8 @@ on:
     paths:
       - .github/maintenance/rename_mascot.py
       - .github/workflows/rename-mascot.yml
+      - src/utils/aboutTransport.test.mjs
+      - src/utils/finalUi.test.mjs
   workflow_dispatch:
 permissions:
   contents: write

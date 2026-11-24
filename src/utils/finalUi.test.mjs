@@ -33,7 +33,10 @@ test('shared tempo detection serves About or active animated playback and retain
  assert.ok(code.includes('stopDetection();attempted=false'));assert.ok(code.includes('disposed=true;stopDetection()'));
  assert.ok(code.includes('if(disposed||worker!==current)return;'));assert.ok(code.includes('worker?.terminate()'));
  assert.ok(code.includes('export function readHeaderTempo()'));assert.ok(code.includes('headerTempo=robotTempo'));
- assert.ok(particles.includes('audioEngine.readLiveMeters()'));assert.ok(particles.includes('meters.leftRms,meters.rightRms'));assert.ok(!particles.includes('readHeaderTempo'));assert.ok(!particles.includes('getCurrentSample'));assert.ok(!particles.includes('kick'));
+ const meterName=particles.match(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*audioEngine\.readLiveMeters\(\)/)?.[1];assert.ok(meterName,'Header wave must read the live stereo meters');
+ const meter=meterName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ for(const suffix of ['Rms','Peak'])assert.match(particles,new RegExp(`Math\\.max\\(\\s*${meter}\\.left${suffix}\\s*,\\s*${meter}\\.right${suffix}\\s*\\)`));
+ assert.ok(!particles.includes('readHeaderTempo'));assert.ok(!particles.includes('getCurrentSample'));assert.ok(!particles.includes('kick'));
  assert.ok(worker.includes('detectBpmAndBeats(channels,sampleRate)'));assert.ok(worker.includes('result.beatSamples[0]??0'));
 });
 test('boom pulses have a fast attack, gradual return and bounded scale on every beat',()=>{
@@ -77,6 +80,7 @@ test('About link halos are thinner, sharper and faster',()=>{
 test('Space transport is installed once with the global descriptions and only uses existing controls',()=>{
  const code=readFileSync('src/utils/finalUi.ts','utf8'),space=readFileSync('src/utils/spaceTransport.mjs','utf8');
  assert.ok(code.includes('installSpaceTransport({isPlaying:()=>audioEngine.isPlaying,isRecording:()=>audioEngine.isRecording})'));assert.ok(code.includes('removeSpaceTransport();hide();'));
- assert.ok(space.includes("'.atz-advanced-backdrop'"));assert.ok(space.includes('addEventListener(\'keydown\',down,true)'));assert.ok(space.includes('control.element.click()'));
+ assert.ok(space.includes('doc.querySelectorAll(CONTROLS)'));assert.ok(space.includes('Fenêtre de contrôle flottante'));assert.ok(space.includes('addEventListener(\'keydown\',down,true)'));
+ assert.match(space,/activate\s*:\s*([A-Za-z_$][\w$]*)\s*=>\s*\1\.element\.click\(\)/);
  assert.ok(!space.includes('audioEngine'));
 });
