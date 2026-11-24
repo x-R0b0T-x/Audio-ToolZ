@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { PreviewBand } from '../audio/engine';
 import type { AudioDocument } from '../audio/types';
 import {targetRange,hasGain} from '../audio/effectsModel.mjs';
+import {formatEqFrequency} from '../utils/effectReview.mjs';
 import { bandsDefault, colors, dynamicsDefault, CEILING_RANGE, type Band, type Dynamics, type Trace } from '../audio/advancedDsp';
 import { EffectPanel } from './EffectPanel';
 import { EffectGain, EffectParameter } from './EffectParameter';
@@ -20,6 +21,7 @@ export function AdvancedEffects(props: Props) {
   const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {startSample:r.start,endSample:r.end};},[doc]);
   const source = useMemo(() => doc.channels.map(ch => ch.subarray(range.startSample, range.endSample)), [doc, range]);
   const [bands, setBands] = useState(() => bandsDefault(doc.sampleRate));
+  const [frequencyBand,setFrequencyBand]=useState<number|null>(null);
   const [params, setParams] = useState(() => dynamicsDefault(props.effect === 'compressor' ? 'compressor' : 'limiter'));
   const [scroll,setScroll]=useState(0);
   const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
@@ -27,7 +29,7 @@ export function AdvancedEffects(props: Props) {
   const worker = useRef<Worker | null>(null), serial = useRef(0), busy = useRef(false), desired = useRef<RenderRequest | null>(null);
   const applyId = useRef(-1), rendered = useRef<{ id: number; channels: Float32Array[] } | null>(null);
   const callbacks = useRef(props); callbacks.current = props;
-  const label = eq ? 'Égaliseur paramétrique 7 bandes' : params.mode === 'limiter' ? 'Limiteur' : 'Compresseur';
+  const label = eq ? 'Z-égaliseur' : params.mode === 'limiter' ? 'Limiteur' : 'Compresseur';
   const commit = useRef((channels: Float32Array[]) => {});
   commit.current = channels => callbacks.current.onApply(channels.map((segment, i) => {
     const full = new Float32Array(doc.channels[i]); full.set(segment, range.startSample); return full;
@@ -63,7 +65,7 @@ export function AdvancedEffects(props: Props) {
     const timer = window.setTimeout(() => { if (desired.current) dispatch(desired.current); }, 75);
     return () => window.clearTimeout(timer);
   }, [eq, source, doc.sampleRate, bands, params]);
-  const update = (i: number, patch: Partial<Band>) => setBands(old => old.map((b, j) => j === i ? { ...b, ...patch } : b));
+  const update = (i: number, patch: Partial<Band>) => {if(patch.frequency!==undefined)setFrequencyBand(i);setBands(old => old.map((b, j) => j === i ? { ...b, ...patch } : b));};
   const apply = () => {
     if (pending || applying || !source[0]?.length) return;
     setApplying(true);
@@ -74,7 +76,7 @@ export function AdvancedEffects(props: Props) {
     <EffectParameter label={caption} value={params[key]} initial={dynamicsDefault(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
   const graph = eq ? <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/> : <DynamicsPeakGraph original={doc.channels} output={output} offset={range.startSample} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll}/>;
   return <div className="atz-advanced-backdrop"><EffectPanel className={`atz-advanced ${eq ? 'atz-equalizer' : 'atz-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
-    <header><div><h2 id="advanced-title">{eq ? label : 'Limiteur / Compresseur'}</h2></div><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
+    <header><div><h2 id="advanced-title">{eq ? label : 'Z-Limit/Comp'}</h2></div><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
     <main><fieldset className="atz-effect-body" disabled={applying} inert={applying}>
       {eq ? <><div className="atz-eq-layout">{graph}<div className="atz-eq-rack" role="group" aria-label="Sept bandes de l’égaliseur">
         {bands.map((b, i) => <div className="atz-band" key={i} style={{ color: colors[i], borderColor: colors[i] }} role="group" aria-label={`Bande de ${b.frequency} Hz`}>
@@ -85,7 +87,7 @@ export function AdvancedEffects(props: Props) {
           </div>
           <EffectGain disabled={!hasGain(b)} label={`${b.frequency} Hz : gain`} value={b.gainDb} onChange={gainDb => update(i, { gainDb })}/>
         </div>)}
-      </div></div><p className="atz-hint">Spectre d’entrée stéréo · Glisser un point : fréquence/gain · Molette sur un point : largeur Q · Maj : réglage fin</p></> : <>
+      </div></div><output className="atz-hint atz-eq-frequency" aria-live="off" aria-label="Fréquence de la bande sélectionnée">{formatEqFrequency(frequencyBand===null?null:bands[frequencyBand].frequency)}</output></> : <>
         {graph}<div className="atz-dynamics-controls">
           <div className="atz-control-group atz-mode" role="group" aria-label="Mode" onDoubleClick={() => setParams(old => ({ ...old, mode: props.effect === 'compressor' ? 'compressor' : 'limiter' }))}><span>MODE</span>{(['limiter', 'compressor'] as const).map(mode => <button type="button" key={mode} aria-pressed={params.mode === mode} onClick={() => setParams(old => ({ ...old, mode }))}>{mode === 'limiter' ? 'LIMIT' : 'COMP'}</button>)}</div>
           <div className="atz-control-group" role="group" aria-label="Niveau">{control('input', 'Gain', -24, 24, .5, .1, 1, 'dB')}{control('ceiling','Plafond',CEILING_RANGE.min,CEILING_RANGE.max,.5,.1,1,'dBFS')}{params.mode==='compressor'&&control('threshold','Seuil',-60,0,.5,.1,1,'dBFS')}</div>

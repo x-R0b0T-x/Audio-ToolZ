@@ -1,0 +1,18 @@
+/* Explicit exceptions to the global white text policy. */
+#root#root .atz-effect-name>.atz-name-z{color:#b34dff!important}#root#root .atz-effect-name>.atz-name-dash{color:#fff!important}#root#root .atz-effect-name>.atz-name-effect{color:#39ff14!important}
+/* Both predelay modes occupy the same first row; interaction never lifts Tempo. */
+#root#root .atz-reverb .atz-rv-knobs{grid-template-rows:90px auto auto}
+#root#root .atz-reverb .atz-rv-division{box-sizing:border-box;height:90px;justify-content:flex-start}
+#root#root .atz-reverb button.atz-rv-tempo,#root#root .atz-reverb button.atz-rv-tempo:is(:hover,:active,:focus-visible,[aria-pressed=true]){transform:none!important;translate:none!important;position:static!important;margin:0!important;align-self:center;transition:border-color .15s,box-shadow .15s!important}
+/* Larger cells; only an inward edge shadow, never a flat violet fill. */
+#root#root .atz-rv-room::after{background-size:40px 40px}
+#root#root .atz-rv-room::before{background:transparent;box-shadow:inset 0 0 calc(var(--wet)*90px) calc(var(--wet)*28px) #b34dff,inset 0 0 calc(var(--wet)*12px) calc(var(--wet)*2px) #db9bff;opacity:var(--wet)}
+#root#root .atz-rv-room{border-color:rgba(179,77,255,calc(.2 + .8*var(--wet)));box-shadow:0 0 calc(var(--wet)*16px) rgba(179,77,255,var(--wet))}
+/* The endpoint labels share the numeric readout baseline. */
+#root#root .atz-rv-stereo{position:relative}
+#root#root .atz-rv-stereo-labels{position:absolute;left:0;right:0;bottom:0;height:18px;display:grid;grid-template-columns:minmax(0,1fr) 80px minmax(0,1fr);align-items:center;padding:0;pointer-events:none;font-size:11px;line-height:18px}
+#root#root .atz-rv-stereo-labels>span:first-child{grid-column:1;text-align:right}
+#root#root .atz-rv-stereo-labels>span:last-child{grid-column:3;text-align:left}
+#root#root .atz-rv-stereo .atz-parameter>span,#root#root .atz-rv-stereo-labels>span{color:#39ff14!important;white-space:nowrap}
+#root#root .atz-rv-stereo .atz-value-entry{min-height:18px;height:18px}
+#root#root .atz-rv-stereo .atz-value-entry output::after{content:' %'}
