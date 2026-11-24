@@ -1,0 +1,51 @@
+name: Audio ToolZ v1.7-dev - Z-Reverbe Windows test
+on:
+  push:
+    branches: [v.1.7-dev]
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/workflows/build-v1.7-dev.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reverb-dev-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows:
+    if: github.ref == 'refs/heads/v.1.7-dev'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Restore application icons if missing
+        shell: pwsh
+        run: |
+          if (-not (Test-Path public/icon.ico) -or -not (Test-Path public/icon.png)) {
+            git restore --source=6af5c11 -- public/icon.ico public/icon.png
+            if ($LASTEXITCODE -ne 0) { throw 'Icons unavailable' }
+          }
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install --no-save @tauri-apps/cli@2
+      - name: Reverb DSP tests
+        run: node --test src/audio/reverb.test.mjs
+      - name: TypeScript check
+        run: npm run lint
+      - name: Build portable Windows application
+        run: npx tauri build --no-bundle
+      - name: Prepare test artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dev-output | Out-Null
+          Copy-Item src-tauri/target/release/audio-toolz.exe 'dev-output/Audio ToolZ v1.7-dev.exe'
+          @('Audio ToolZ - Z-Reverbe development test', 'Source commit: ${{ github.sha }}', 'Open audio, then Effets > Z-Reverbe.', 'Preview includes the rendered tail. Apply, then export the entire document to keep the tail.', 'Development snapshot: application version metadata is still 1.6.') | Set-Content dev-output/BUILD.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Audio.ToolZ.v1.7-dev
+          path: dev-output/
+          if-no-files-found: error

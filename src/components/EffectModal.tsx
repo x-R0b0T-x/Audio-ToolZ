@@ -8,10 +8,11 @@ import type {AudioDocument,EffectModalId,FadeCurve,FadeDirection} from '../audio
 import {Fader,Knob,DelayModeSwitch} from './EffectControls';
 import {AdvancedEffects} from './AdvancedEffects';
 import {EffectPanel} from './EffectPanel';
+import {ReverbModal} from './ReverbModal';
 import {targetRange} from '../audio/effectsModel.mjs';
 import './delayPanel.css';
 interface Props{effect:EffectModalId;document:AudioDocument|null;noiseProfile?:NoiseProfile|null;onCaptureNoiseProfile?:(p:NoiseProfile)=>void;isPreviewPlaying:boolean;onStartPreview:(c:Float32Array[],r:number,g?:number,b?:PreviewBand[])=>void;onStopPreview:()=>void;onApply:(c:Float32Array[],label:string,s?:{startSample:number;endSample:number})=>void;onClose:()=>void;}
-export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:<LiveEffectSession key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;
+export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:p.effect==='reverb'?<ReverbModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onApply={p.onApply} onClose={p.onClose}/>:<LiveEffectSession key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;
 function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const latest=useRef(p);latest.current=p;
  const relay=useMemo(()=>createPreviewRelay(()=>audioEngine.isPlaying,(...args:Parameters<Props['onStartPreview']>)=>latest.current.onStartPreview(...args)),[]);
@@ -43,7 +44,7 @@ function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocume
  const change=(v:Partial<typeof c>)=>set(old=>({...old,...v})),callback=useRef(p);callback.current=p;
  const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {startSample:r.start,endSample:r.end};},[doc]),start=range.startSample,end=range.endSample,source=useMemo(()=>doc.channels.map(ch=>ch.subarray(start,end)),[doc,start,end]),n=source[0]?.length??0,bpm=detectedBpm>0?detectedBpm:doc.bpmInfo?.bpm??0;
  const blocked=effect==='echo'&&c.mode!=='off'&&c.repetitions>0&&c.wet>0&&!(Number.isFinite(bpm)&&bpm>0);
- const label=({fade:'Fondus','speed-pitch':'Vitesse et hauteur','noise-reduction':'Réduction de bruit spectrale',echo:'Delay'} as Record<string,string>)[effect];
+ const label=({fade:'Z-Fondus','speed-pitch':'Z-Pitcher','noise-reduction':'Réduction de bruit spectrale',echo:'Z-Delay'} as Record<string,string>)[effect];
  const process=()=>{switch(effect){case 'fade':return applyFade(source,0,n,c.direction,c.curve);case 'noise-reduction':return applySpectralNoiseReduction(source,0,n,p.noiseProfile??captureNoiseProfile(source,doc.sampleRate,0,n),{reductionDb:c.reduction,sensitivity:1,smoothing:.35});case 'echo':return blocked?source:applyMusicalDelay(source,doc.sampleRate,bpm,c.division,c.mode,c.repetitions,c.wet,c.pan);default:return source;}};
  const speed=()=>applySpeedAndPitch(doc.channels,doc.sampleRate,start,end,c.speed,c.pitch,true);
  useEffect(()=>{if(!n)return;const timer=window.setTimeout(()=>{if(effect==='speed-pitch'){const r=speed();callback.current.onStartPreview(r.channels.map(ch=>ch.subarray(r.selection.startSample,r.selection.endSample)),doc.sampleRate);}else callback.current.onStartPreview(process(),doc.sampleRate);},60);return()=>window.clearTimeout(timer);},[effect,doc,c,source,p.noiseProfile,blocked,bpm]);
