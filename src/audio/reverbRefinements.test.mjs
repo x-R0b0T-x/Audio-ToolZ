@@ -5,7 +5,18 @@ import {presentEffectHelp} from '../components/effectHelpPresentation.mjs';
 import {normalizeEffectName,formatEqFrequency,clampReverbLevels,restoreUnappliedPreview,createPreviewExit} from '../utils/effectReview.mjs';
 test('wide, normal and mono act on wet stereo without changing dry',()=>{const l=Float32Array.of(1,...Array(127).fill(0)),r=new Float32Array(l.length),make=width=>renderReverb([l,r],8000,{decay:.15,preDelay:0,width}),a=make(100),b=make(200),c=make(0),energy=w=>w[0].reduce((s,x,i)=>s+(x-w[1][i])**2,0);assert.ok(energy(a.wet)>0);assert.ok(Math.abs(energy(b.wet)/energy(a.wet)-4)<1e-5);assert.deepEqual(c.wet[0],c.wet[1]);for(const v of [a,b,c]){assert.equal(v.channels[0][0],1);assert.equal(v.channels[1][0],0);assert.ok(v.channels.every(ch=>ch.every(Number.isFinite)));}assert.equal(reverbSettings({width:500}).width,200);});
 test('musical predelay is not clipped at 250 ms',()=>{const l=Float32Array.of(1,...Array(127).fill(0)),first=d=>renderReverb([l],8000,{decay:.15,preDelay:d,direct:0}).wet[0].findIndex(v=>Math.abs(v)>1e-8);assert.equal(first(500)-first(0),4000);});
-test('help removes window topics, explains cached tempo and keeps source intact',()=>{const topics=[['Fermer','x'],['Redimensionner la fenêtre d’effet','x'],['Largeur','old'],['Appliquer','yes'],['Pièce et halo violet','old']],before=JSON.stringify(topics),a=presentEffectHelp('Z-Reverbe',topics),m=new Map(a.topics);assert.ok(!m.has('Fermer'));assert.ok(!m.has('Redimensionner la fenêtre d’effet'));assert.ok(m.has('Appliquer'));assert.match(m.get('Stéréo'),/midi/);assert.match(m.get('Tempo'),/ne lance aucune analyse/);assert.match(m.get('Cercle et grille'),/vert vide/);assert.equal(JSON.stringify(topics),before);assert.ok(!new Map(presentEffectHelp('Z-Delay',topics).topics).has('Fermer'));});
+test('help omits basic actions, explains cached tempo and keeps source intact',()=>{
+ const topics=[['Fermer','x'],['Redimensionner la fenêtre d’effet','x'],['Largeur','old'],['Appliquer','yes'],['Annuler','yes'],['Temps','keep'],['Pièce et halo violet','old']];
+ const before=JSON.stringify(topics),a=presentEffectHelp('Z-Reverbe',topics),m=new Map(a.topics);
+ for(const title of ['Z-Reverbe','Z-Delay','Z-égaliseur','Z-Fondus','Z-Limit/Comp','Z-Pitcher']){
+  const result=presentEffectHelp(title,topics),entries=new Map(result.topics);
+  assert.equal(result.title,title);
+  for(const label of ['Fermer','Redimensionner la fenêtre d’effet','Appliquer','Annuler'])assert.equal(entries.has(label),false,`${title}: ${label} must not appear in help`);
+  assert.equal(entries.get('Temps'),'keep');
+ }
+ assert.match(m.get('Stéréo'),/midi/);assert.match(m.get('Tempo'),/ne lance aucune analyse/);assert.match(m.get('Cercle et grille'),/vert vide/);
+ assert.equal(JSON.stringify(topics),before);
+});
 test('window names follow the agreed effect names',()=>{for(const [a,b] of [['Égaliseur paramétrique 7 bandes','Z-égaliseur'],['Z-Égaliseur','Z-égaliseur'],['Limiteur / Compresseur','Z-Limit/Comp'],['Z-Reverbe','Z-Reverbe'],['Z-Fondus','Z-Fondus'],['Z-Pitcher','Z-Pitcher'],['Z-Delay','Z-Delay']])assert.equal(normalizeEffectName(a),b);});
 test('frequency readout formats the actual band frequency in Hz',()=>{assert.equal(formatEqFrequency(1250.4).replace(/\s/g,''),'Fréquence:1250Hz');assert.equal(formatEqFrequency(20),'Fréquence : 20 Hz');assert.equal(formatEqFrequency(null),'Fréquence : — Hz');});
 test('all three reverb levels stay between zero and one hundred',()=>{const source={direct:150,reflections:-10,reverb:NaN};assert.deepEqual(clampReverbLevels(source),{direct:100,reflections:0,reverb:0});assert.equal(source.direct,150);assert.deepEqual(clampReverbLevels({direct:100,reflections:25,reverb:30}),{direct:100,reflections:25,reverb:30});});
