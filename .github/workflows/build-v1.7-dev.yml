@@ -2,7 +2,7 @@ name: Audio ToolZ v1.7-dev - Windows validation
 on:
   push:
     branches: [v.1.7-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/finish_v17.py', '.github/maintenance/package-v17.py', '.github/workflows/build-v1.7-dev.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/**', '.github/workflows/build-v1.7-dev.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,15 +25,13 @@ jobs:
         with:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
-      - name: Apply reviewed development corrections
+      - name: Apply original reviewed development corrections
         shell: pwsh
         run: |
           python .github/maintenance/finish_v17.py
           if ($LASTEXITCODE -ne 0) { throw 'Finishing failed' }
           git add -A -- src .github/maintenance/package-v17.py .github/diagnostics/finishing-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
-      - name: Audit tracked source and robot spelling
-        run: node src/utils/reviewAudit.mjs
       - name: Restore application icons if missing
         shell: pwsh
         run: |
@@ -41,10 +39,22 @@ jobs:
             git restore --source=6af5c11 -- public/icon.ico public/icon.png
             if ($LASTEXITCODE -ne 0) { throw 'Icons unavailable' }
           }
-      - name: Install dependencies
+      - name: Install frontend and build dependencies
+        shell: pwsh
         run: |
           npm install
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
           npm install --no-save @tauri-apps/cli@2
+          if ($LASTEXITCODE -ne 0) { throw 'Tauri CLI installation failed' }
+      - name: Apply complete user interface review
+        shell: pwsh
+        run: |
+          python .github/maintenance/review_v17.py
+          if ($LASTEXITCODE -ne 0) { throw 'User interface review failed' }
+          git add -A -- src .github/diagnostics/review-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Review staging failed' }
+      - name: Audit all tracked corrected source
+        run: node src/utils/reviewAudit.mjs
       - name: Verify locked Symphonia 0.6.1
         shell: pwsh
         run: |
@@ -69,30 +79,38 @@ jobs:
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml audio_fallback::tests -- --nocapture
       - name: Build portable Windows application
         run: npx tauri build --no-bundle
-      - name: Commit only tested development sources locally
+      - name: Record only tested development sources locally
         shell: pwsh
         run: |
           if ((git branch --show-current) -ne 'v.1.7-dev') { throw 'Wrong branch' }
           if ((git rev-parse HEAD) -ne $env:GITHUB_SHA) { throw 'Unexpected checkout' }
           git diff --exit-code -- src-tauri/Cargo.lock
           if ($LASTEXITCODE -ne 0) { throw 'Rust lock changed unexpectedly' }
-          python -c "import json;from pathlib import Path;p=Path('.github/diagnostics/finishing-v17.json');r=json.loads(p.read_text(encoding='utf-8'));r['validation']='node-tests-typescript-frontend-decoder-tests-and-windows-build-passed';p.write_text(json.dumps(r,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')"
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot update validation report' }
-          git add -- .github/diagnostics/finishing-v17.json
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot stage validation report' }
+          @'
+          import json
+          from pathlib import Path
+          for name in ['finishing-v17.json','review-v17.json']:
+              path=Path('.github/diagnostics')/name
+              report=json.loads(path.read_text(encoding='utf-8'))
+              report['validation']='node-tests-typescript-frontend-decoder-tests-and-windows-build-passed'
+              path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot update reports' }
+          git add -- .github/diagnostics/finishing-v17.json .github/diagnostics/review-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot stage reports' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
           if ($result -gt 1) { throw 'Cannot inspect staged changes' }
           if ($result -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'fix: finish v1.7-dev interface loading and portable packaging'
+            git commit -m 'fix: apply complete v1.7-dev user interface review'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
           }
           exit 0
       - name: Package and verify Windows Shell extraction
         run: python .github/maintenance/package-v17.py
-      - name: Publish validated development sources
+      - name: Publish validated development sources without force
         shell: pwsh
         run: |
           git push origin HEAD:refs/heads/v.1.7-dev
@@ -111,4 +129,5 @@ jobs:
           path: |
             audit-output/
             .github/diagnostics/finishing-v17.json
+            .github/diagnostics/review-v17.json
           if-no-files-found: warn
