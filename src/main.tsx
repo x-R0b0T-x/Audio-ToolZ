@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {installDescriptions} from './utils/finalUi';
 import {installPreviewLoopGuard} from './utils/previewLoopGuard';
 import {installContextMenuGuard} from './utils/contextMenuGuard';
@@ -9,16 +10,14 @@ import {installTextExceptions} from './utils/textExceptions';
 import './index.css';
 import './windowClose.css';
 import './textReadability.css';
-
+function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7-dev';},[]);return null;}
 const root = document.getElementById('root')!;
-createRoot(root).render(<App />);
+createRoot(root).render(<><App /><BuildTitle /></>);
 installPreviewLoopGuard();
 installContextMenuGuard();
 installControlGestures(root);
 installTextExceptions(root);
-
 installDescriptions(root);
-
 const tutorialHost = document.createElement('div');
 tutorialHost.id = 'atz-tutorial-root';
 document.body.appendChild(tutorialHost);

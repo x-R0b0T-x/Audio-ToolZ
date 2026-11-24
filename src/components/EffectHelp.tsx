@@ -4,19 +4,61 @@ import helpImage from '../medias/help.png?url';
 import proImage from '../medias/pro.png?url';
 import {getEffectHelp} from './effectHelpContent.mjs';
 import './effectHelp.css';
+function helpFor(title:string){
+ const help=getEffectHelp(title);
+ if(!/reverb/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return help;
+ help.topics=help.topics.filter(([label])=>!['Préécouter avec la queue','Arrêter'].includes(label)).map(([label,text]):[string,string]=>{
+  if(label==='Vitesse de modulation')return ['Vitesse',text];
+  if(label==='Amortissement aigu')return ['Amort. aigu',text];
+  if(label==='Réflexions')return ['Réflex.',text];
+  if(label==='Réverbération')return ['Réverb.',text];
+  if(label==='Pièce et halo violet')return ['Cercle et halo vert','Le diamètre du cercle dépend uniquement de Taille. Sa luminosité verte suit le signal réverbéré réellement entendu, puis s’éteint avec la traîne. Le signal Direct seul ne l’allume pas.'];
+  return [label,text] as [string,string];
+ });
+ help.topics.splice(2,0,['Tempo','Activez Tempo pour synchroniser le prédélai au BPM de la piste. Si le tempo n’est pas connu, vous pouvez saisir sa valeur dans le champ BPM. Prédélai propose alors des divisions de temps.']);
+ return help;
+}
 export function EffectHelp({panelRef}:{panelRef:React.RefObject<HTMLElement|null>}){
- const [open,setOpen]=useState(false),[selected,setSelected]=useState<number|null>(null),[content,setContent]=useState(()=>getEffectHelp(''));
- const trigger=useRef<HTMLButtonElement>(null),heading=useRef<HTMLHeadingElement>(null),scroll=useRef<HTMLDivElement>(null),id=useId();
+ const [open,setOpen]=useState(false),[expanded,setExpanded]=useState<Set<number>>(()=>new Set()),[content,setContent]=useState(()=>helpFor(''));
+ const [position,setPosition]=useState({left:8,top:8}),[offer,setOffer]=useState<{left:number;top:number}|null>(null);
+ const trigger=useRef<HTMLButtonElement>(null),dialog=useRef<HTMLElement>(null),timer=useRef(0),drag=useRef<{dx:number;dy:number}|null>(null),id=useId();
+ const size=()=>({w:Math.max(1,Math.min(680,innerWidth-16)),h:Math.max(1,Math.min(560,innerHeight-16))});
+ const hideOffer=()=>{clearTimeout(timer.current);timer.current=window.setTimeout(()=>setOffer(null),180);};
+ const showOffer=()=>{
+  clearTimeout(timer.current);if(open)return;
+  const r=panelRef.current?.getBoundingClientRect();if(!r)return;
+  const width=270,height=110;
+  const left=r.right+width+12<=innerWidth?r.right+8:r.left-width-8>=8?r.left-width-8:Math.max(8,innerWidth-width-8);
+  setOffer({left,top:Math.max(8,Math.min(innerHeight-height-8,r.top+4))});
+ };
+ const show=()=>{
+  clearTimeout(timer.current);setOffer(null);setExpanded(new Set());
+  setContent(helpFor(panelRef.current?.querySelector('h2')?.textContent??'Effet'));
+  const {w,h}=size();setPosition({left:Math.max(8,(innerWidth-w)/2),top:Math.max(8,(innerHeight-h)/2)});setOpen(true);
+ };
  const close=()=>{setOpen(false);trigger.current?.focus();};
- useEffect(()=>{if(open){heading.current?.focus();if(scroll.current)scroll.current.scrollTop=0;}},[open,selected]);
- const show=()=>{setContent(getEffectHelp(panelRef.current?.querySelector('h2')?.textContent??'Effet'));setSelected(null);setOpen(true);};
- return <><span className="atz-effect-help"><button ref={trigger} className="atz-help-trigger" type="button" title="Aide" aria-label="Aide de cet effet avec ATZ" aria-haspopup="dialog" aria-expanded={open} aria-controls={open?id:undefined} onClick={()=>open?close():show()}>?</button>
- {!open&&<span className="atz-help-preview" aria-hidden="true"><img src={helpImage} alt=""/><span>Besoin d’aide ?</span></span>}</span>
- {open&&createPortal(<aside id={id} className="atz-help-dialog" role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();close();}}}>
- <div className="atz-help-bar"><h2 id={`${id}-title`}>L’aide d’ATZ · {content.title}</h2><button type="button" aria-label="Fermer uniquement l’aide" onClick={close}>×</button></div>
- <div className="atz-help-layout"><img className="atz-help-professor" src={proImage} alt="ATZ vous explique les commandes"/>
- <div ref={scroll} className="atz-help-bubble" tabIndex={0} role="region" aria-label="Explications défilantes d’ATZ">
- <h3 ref={heading} tabIndex={-1}>{selected===null?'Besoin d’un coup de main ?':content.topics[selected][0]}</h3>
- {selected===null?<><p>Cliquez sur une commande pour que je vous explique à quoi elle sert et comment vous en servir.</p><nav aria-label="Commandes de l’effet">{content.topics.map(([label],index)=><button className="atz-help-link" type="button" key={label} onClick={()=>setSelected(index)}>{label}</button>)}</nav></>:<><p>{content.topics[selected][1]}</p><button type="button" className="atz-help-link" onClick={()=>setSelected(null)}>Retour aux commandes</button></>}
- </div></div></aside>,document.body)}</>;
+ useEffect(()=>()=>clearTimeout(timer.current),[]);
+ useEffect(()=>{if(open)dialog.current?.focus({preventScroll:true});},[open]);
+ useEffect(()=>{
+  const resize=()=>{const {w,h}=size();setPosition(p=>({left:Math.max(8,Math.min(innerWidth-w-8,p.left)),top:Math.max(8,Math.min(innerHeight-h-8,p.top))}));setOffer(null);};
+  window.addEventListener('resize',resize);return()=>window.removeEventListener('resize',resize);
+ },[]);
+ const {w,h}=size();
+ return <><span className="atz-effect-help" onMouseEnter={showOffer} onMouseLeave={hideOffer}>
+  <button ref={trigger} type="button" className="atz-help-trigger" aria-label="Aide de cet effet avec ATZ" aria-haspopup="dialog" aria-expanded={open} onFocus={showOffer} onBlur={hideOffer} onClick={()=>open?close():show()}>?</button>
+ </span>
+ {offer&&!open&&createPortal(<button type="button" className="atz-help-offer" style={offer} onMouseEnter={()=>clearTimeout(timer.current)} onMouseLeave={hideOffer} onFocus={()=>clearTimeout(timer.current)} onBlur={hideOffer} onClick={show}><img src={helpImage} alt="" draggable={false}/><span>Besoin d’aide ?</span></button>,document.body)}
+ {open&&createPortal(<aside ref={dialog} tabIndex={-1} role="dialog" aria-modal="false" aria-labelledby={`${id}-title`} className="atz-help-dialog" style={{...position,width:w,height:h}} onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();close();}}}>
+  <div className="atz-help-bar" onPointerDown={e=>{if(e.button!==0||(e.target as Element).closest('button'))return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);drag.current={dx:e.clientX-position.left,dy:e.clientY-position.top};}}
+   onPointerMove={e=>{const d=drag.current;if(d)setPosition({left:Math.max(8,Math.min(innerWidth-w-8,e.clientX-d.dx)),top:Math.max(8,Math.min(innerHeight-h-8,e.clientY-d.dy))});}}
+   onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}} onLostPointerCapture={()=>{drag.current=null;}}>
+   <h2 id={`${id}-title`}>L’aide d’ATZ · {content.title}</h2><button type="button" aria-label="Fermer l’aide" onClick={close}>×</button>
+  </div><div className="atz-help-layout"><img className="atz-help-professor" src={proImage} alt="ATZ vous explique les commandes" draggable={false}/>
+   <div className="atz-help-bubble" tabIndex={0} role="region" aria-label="Explications défilantes d’ATZ"><p>Cliquez sur une rubrique pour la déplier ou la replier.</p>
+    {content.topics.map(([label,text],index)=><section className="atz-help-topic" key={label}>
+     <button type="button" className="atz-help-link" aria-expanded={expanded.has(index)} aria-controls={`${id}-${index}`} onClick={()=>setExpanded(old=>{const next=new Set(old);if(!next.delete(index))next.add(index);return next;})}>{label}</button>
+     <p id={`${id}-${index}`} hidden={!expanded.has(index)}>{text}</p>
+    </section>)}
+   </div></div>
+ </aside>,document.body)}</>;
 }
