@@ -17,3 +17,7 @@
 #atz-header-kick-slot{min-height:32px;align-items:center;padding:0 5px}
 #atz-header-kick-slot [data-testid="snap-kicks-toggle"]{position:static!important;margin:0!important;transform:none!important;white-space:nowrap;line-height:1.3;border-radius:6px;color:#39ff14!important;font-size:11px;min-height:28px;padding:4px 10px;flex:none}
 @media(prefers-reduced-motion:reduce){.atz-about-resize{transition:none}#root .atz-about-dialog .atz-about-actions>a::before{animation:none}}
+/* Symmetric side columns keep Audio ToolZ centered independently of Close. */
+#root .atz-about-dialog>div:first-child{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center}
+#root .atz-about-dialog #about-title{grid-column:2;grid-row:1;justify-self:center;text-align:center;margin:0}
+#root .atz-about-dialog>div:first-child>button{grid-column:3;grid-row:1;justify-self:end;display:flex;align-items:center;justify-content:center;width:32px;height:32px}

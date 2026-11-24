@@ -111,23 +111,24 @@ export const Knob: React.FC<KnobProps> = (p) => {
 };
 const modes: DelayMode[] = ['mono', 'stereo', 'ping-pong', 'off'];
 export const DelayModeSwitch: React.FC<{ value: DelayMode; onChange: (mode: DelayMode) => void }> = ({ value, onChange }) => {
-  const index = modes.indexOf(value);
-  const updateAt = (element: HTMLElement, y: number) => {
-    const box = element.getBoundingClientRect();
-    onChange(modes[Math.max(0, Math.min(3, Math.round(((y - box.top - 14) / Math.max(1, box.height - 28)) * 3)))]);
+  const group = useRef<HTMLDivElement>(null);
+  const index = Math.max(0, modes.indexOf(value));
+  const select = (next: number) => {
+    onChange(modes[next]);
+    group.current?.querySelectorAll<HTMLButtonElement>('button[role="radio"]')[next]?.focus();
   };
-  return <div className="flex justify-center items-center gap-3" onDoubleClick={() => onChange('off')}>
-    <div role="slider" tabIndex={0} aria-label="Mode du délai" aria-orientation="vertical" aria-valuemin={0} aria-valuemax={3} aria-valuenow={index} aria-valuetext={value}
-      className="atz-delay-switch" style={{ position: 'relative', width: 28, height: 124, borderRadius: 12, background: '#191322', border: '1px solid #9368c8', touchAction: 'none', cursor: 'ns-resize' }}
-      onPointerDown={(e) => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); updateAt(e.currentTarget, e.clientY); }}
-      onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) updateAt(e.currentTarget, e.clientY); }}
-      onKeyDown={(e) => { if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) { e.preventDefault(); onChange(modes[e.key === 'Home' ? 0 : e.key === 'End' ? 3 : Math.max(0, Math.min(3, index + (e.key === 'ArrowDown' ? 1 : -1)))]); } }}>
-      <span aria-hidden="true" style={{ position: 'absolute', left: 3, right: 3, height: 22, top: 3 + index * 32, borderRadius: 7, background: '#39ff14', border: '1px solid #9eff8a', boxShadow: '0 0 8px rgba(57, 255, 20, 0.55)', pointerEvents: 'none' }}>
-        <span style={{ position: 'absolute', left: 4, right: 4, top: 9, height: 2, background: '#13151c' }} />
-      </span>
-    </div>
-    <div role="group" aria-label="Positions du sélecteur" className="flex flex-col justify-between" style={{ height: 124 }}>
-      {modes.map((mode, i) => <button type="button" key={mode} aria-pressed={value === mode} onClick={() => onChange(mode)} className="px-2 text-xs rounded" style={{ color: value === mode ? '#45f882' : 'var(--text-muted)', height: 28 }}>{['Mono', 'Stéréo', 'Ping-pong', 'Off'][i]}</button>)}
-    </div>
+  return <div ref={group} role="radiogroup" aria-label="Mode du délai" aria-orientation="vertical" className="atz-delay-mode"
+    onDoubleClick={() => select(3)}
+    onKeyDown={(e) => {
+      if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      e.preventDefault();
+      const next = e.key === 'Home' ? 0 : e.key === 'End' ? modes.length - 1
+        : (index + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1) + modes.length) % modes.length;
+      select(next);
+    }}>
+    {modes.map((mode, i) => <button type="button" role="radio" key={mode} aria-checked={value === mode}
+      tabIndex={value === mode ? 0 : -1} className="atz-delay-mode-position" onClick={() => onChange(mode)}>
+      <span className="atz-delay-mode-contact" aria-hidden="true" /><span>{['Mono', 'Stéréo', 'Ping-pong', 'Off'][i]}</span>
+    </button>)}
   </div>;
 };
