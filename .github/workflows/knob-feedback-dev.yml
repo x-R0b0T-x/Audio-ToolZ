@@ -2,7 +2,7 @@ name: Apply knob feedback on v1.7-dev
 on:
   push:
     branches: [v.1.7-dev]
-    paths: ['.github/corrections/knob_feedback.py', '.github/workflows/knob-feedback-dev.yml']
+    paths: ['.github/corrections/knob_feedback.py', '.github/workflows/knob-feedback-dev.yml', 'src/components/aboutLight.test.mjs', 'src/utils/finishingV17.test.mjs']
   workflow_dispatch:
 permissions:
   contents: write
