@@ -28,10 +28,10 @@ jobs:
       - name: Remove external BPM experiment and preserve reviewed native detector
         shell: pwsh
         run: |
-          python .github/maintenance/remove_bpm_experiment.py
-          if ($LASTEXITCODE -ne 0) { throw 'BPM experiment removal failed' }
           python .github/maintenance/finish_v17.py
           if ($LASTEXITCODE -ne 0) { throw 'Finishing failed' }
+          python .github/maintenance/remove_bpm_experiment.py
+          if ($LASTEXITCODE -ne 0) { throw 'BPM experiment removal failed' }
           git add -A -- src .github/maintenance/package-v17.py .github/diagnostics/finishing-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
       - name: Restore application icons if missing
