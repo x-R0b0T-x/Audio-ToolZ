@@ -9,10 +9,11 @@ import {Fader,Knob,DelayModeSwitch} from './EffectControls';
 import {AdvancedEffects} from './AdvancedEffects';
 import {EffectPanel} from './EffectPanel';
 import {ReverbModal} from './ReverbModal';
+import {PitcherModal} from './PitcherModal';
 import {targetRange} from '../audio/effectsModel.mjs';
 import './delayPanel.css';
 interface Props{effect:EffectModalId;document:AudioDocument|null;noiseProfile?:NoiseProfile|null;onCaptureNoiseProfile?:(p:NoiseProfile)=>void;isPreviewPlaying:boolean;onStartPreview:(c:Float32Array[],r:number,g?:number,b?:PreviewBand[])=>void;onStopPreview:()=>void;onApply:(c:Float32Array[],label:string,s?:{startSample:number;endSample:number})=>void;onClose:()=>void;}
-export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:p.effect==='reverb'?<ReverbModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onApply={p.onApply} onClose={p.onClose}/>:<LiveEffectSession key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;
+export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:p.effect==='reverb'?<ReverbModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='speed-pitch'?<PitcherModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onClose={p.onClose} onApply={p.onApply}/>:<LiveEffectSession key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;
 function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const latest=useRef(p);latest.current=p;
  const relay=useMemo(()=>createPreviewRelay(()=>audioEngine.isPlaying,(...args:Parameters<Props['onStartPreview']>)=>latest.current.onStartPreview(...args)),[]);

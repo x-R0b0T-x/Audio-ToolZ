@@ -24,7 +24,7 @@
     "src/utils/finishingV17.test.mjs",
     "src/utils/welcomeLogo.ts"
   ],
-  "validation": "node-tests-typescript-frontend-decoder-tests-and-windows-build-passed",
+  "validation": "node-tests-typescript-frontend-signalsmith-runtime-decoder-tests-and-windows-build-passed",
   "pending": [
     "variable-tempo-detection-grid-and-effect-synchronization",
     "manual-Windows-visual-and-listening-review"
