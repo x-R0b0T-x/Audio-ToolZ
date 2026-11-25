@@ -9,6 +9,12 @@ new="files['src-tauri/src/configuration_scan.rs']=r'''"
 if new not in source:
  if source.count(old)!=1:raise RuntimeError('Unexpected embedded Rust block')
  source=source.replace(old,new,1)
+old_guard=' if new in t:return\n'
+new_guard=" if new in t:return\n if p=='src/components/Tutorial.tsx' and old==' {image:img2,alt:' and 'image:scanner' in t:return\n"
+if new_guard not in source:
+ if source.count(old_guard)!=1:raise RuntimeError('Unexpected change helper')
+ source=source.replace(old_guard,new_guard,1)
+source=source.replace("scan.includes('Vous pouvez utiliser Audio ToolZ sans problème.')","scan.includes('vous pouvez utiliser Audio ToolZ sans problème.')")
 hook="subprocess.run(['python','.github/corrections/finalize_tutorial_scan.py'],cwd=ROOT,check=True)"
 if hook not in source:source+='\n'+hook+'\n'
 compile(source,str(p),'exec')
@@ -19,4 +25,4 @@ if "env.playing()?'stop':" not in source or 'src/components/finalLot.test.mjs' n
 for other in (ROOT/'.github/corrections').glob('*.py'):
  compile(source if other==p else other.read_text(encoding='utf-8'),str(other),'exec')
 p.write_text(source,encoding='utf-8')
-print({'pipeline':'complete-v1.7-dev-windows','pythonSyntax':'passed','embeddedRustUnicode':'preserved','completePlayStopLot':'present','tutorialFinalization':'scheduled','checkedGenerators':len(list((ROOT/'.github/corrections').glob('*.py')))})
+print({'pipeline':'complete-v1.7-dev-windows','pythonSyntax':'passed','embeddedRustUnicode':'preserved','completePlayStopLot':'present','tutorialFinalization':'scheduled','scanInsertion':'repeatable','checkedGenerators':len(list((ROOT/'.github/corrections').glob('*.py')))})
