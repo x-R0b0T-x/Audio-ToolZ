@@ -1,0 +1,54 @@
+name: Apply knob feedback on v1.7-dev
+on:
+  push:
+    branches: [v.1.7-dev]
+    paths: ['.github/corrections/knob_feedback.py', '.github/workflows/knob-feedback-dev.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: knob-feedback-dev
+  cancel-in-progress: true
+jobs:
+  apply:
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ' && github.ref == 'refs/heads/v.1.7-dev'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: v.1.7-dev
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Apply source corrections
+        run: python .github/corrections/knob_feedback.py
+      - name: Install dependencies
+        run: npm install
+      - name: TypeScript validation
+        run: npm run lint
+      - name: Regression tests
+        shell: pwsh
+        run: |
+          $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
+          node --test @tests
+          if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed' }
+      - name: Frontend build
+        run: npm run build
+      - name: Publish corrected development sources
+        shell: pwsh
+        run: |
+          if ((git branch --show-current) -ne 'v.1.7-dev') { throw 'Wrong branch' }
+          git add -- src
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { exit 0 }
+          if ($LASTEXITCODE -gt 1) { throw 'Cannot inspect diff' }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: universal wheel direction, white localized ticks and fading status text'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          git push origin HEAD:refs/heads/v.1.7-dev
+          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; no force push attempted' }
