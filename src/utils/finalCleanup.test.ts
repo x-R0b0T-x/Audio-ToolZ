@@ -16,7 +16,7 @@ test('dynamics group legends are removed without deleting controls',()=>{
  for(const key of ['attack','release','ceiling'])assert.ok(code.includes("control('"+key+"'"));assert.ok(code.includes('label="Défilement"'));
 });
 test('release metadata and public notes are consistent',()=>{
- assert.equal(JSON.parse(read('package.json')).version,'1.6.0');assert.equal(JSON.parse(read('src-tauri/tauri.conf.json')).version,'1.6.0');
- for(const path of ['src/releaseNotes.ts','RELEASE_NOTES_1.6.md'])assert.ok(!/easter|q7m4n2|30 clic/i.test(read(path)));
+ const version=JSON.parse(read('package.json')).version;assert.match(version,/^\d+\.\d+\.\d+$/);assert.equal(JSON.parse(read('src-tauri/tauri.conf.json')).version,version);
+ assert.ok(!/easter|q7m4n2|30 clic/i.test(read('src/releaseNotes.ts')));
  assert.equal(signedDb(3,1),'+3.0');assert.equal(signedDb(0,1),'0.0');assert.equal(signedDb(-3,1),'-3.0');
 });

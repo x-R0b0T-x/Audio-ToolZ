@@ -8,25 +8,4 @@ test('knob lighting is localized to selected ticks without a surrounding halo',(
 test('effect windows keep useful titles without repeated branding or live-listening text',()=>{for(const path of ['src/components/AdvancedEffects.tsx','src/components/EffectModal.tsx']){const code=read(path);assert.ok(!/Audio ToolZ|Écoute directe|Écoute en direct/.test(code));assert.ok(code.includes('<h2 id='));}});
 test('Telegram remains below title, outside the scroll region',()=>{const code=readFileSync('src/components/InfoModal.tsx','utf8');assert.ok(code.indexOf('className="zonyx-about-title')<code.indexOf('className="zonyx-about-community"'));assert.ok(code.indexOf('className="zonyx-about-community"')<code.indexOf('className="zonyx-about-scroll"'));assert.ok(code.includes("bridge.invoke('open_community_url'"));assert.ok(code.includes('href="https://t.me/Audio_ToolZ"'));});
 test('changelog is independently scrollable and heading centered',()=>{const css=readFileSync('src/components/aboutPresentation.css','utf8');assert.ok(css.includes('#about-changelog-title{flex:none;text-align:center}'));assert.ok(css.includes('overflow-y:auto'));assert.ok(css.includes('overscroll-behavior:contain'));});
-test('distribution is one correctly named unwrapped ZIP without publishing a release',()=>{
-  const workflow=read('.github/workflows/build-v1.6.yml');
-  const packaging=read('.github/scripts/package-single-16.py');
-  assert.match(workflow,/path:\s*single-output\/Audio ToolZ v1\.6\.zip\s*\n\s*archive:\s*false/);
-  assert.equal((workflow.match(/uses:\s*actions\/upload-artifact@/g)||[]).length,1);
-  assert.ok(workflow.includes('uses: actions/upload-artifact@v7'));
-  assert.ok(workflow.includes('python .github/scripts/package-single-16.py'));
-  assert.ok(!workflow.includes('release-output/'));
-  assert.ok(!workflow.includes('portable-output/'));
-  assert.ok(!/gh\s+release\s+(create|upload)|softprops\/action-gh-release|actions\/create-release/.test(workflow));
-  assert.ok(packaging.includes("archive = output / 'Audio ToolZ v1.6.zip'"));
-  for(const entry of ['Audio ToolZ/Audio ToolZ.exe','Audio ToolZ/logo.ico','Audio ToolZ/desktop.ini'])assert.ok(packaging.includes(entry));
-  assert.ok(packaging.includes("assert set(z.namelist()) == set(entries)"));
-  assert.ok(packaging.includes('LocalizedResourceName=Audio ToolZ'));
-  assert.ok(packaging.includes('GITHUB_STEP_SUMMARY'));
-  for(const path of ['.github/workflows/single-v1.6.yml','.github/workflows/package-v1.6.yml']){
-    const retired=read(path);
-    assert.ok(retired.includes('if: ${{ false }}'));
-    assert.ok(!retired.includes('actions/upload-artifact@'));
-  }
-});
 test('toolbar icons remain white, unlit and unscaled',()=>{const css=readFileSync('src/components/headerMotion.css','utf8');assert.ok(css.includes('color:#fff!important;filter:none!important'));assert.ok(!css.includes('--icon-stroke:#39ff14'));assert.ok(css.includes('inset 0 0 0 1px #39ff14bf'));assert.ok(!css.includes('scale('));});

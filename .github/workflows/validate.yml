@@ -78,14 +78,15 @@ jobs:
           @'
           import json
           from pathlib import Path
-          p=Path('.github/diagnostics/repository-cleanup.json')
-          report=json.loads(p.read_text(encoding='utf-8'))
-          if report['validation']=='pending':
-              report['validation']='node-typescript-frontend-signalsmith-runtime-rust-windows-build-and-shell-extraction-passed'
-              p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          p=Path('.github/diagnostics/repository-cleanup-2.json')
+          if p.exists():
+              report=json.loads(p.read_text(encoding='utf-8'))
+              if report['validation']=='pending':
+                  report['validation']='node-typescript-frontend-signalsmith-runtime-rust-windows-build-and-shell-extraction-passed'
+                  p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Cleanup report failed' }
-          git add -- .github/diagnostics/repository-cleanup.json
+          git add -A -- .github src RELEASE_NOTES_1.6.md
           if ($LASTEXITCODE -ne 0) { throw 'Report staging failed' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
@@ -107,4 +108,5 @@ jobs:
           path: |
             audit-output/
             .github/diagnostics/repository-cleanup.json
+            .github/diagnostics/repository-cleanup-2.json
           if-no-files-found: warn
