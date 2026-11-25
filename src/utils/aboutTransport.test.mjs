@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {installSpaceTransport} from './spaceTransport.mjs';
 import {isLoopActive,setLoopActive} from './loopState.mjs';
 const key=()=>({code:'Space',key:' ',preventDefault(){},stopPropagation(){},stopImmediatePropagation(){}});
-test('About Space plays or loops, pauses and resumes without Stop or closing the dialog',()=>{
+test('About Space plays or loops, stops and restarts without Pause or closing the dialog',()=>{
  try{
   for(const loop of [false,true]){
    setLoopActive(loop);const listeners={},clicks=[],dialog={};let playing=false;
@@ -12,10 +12,10 @@ test('About Space plays or loops, pauses and resumes without Stop or closing the
    const remove=installSpaceTransport({isPlaying:()=>playing,isRecording:()=>false},target),start=loop?'Boucle':'Lecture';
    try{
     listeners.keydown(key());listeners.keydown({...key(),repeat:true});listeners.keydown(key());assert.deepEqual(clicks,[start]);
-    listeners.keyup(key());listeners.keydown(key());listeners.keydown({...key(),repeat:true});assert.deepEqual(clicks,[start,'Pause']);assert.equal(playing,false);
-    listeners.keyup(key());listeners.keydown(key());assert.deepEqual(clicks,[start,'Pause',start]);assert.equal(playing,true);
-    listeners.blur();listeners.keydown(key());assert.deepEqual(clicks,[start,'Pause',start,'Pause']);assert.equal(playing,false);
-    assert.equal(isLoopActive(),loop);assert.equal(clicks.includes('Stop'),false);assert.equal(target.document.querySelector('.zonyx-about-dialog'),dialog);
+    listeners.keyup(key());listeners.keydown(key());listeners.keydown({...key(),repeat:true});assert.deepEqual(clicks,[start,'Stop']);assert.equal(playing,false);
+    listeners.keyup(key());listeners.keydown(key());assert.deepEqual(clicks,[start,'Stop',start]);assert.equal(playing,true);
+    listeners.blur();listeners.keydown(key());assert.deepEqual(clicks,[start,'Stop',start,'Stop']);assert.equal(playing,false);
+    assert.equal(isLoopActive(),loop);assert.equal(clicks.includes('Pause'),false);assert.equal(target.document.querySelector('.zonyx-about-dialog'),dialog);
    }finally{remove();assert.deepEqual(Object.keys(listeners),[]);}
   }
  }finally{setLoopActive(false);}
