@@ -1,5 +1,0 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {ENGINES,engineId,median,samplePositions,tempoTrace,validReport} from './bpmCompareMath.mjs';
-test('three explicit engines, safe preference parsing',()=>{assert.deepEqual(Object.keys(ENGINES),['builtin','essentia','aubio']);assert.equal(engineId('essentia'),'essentia');assert.equal(engineId('broken'),'builtin');});
-test('convert seconds without changing sample domain',()=>{assert.deepEqual(samplePositions([1,0.5,1,-1,NaN,5],48000,96000),[24000,48000]);});
-test('local trace follows actual beat intervals',()=>{const beats=[0,22050,44100,66150,88200,110250,154350,198450,242550,286650,330750];const trace=tempoTrace(beats,44100);assert.equal(trace[0].bpm,120);assert.equal(trace.at(-1).bpm,60);assert.equal(median([130,180,130]),130);});
-test('invalid tempo or positions cannot reach the grid',()=>{for(const result of [{bpm:0,beatSamples:[],kickSamples:[]},{bpm:120,beatSamples:[2,1],kickSamples:[]},{bpm:120,beatSamples:[100],kickSamples:[]}])assert.throws(()=>validReport(result,100));const report={bpm:120,beatSamples:[0,20],kickSamples:[]};assert.equal(validReport(report,100),report);});

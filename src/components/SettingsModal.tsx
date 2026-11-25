@@ -1,11 +1,9 @@
-import {BpmComparisonSettings} from './BpmComparison';
-import type {AudioDocument} from '../audio/types';
 import React,{useCallback,useEffect,useState} from 'react';
 import {Check,Mic,RefreshCw,Settings,ShieldCheck,Speaker,X} from 'lucide-react';
 import {audioEngine,type AudioInputDevice,type AudioOutputDevice} from '../audio/engine';
 import type {RecordingPreferences} from '../utils/uiStateStorage';
 import './interfaceConsistency.css';
-interface SettingsModalProps{open:boolean;selectedInputDeviceId:string;selectedOutputDeviceId:string;recordingSettings:RecordingPreferences;onSelectInputDevice:(id:string)=>void;onSelectOutputDevice:(id:string)=>void;onChangeRecordingSettings:(patch:Partial<RecordingPreferences>)=>void;onClose:()=>void;bpmDocument?:AudioDocument|null;}
+interface SettingsModalProps{open:boolean;selectedInputDeviceId:string;selectedOutputDeviceId:string;recordingSettings:RecordingPreferences;onSelectInputDevice:(id:string)=>void;onSelectOutputDevice:(id:string)=>void;onChangeRecordingSettings:(patch:Partial<RecordingPreferences>)=>void;onClose:()=>void;}
 export const SettingsModal:React.FC<SettingsModalProps>=p=>{
  const [inputs,setInputs]=useState<AudioInputDevice[]>([]),[outputs,setOutputs]=useState<AudioOutputDevice[]>([]),[supportsOutputSelect,setSupportsOutputSelect]=useState(false),[loading,setLoading]=useState(false),[statusMessage,setStatusMessage]=useState<string|null>(null);
  const refreshDevices=useCallback(async()=>{
@@ -20,7 +18,7 @@ export const SettingsModal:React.FC<SettingsModalProps>=p=>{
  if(!p.open)return null;
  return <div role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" className="zonyx-settings fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"><div className="zonyx-settings-panel">
   <header><Settings className="zonyx-settings-icon"/><h2 id="settings-modal-title">Paramètres audio &amp; Périphériques</h2><button type="button" className="zonyx-settings-close" aria-label="Fermer" onClick={p.onClose}><X/></button></header>
-  <main><BpmComparisonSettings audioDocument={p.bpmDocument??null}/>
+  <main>
    <section><h3><Mic className="zonyx-settings-icon"/>Carte d’entrée audio / Microphone</h3><div className="zonyx-settings-actions"><button type="button" disabled={loading} onClick={()=>void request()}><ShieldCheck/>Détecter les cartes son</button><button type="button" disabled={loading} aria-label="Actualiser la liste des périphériques" title="Actualiser" onClick={()=>void refreshDevices()}><RefreshCw className={loading?'animate-spin':''}/></button></div>
     {statusMessage&&<p role="status">{statusMessage}</p>}
     <label htmlFor="settings-audio-input-select">Périphérique d’enregistrement actif</label>

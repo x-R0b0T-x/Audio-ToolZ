@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { copyFileSync, cpSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync } from 'node:fs';
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ command }) => ({
@@ -16,11 +16,6 @@ export default defineConfig(({ command }) => ({
       for (const icon of ['icon.ico', 'icon.png']) {
         copyFileSync(path.resolve(__dirname, 'public', icon), path.join(output, icon));
       }
-      cpSync(
-        path.resolve(__dirname, 'public', 'third_party', 'bpm'),
-        path.join(output, 'third_party', 'bpm'),
-        { recursive: true },
-      );
     },
   }],
   resolve: { alias: { '@': path.resolve(__dirname, '.') } },
