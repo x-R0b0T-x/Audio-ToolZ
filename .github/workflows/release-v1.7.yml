@@ -35,6 +35,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Cannot create release working branch' }
           python .github/release/prepare_v17.py
           if ($LASTEXITCODE -ne 0) { throw 'Official preparation failed' }
+      - name: Restore application icons if missing
+        shell: pwsh
+        run: |
+          foreach ($icon in @('public/icon.ico','public/icon.png')) {
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) {
+              git restore --source=6af5c11 --worktree -- $icon
+              if ($LASTEXITCODE -ne 0) { throw "Cannot restore $icon" }
+            }
+            if ((Get-Item -LiteralPath $icon).Length -eq 0) { throw "Empty icon $icon" }
+          }
       - name: Install application and validation tools
         shell: pwsh
         run: |
@@ -76,7 +86,7 @@ jobs:
           p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Official report failed' }
-          git add -- src package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json .github/release .github/diagnostics/official-v17.json
+          git add -- src package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json public/icon.ico public/icon.png .github/release .github/diagnostics/official-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
