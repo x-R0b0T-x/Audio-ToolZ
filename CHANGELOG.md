@@ -4,30 +4,23 @@
 
 ### Mises à jour
 
-- Z-Pitcher : vitesse (0,5× à 2×) et hauteur (−12 à +12 demi-tons) réglables indépendamment avec Signalsmith Stretch, sur deux grands faders horizontaux gradués aux valeurs lisibles.
-- Z-Reverbe : niveaux Direct, Réflexions et Réverbération, valeurs précises, réglage Stéréo de 0 à 100 % et prédélai synchronisable au tempo.
-- Z-Delay : fenêtre rectangulaire de 720 × 370 px et sélecteur cranté Mono / Stéréo / Ping-pong / Off ; libellés Gauche, Centre et Droite repositionnés.
-- Barre d'espace : Play/Stop, avec conservation de la préférence de boucle.
-- Bandeau des effets : texte blanc pendant l'interaction, puis fondu d'environ 1,5 seconde.
-- Potards : crans illuminés au repos, avec un cran principal vert lumineux et un halo plus faible sur les crans voisins.
-- Libellés de position : transition progressive du blanc vers le vert lumineux.
-- Triangle de redimensionnement : vert au repos, plus lumineux au survol et pendant le redimensionnement.
-- Didacticiel : nouvelle page de vérification de la configuration en deuxième position (carte mère, processeur, mémoire, carte graphique, périphériques audio, contrôle audio et mesure indicative du temps de traitement), défilement lent et résultat affiché sous le robot.
-- Didacticiel : nouvelle page « Je suis là pour vous guider » et textes plus chaleureux.
-- Écran d'ouverture de fichier avec le message « Ouverture en cours. Patientez. ».
-- Aides des effets revues : noms d'effets centrés et textes harmonisés.
-- Décodeur audio de secours migré vers Symphonia 0.6.1.
-- Version 1.7.0 : paquet Windows portable contenant Audio ToolZ.exe, Audio ToolZ.ico et Desktop.ini.
+- Nouveau moteur audio pour Z-Pitcher : Signalsmith Stretch règle la vitesse (0,5× à 2×) et la hauteur (−12 à +12 demi-tons) indépendamment, avec une préécoute et une application cohérentes, sur deux faders horizontaux gradués.
+- Décodeur audio de secours mis à jour vers Symphonia 0.6.1.
+- Z-Reverbe : niveaux Direct, Réflexions et Réverbération, réglage Stéréo de 0 à 100 % et prédélai calé sur le tempo.
+- Z-Delay : fenêtre rectangulaire et sélecteur cranté Mono / Stéréo / Ping-pong / Off.
+- Barre d'espace : Play/Stop.
+- Interface : crans des potards lumineux au repos, libellés de position qui s'illuminent progressivement, bandeau des effets en fondu de 1,5 seconde et triangle de redimensionnement vert.
+- Didacticiel : nouvelle page de vérification de la configuration (matériel, audio et temps de traitement indicatif) et page « Je suis là pour vous guider ».
+- Écran « Ouverture en cours » lors de l'ouverture d'un fichier.
+- Version 1.7.0.
 
 ### Corrections
 
-- Z-Pitcher : résultats périmés rejetés, annulation qui préserve l'original, plus de repli silencieux vers l'ancien moteur et suppression du texte « Calcul… ».
-- Barre d'espace : fin du comportement Pause/Reprise ; la lecture redémarre au début de la boucle avec les réglages actuels.
-- Z-Reverbe : la fermeture restaure le signal original sans laisser la préécoute réverbérée active.
-- Z-Reverbe : niveaux limités à 100 %, bouton Tempo stabilisé, repères Stéréo repositionnés et molette Stéréo corrigée.
-- Z-Reverbe : le signal source n'est transféré qu'une seule fois au calcul en arrière-plan.
-- Aides des effets : rubriques inutiles retirées et couleur verte commune pour les textes et le halo.
-- Écran de chargement : libellés Curseur et Sélection en vert.
+- Z-Pitcher : résultats périmés rejetés, annulation qui préserve l'original et plus de repli silencieux vers l'ancien moteur.
+- Barre d'espace : fin du comportement Pause/Reprise ; la lecture redémarre au début de la boucle.
+- Z-Reverbe : la fermeture restaure le signal original ; niveaux limités à 100 %, bouton Tempo et molette Stéréo corrigés.
+- Aides des effets : rubriques inutiles retirées et couleurs harmonisées.
+- Libellés Curseur et Sélection de l'écran de chargement en vert.
 
 ## 1.6 — Une grosse mise à jour
 
