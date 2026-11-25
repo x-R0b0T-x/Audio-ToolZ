@@ -15,7 +15,7 @@ import './index.css';
 import './windowClose.css';
 import './textReadability.css';
 import './components/interfaceConsistency.css';
-function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7-dev';},[]);return null;}
+function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7';},[]);return null;}
 const root = document.getElementById('root')!;
 createRoot(root).render(<><App /><BuildTitle /><FileOpeningOverlay /></>);
 installPreviewLoopGuard();

@@ -1,7 +1,7 @@
 export const RELEASE_ADDITIONS = [
- "v1.7-dev : écran d’ouverture local avec wait.png, page de conseils avec ZØNYX, titres et modes du délai corrigés.",
+ "v1.7 : écran d’ouverture local avec wait.png, page de conseils avec ZØNYX, titres et modes du délai corrigés.",
  "Z-Reverbe : valeurs précises, Stéréo de 0 à 100 %, ligne de réglage fixe et source transférée une seule fois au worker.",
- "v1.7-dev : je vous accompagne dans le guide d’accueil et les aides, avec un ton personnel et chaleureux. — ZØNYX",
+ "v1.7 : je vous accompagne dans le guide d’accueil et les aides, avec un ton personnel et chaleureux. — ZØNYX",
  "Guide d’accueil : titre Audio ToolZ centré, sans libellé Présentation, et catalogue des six effets actualisé.",
  "Effets : Z-Delay, Z-Égaliseur, Z-Fondus, Z-Limit/Comp, Z-Pitcher et Z-Reverbe ; noms blancs dans le menu et titres colorés centrés dans leurs fenêtres.",
  "Z-Reverbe : niveaux Direct, Réflexions et Réverbération, traîne conservée à l’application et fonds noirs pour les faders.",
@@ -23,7 +23,7 @@ export const RELEASE_ADDITIONS = [
  "Application Windows portable, sans installation."
 ];
 export const RELEASE_FIXES = [
- "Retours de test v1.7-dev : Z-Fondus allégé, valeurs de Z-Reverbe violettes et blanches, molette Stéréo corrigée.",
+ "Retours de test v1.7 : Z-Fondus allégé, valeurs de Z-Reverbe violettes et blanches, molette Stéréo corrigée.",
  "Chargement : remplacement du robot d’accueil par wait.png, texte explicite et trois points animés ; libellés Curseur et Sélection en vert.",
  "Corrections des tests d’aide pour vérifier les rubriques réellement demandées, les titres centrés et la couleur commune.",
  "Fermeture de Z-Reverbe : restauration du signal original sans laisser la préécoute réverbérée active.",

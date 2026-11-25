@@ -1,6 +1,6 @@
 [package]
 name = "audio-toolz"
-version = "1.6.0"
+version = "1.7.0"
 description = "Audio ToolZ - Editeur audio leger"
 edition = "2021"
 

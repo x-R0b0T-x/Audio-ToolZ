@@ -26,7 +26,7 @@ test('reverb never restarts playback on a knob movement and keeps full tail on a
  assert.match(reverb,/for\(let i=end-start;i<r\.channels\[c\]\.length;i\+\+\)/);
 });
 test('web and desktop titles point to the dev build',()=>{
- assert.match(read('../main.tsx'),/Audio ToolZ v1\.7-dev/);
+ assert.match(read('../main.tsx'),/Audio ToolZ v1\.7/);
  const config=JSON.parse(read('../../src-tauri/tauri.conf.json'));
- assert.equal(config.app.windows[0].title,'Audio ToolZ v1.7-dev');
+ assert.equal(config.app.windows[0].title,'Audio ToolZ v1.7');
 });
