@@ -7,6 +7,7 @@ def read(p):return files[p] if p in files else (ROOT/p).read_text(encoding='utf-
 def change(p,old,new):
  t=read(p)
  if new in t:return
+ if p=='src/components/Tutorial.tsx' and old==' {image:img2,alt:' and 'image:scanner' in t:return
  if t.count(old)!=1:raise RuntimeError('Unexpected source '+p+' / '+old[:70])
  files[p]=t.replace(old,new,1)
 change('src/components/effectStatus.css','opacity 250ms ease-out,visibility 0s 250ms','opacity 1500ms linear,visibility 0s 1500ms')
@@ -234,7 +235,7 @@ const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 test('position text starts at half the path and peaks on label',()=>{assert.equal(labelLight(.5,0),0);assert.equal(labelLight(.25,0),0);assert.equal(labelLight(.125,0),.5);assert.equal(labelLight(0,0),1);assert.equal(labelLight(.75,1),0);assert.equal(labelLight(1,1),1);assert.equal(labelLight(.25,.5),0);assert.equal(labelLight(.5,.5),1);});
 test('horizontal speed scale has neutral in exact center',()=>{for(const value of [.5,.75,1,1.5,2])assert.ok(Math.abs(positionSpeed(speedPosition(value))-value)<1e-9);assert.deepEqual([.5,1,2].map(speedPosition),[0,50,100]);});
 test('final UI keeps slow fade diode halos and no calculation text',()=>{assert.ok(read('./effectStatus.css').includes('opacity 1500ms linear,visibility 0s 1500ms'));const ticks=read('./knobStates.css');assert.ok(ticks.includes('opacity:.65!important;filter:drop-shadow(0 0 3px #39ff14)!important'));assert.ok(ticks.includes('filter:drop-shadow(0 0 5px #39ff14) drop-shadow(0 0 8px #39ff1480)!important'));assert.ok(!read('./PitcherModal.tsx').includes('Calcul Signalsmith'));assert.ok(read('./PitcherModal.tsx').includes('disabled={!ready}'));assert.ok(read('./EffectPanel.tsx').includes('is-resizing'));});
-test('tutorial inserts scanner as page two with conditional success and no microphone request',()=>{const tutorial=read('./Tutorial.tsx'),scan=read('./ConfigurationScan.tsx');assert.ok(tutorial.indexOf('image:scanner')<tutorial.indexOf('image:img2'));assert.ok(tutorial.includes('step===1&&<ConfigurationScan/>'));assert.ok(scan.includes('finished&&success'));assert.ok(scan.includes('Vous pouvez utiliser Audio ToolZ sans problème.'));assert.ok(scan.includes('renderSignalsmith(silent'));assert.ok(!scan.includes('getUserMedia'));assert.ok(scan.includes('node.scrollTo'));});
+test('tutorial inserts scanner as page two with conditional success and no microphone request',()=>{const tutorial=read('./Tutorial.tsx'),scan=read('./ConfigurationScan.tsx');assert.ok(tutorial.indexOf('image:scanner')<tutorial.indexOf('image:img2'));assert.ok(tutorial.includes('step===1&&<ConfigurationScan/>'));assert.ok(scan.includes('finished&&success'));assert.ok(scan.includes('vous pouvez utiliser Audio ToolZ sans problème.'));assert.ok(scan.includes('renderSignalsmith(silent'));assert.ok(!scan.includes('getUserMedia'));assert.ok(scan.includes('node.scrollTo'));});
 '''
 for p,t in files.items():
  f=ROOT/p;f.parent.mkdir(parents=True,exist_ok=True);f.write_text(t,encoding='utf-8')
@@ -242,3 +243,5 @@ image.parent.mkdir(parents=True,exist_ok=True);image.write_bytes(blob)
 report={'files':sorted(files)+['src/medias/test.png'],'scope':'v.1.7-dev only','validation':'pending','manualReview':['visual halos and text placement','Play Stop loop in Z-Delay','Windows WebView2 configuration scan and audio','hardware naming and GPU memory'],'tutorialImageBlob':'94807aa4dc443fcd8d53a5cd15f388a56ac2ce6e'}
 f=ROOT/'.github/diagnostics/final-lot.json';f.parent.mkdir(parents=True,exist_ok=True);f.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False))
+
+subprocess.run(['python','.github/corrections/finalize_tutorial_scan.py'],cwd=ROOT,check=True)

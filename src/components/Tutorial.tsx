@@ -24,7 +24,7 @@ const STEPS:Step[]=[
  {image:img1,alt:"ZØNYX, le robot mascotte, vous salue",title:"Bienvenue dans Audio ToolZ",
   intro:["Salut, moi c’est ZØNYX ! Je vous accompagne pour donner vie à vos sons.","Léger, rapide, entièrement en français et portable : pas d’installation, et tous les traitements se font sur votre machine. Vos fichiers ne quittent jamais votre ordinateur.","Que vous prépariez un sample, nettoyiez une prise ou finalisiez un mix, je vous montre les outils à votre rythme. Essayez, écoutez : je vous guide pas à pas."],
   outro:"Prêt ? Suivez-moi !"},
- {image:scanner,alt:'ZØNYX examine votre configuration avec sa loupe',title:'Votre configuration',intro:['D’abord, nous allons examiner votre configuration et vérifier les éléments nécessaires au fonctionnement d’Audio ToolZ sur votre machine.']},
+ {image:scanner,alt:'ZØNYX examine votre configuration avec sa loupe',title:'Votre configuration',intro:[]},
  {image:img2,alt:"ZØNYX règle des boutons",title:"Un atelier complet, pensé pour la précision",
   intro:["Ici, c’est mon coin préféré : tout se règle, et tout s’écoute en direct pendant la lecture, avant même d’appliquer l’effet."],
   sections:[
