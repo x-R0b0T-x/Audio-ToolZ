@@ -1,0 +1,25 @@
+name: Mettre a jour les notes de la release v1.7
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/update-release-notes-v1.7.yml']
+permissions:
+  contents: write
+concurrency: audio-toolz-release-notes-v1.7
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Remplacer uniquement le texte de la release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .github/release/notes-v1.7.md
+          gh release view v1.7 --repo "$GITHUB_REPOSITORY" --json isDraft,tagName > release.json
+          jq -e '.tagName == "v1.7" and .isDraft == false' release.json
+          gh release edit v1.7 --repo "$GITHUB_REPOSITORY" --notes-file .github/release/notes-v1.7.md

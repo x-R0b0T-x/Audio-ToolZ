@@ -1,30 +1,30 @@
 ## Audio ToolZ v1.7
 
-Cette version améliore les réglages des effets, Z-Pitcher et le didacticiel de démarrage.
+### Mises à jour
 
-### Effets et interface
+- Nouveau moteur audio pour Z-Pitcher : Signalsmith Stretch règle la vitesse (0,5× à 2×) et la hauteur (−12 à +12 demi-tons) indépendamment, avec une préécoute et une application cohérentes, sur deux faders horizontaux gradués.
+- Décodeur audio de secours mis à jour vers Symphonia 0.6.1.
+- Z-Reverbe : niveaux Direct, Réflexions et Réverbération, réglage Stéréo de 0 à 100 % et prédélai calé sur le tempo.
+- Z-Delay : fenêtre rectangulaire et sélecteur cranté Mono / Stéréo / Ping-pong / Off.
+- Barre d'espace : Play/Stop.
+- Interface : crans des potards lumineux au repos, libellés de position qui s'illuminent progressivement, bandeau des effets en fondu de 1,5 seconde et triangle de redimensionnement vert.
+- Didacticiel : nouvelle page de vérification de la configuration (matériel, audio et temps de traitement indicatif) et page « Je suis là pour vous guider ».
+- Écran « Ouverture en cours » lors de l'ouverture d'un fichier.
 
-- Z-Pitcher : hauteur et vitesse indépendantes avec Signalsmith Stretch, deux faders horizontaux gradués, préécoute et application protégées contre les résultats périmés.
-- Barre d’espace en Play/Stop, avec conservation de la préférence de boucle.
-- Bandeau blanc pendant l’interaction puis fondu de 1,5 seconde.
-- Crans des potards illuminés au repos, avec un cran principal vert et un halo plus faible sur les voisins, sans anneau lumineux autour du potard.
-- Libellés de position progressivement illuminés et panoramique de Z-Delay repositionné.
-- Triangle de redimensionnement vert au repos, plus lumineux pendant l’interaction.
+### Corrections
 
-### Didacticiel et configuration
+- Z-Pitcher : résultats périmés rejetés, annulation qui préserve l'original et plus de repli silencieux vers l'ancien moteur.
+- Barre d'espace : fin du comportement Pause/Reprise ; la lecture redémarre au début de la boucle.
+- Z-Reverbe : la fermeture restaure le signal original ; niveaux limités à 100 %, bouton Tempo et molette Stéréo corrigés.
+- Aides des effets : rubriques inutiles retirées et couleurs harmonisées.
+- Libellés Curseur et Sélection de l'écran de chargement en vert.
 
-- Nouvelle page de scan en deuxième position, sans suppression des pages existantes.
-- Scan local de carte mère, CPU, RAM, GPU et interfaces audio ; mémoires GPU dédiée et partageable présentées distinctement.
-- Défilement automatique lent, trois points animés et résultat lisible en gros sous le robot.
-- Contrôle audio sans lecture sonore et mesure indicative de temps de traitement.
-- Message de réussite, avertissement de lenteur ou explication distincte lorsque le fonctionnement ne peut pas être vérifié.
+### Installation
 
-Le scan ne garantit pas les performances pour tous les effets et fichiers. Le temps de traitement dépend aussi de la charge actuelle du PC ; une information matérielle indisponible ne prouve pas une incompatibilité.
+1. Téléchargez l'archive ZIP ci-dessous.
+2. Extrayez-la entièrement.
+3. Ouvrez le dossier `Audio ToolZ` et lancez `Audio ToolZ.exe`.
 
-### Windows portable
+Le dossier contient `Audio ToolZ.exe`, `Audio ToolZ.ico` et `Desktop.ini`, à conserver ensemble. `SHA256SUMS.txt` permet de vérifier l'archive. Les archives « Source code » de GitHub ne contiennent pas l'application prête à lancer.
 
-Téléchargez l’archive Audio ToolZ v1.7.zip, extrayez-la entièrement puis lancez Audio ToolZ.exe dans le dossier Audio ToolZ. Conservez ensemble l’exécutable, Audio ToolZ.ico et Desktop.ini.
-
-Les archives Source code de GitHub ne contiennent pas l’application Windows prête à lancer. SHA256SUMS.txt permet de vérifier l’archive distribuée.
-
-La version officielle est reconstruite avec les métadonnées 1.7.0 et soumise aux tests Node, TypeScript, frontend, Signalsmith et Rust, ainsi qu’au contrôle de l’extraction Windows de l’archive.
+Historique complet : [journal des modifications](https://github.com/x-R0b0T-x/Audio-ToolZ/blob/main/CHANGELOG.md).
