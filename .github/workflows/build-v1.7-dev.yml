@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
+      - name: Repair embedded Rust escape and preflight Python generators
+        run: python .github/corrections/repair_final_lot_encoding.py
       - name: Prepare approved sources and complete final lot
         shell: pwsh
         run: |
@@ -34,7 +36,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Signalsmith integration failed' }
           python .github/corrections/apply_final_lot.py
           if ($LASTEXITCODE -ne 0) { throw 'Final lot failed' }
-          git add -- src src-tauri/src package.json .github/diagnostics/final-lot.json
+          git add -- src src-tauri/src package.json .github/diagnostics/final-lot.json .github/corrections/apply_final_lot.py
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
       - name: Restore application icons if missing
         shell: pwsh
@@ -99,7 +101,7 @@ jobs:
           p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Report failed' }
-          git add -- src src-tauri/src package.json package-lock.json .github/diagnostics/final-lot.json
+          git add -- src src-tauri/src package.json package-lock.json .github/diagnostics/final-lot.json .github/corrections/apply_final_lot.py
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
