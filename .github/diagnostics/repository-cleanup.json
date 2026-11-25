@@ -1,0 +1,126 @@
+{
+  "baseCommit": "b6ec6a21c1af0cf68d104a4e22a761380f57b8a3",
+  "validation": "node-typescript-frontend-signalsmith-runtime-rust-windows-build-and-shell-extraction-passed",
+  "removed": [
+    ".github/control-polish.applied",
+    ".github/corrections/apply_final_lot.py",
+    ".github/corrections/finalize_tutorial_scan.py",
+    ".github/corrections/integrate_pitcher_engine.py",
+    ".github/corrections/knob_feedback.py",
+    ".github/corrections/repair_final_lot_encoding.py",
+    ".github/diagnostics/bpm-removal.json",
+    ".github/diagnostics/finishing-v17.json",
+    ".github/diagnostics/review-v17.json",
+    ".github/diagnostics/v16-transport-1.txt",
+    ".github/diagnostics/v16-transport-2.txt",
+    ".github/diagnostics/v16-transport-3.txt",
+    ".github/diagnostics/v16-transport-4.txt",
+    ".github/diagnostics/zonyx-migration.json",
+    ".github/final-ui.applied",
+    ".github/maintenance/finish_v17.py",
+    ".github/maintenance/integrate_pitcher_feedback.py",
+    ".github/maintenance/package-v17.py",
+    ".github/maintenance/remove_bpm_experiment.py",
+    ".github/maintenance/rename_mascot.py",
+    ".github/maintenance/review_v17.py",
+    ".github/maintenance/test_review_transport.py",
+    ".github/presentation-final-v1.applied",
+    ".github/release/prepare_v17.py",
+    ".github/revision-controls-v1.applied",
+    ".github/v16-final.applied",
+    ".github/workflows/build-v1.5.yml",
+    ".github/workflows/build-v1.7-dev.yml",
+    ".github/workflows/inspect-v16-transport.yml",
+    ".github/workflows/knob-feedback-dev.yml",
+    ".github/workflows/publish-v1.5.yml",
+    ".github/workflows/publish-v1.7.yml",
+    ".github/workflows/release-v1.7.yml",
+    ".github/workflows/rename-mascot.yml",
+    ".github/workflows/review-easter-art.yml",
+    ".github/workflows/update-release-notes-v1.5.yml",
+    ".github/workflows/update-release-notes-v1.7.yml",
+    ".github/workspace-final-v2.applied",
+    "CAHIER_DES_CHARGES_v1.6.md",
+    "RELEASE-NOTES-v1.7.md",
+    "RELEASE_NOTES_1.5.md"
+  ],
+  "preservedBecauseReferenced": {
+    ".github/maintenance/statusLabels.mjs": [
+      "src/utils/reviewV17.test.mjs"
+    ],
+    ".github/scripts/package-single-16.py": [
+      "src/components/aboutLight.test.mjs"
+    ],
+    ".github/workflows/build-v1.6.yml": [
+      "src/components/aboutLight.test.mjs"
+    ],
+    ".github/workflows/package-v1.6.yml": [
+      "src/components/aboutLight.test.mjs"
+    ],
+    ".github/workflows/single-v1.6.yml": [
+      "src/components/aboutLight.test.mjs"
+    ],
+    "RELEASE_NOTES_1.6.md": [
+      "src/utils/finalCleanup.test.ts"
+    ],
+    ".github/scripts/check-live-preview.cjs": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/finalize-amplitude-wave-16.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/finalize-candidate-16.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/finishing-playback.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/optional-bpm.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/prepare-clean-16.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/rename-archive-16.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/scripts/verify-about-ring.py": [
+      ".github/workflows/build-v1.6.yml"
+    ],
+    ".github/clean-16.applied": [
+      ".github/scripts/prepare-clean-16.py"
+    ],
+    ".github/finishing-playback-v1.applied": [
+      ".github/scripts/finishing-playback.py"
+    ],
+    ".github/optional-bpm-v1.applied": [
+      ".github/scripts/optional-bpm.py"
+    ],
+    ".github/refresh-loop-ui-v1.applied": [
+      ".github/scripts/prepare-clean-16.py"
+    ],
+    ".github/scripts/finalize-control-16.py": [
+      ".github/scripts/finalize-candidate-16.py"
+    ],
+    ".github/scripts/fix-tutorial-buttons-16.py": [
+      ".github/scripts/finalize-candidate-16.py"
+    ],
+    ".github/scripts/polish-six-16.py": [
+      ".github/scripts/finalize-candidate-16.py"
+    ]
+  },
+  "notTouched": [
+    "application source",
+    "tests",
+    "used media",
+    "licenses",
+    "dependency manifests and lockfiles",
+    "published releases and their assets",
+    "branches and tags"
+  ],
+  "retainedBuildTools": [
+    ".github/workflows/validate.yml",
+    ".github/maintenance/verify_pitcher_runtime.mjs",
+    ".github/release/package_v17.py"
+  ]
+}
