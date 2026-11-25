@@ -2,7 +2,7 @@ name: Audio ToolZ v1.7-dev - Windows validation
 on:
   push:
     branches: [v.1.7-dev]
-    paths: ['src/**', 'src-tauri/**', 'public/third_party/bpm/**', 'package.json', '.github/maintenance/**', '.github/workflows/build-v1.7-dev.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/**', '.github/workflows/build-v1.7-dev.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,14 +25,14 @@ jobs:
         with:
           node-version: '22'
       - uses: dtolnay/rust-toolchain@stable
-      - name: Prepare reviewed development sources and BPM integration
+      - name: Remove external BPM experiment and preserve reviewed native detector
         shell: pwsh
         run: |
+          python .github/maintenance/remove_bpm_experiment.py
+          if ($LASTEXITCODE -ne 0) { throw 'BPM experiment removal failed' }
           python .github/maintenance/finish_v17.py
           if ($LASTEXITCODE -ne 0) { throw 'Finishing failed' }
-          python .github/maintenance/add_bpm_comparison.py
-          if ($LASTEXITCODE -ne 0) { throw 'BPM integration failed' }
-          git add -A -- src package.json .github/maintenance/package-v17.py .github/diagnostics/finishing-v17.json .github/diagnostics/bpm-comparison.json
+          git add -A -- src .github/maintenance/package-v17.py .github/diagnostics/finishing-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
       - name: Restore application icons if missing
         shell: pwsh
@@ -48,8 +48,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
           npm install --no-save @tauri-apps/cli@2
           if ($LASTEXITCODE -ne 0) { throw 'Tauri CLI installation failed' }
-      - name: Vendor exact BPM runtimes, licenses and corresponding sources
-        run: python .github/maintenance/vendor_bpm.py
       - name: Apply complete user interface review
         shell: pwsh
         run: |
@@ -79,22 +77,6 @@ jobs:
         run: npm run lint
       - name: Build frontend assets for Rust tests
         run: npm run build
-      - name: Execute all three real BPM engines with offline networking and application CSP
-        shell: pwsh
-        run: |
-          npx playwright install chromium
-          if ($LASTEXITCODE -ne 0) { throw 'Chromium installation failed' }
-          $server = Start-Process node -ArgumentList @('node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4178','--strictPort') -PassThru -RedirectStandardOutput audit-output/bpm-preview.log -RedirectStandardError audit-output/bpm-preview-error.log
-          try {
-            $ready = $false
-            for ($i=0; $i -lt 60; $i++) {
-              try { $response=Invoke-WebRequest http://127.0.0.1:4178/ -TimeoutSec 2; if ($response.StatusCode -eq 200) { $ready=$true; break } } catch {}
-              Start-Sleep -Seconds 1
-            }
-            if (-not $ready) { throw 'Compiled frontend unavailable' }
-            node src/audio/bpmCompare.browser.mjs
-            if ($LASTEXITCODE -ne 0) { throw 'Actual BPM engine smoke test failed' }
-          } finally { Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue }
       - name: Symphonia decoder regression tests
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml audio_fallback::tests -- --nocapture
       - name: Build portable Windows application
@@ -109,14 +91,14 @@ jobs:
           @'
           import json
           from pathlib import Path
-          for name in ['finishing-v17.json','review-v17.json','bpm-comparison.json']:
+          for name in ['finishing-v17.json','review-v17.json']:
               path=Path('.github/diagnostics')/name
               report=json.loads(path.read_text(encoding='utf-8'))
-              report['validation']='node-tests-typescript-frontend-offline-three-engine-smoke-decoder-tests-and-windows-build-passed'
-              path.write_bytes((json.dumps(report,ensure_ascii=False,indent=2)+'\n').encode('utf-8'))
+              report['validation']='node-tests-typescript-frontend-decoder-tests-and-windows-build-passed'
+              path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Cannot update reports' }
-          git add -- .github/diagnostics/finishing-v17.json .github/diagnostics/review-v17.json .github/diagnostics/bpm-comparison.json
+          git add -- .github/diagnostics/finishing-v17.json .github/diagnostics/review-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Cannot stage reports' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
@@ -124,7 +106,7 @@ jobs:
           if ($result -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'feat: validate BPM engine comparison on v1.7-dev'
+            git commit -m 'revert: retire external BPM engines and restore native detection'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
           }
           exit 0
@@ -135,12 +117,6 @@ jobs:
         run: |
           git push origin HEAD:refs/heads/v.1.7-dev
           if ($LASTEXITCODE -ne 0) { throw 'Push rejected; newer changes were not overwritten' }
-      - name: Upload corresponding BPM and application sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: Audio.ToolZ.v1.7-dev.BPM-sources
-          path: bpm-source-output/Audio.ToolZ.BPM.sources.zip
-          if-no-files-found: error
       - name: Upload exact portable ZIP without wrapping
         uses: actions/upload-artifact@v7
         with:
@@ -156,5 +132,5 @@ jobs:
             audit-output/
             .github/diagnostics/finishing-v17.json
             .github/diagnostics/review-v17.json
-            .github/diagnostics/bpm-comparison.json
+            .github/diagnostics/bpm-removal.json
           if-no-files-found: warn
