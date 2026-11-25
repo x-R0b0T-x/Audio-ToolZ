@@ -1,78 +1,92 @@
 <div align="center">
-  <img src="src/medias/mix.png" alt="Logo Audio ToolZ" width="220" />
+  <img src="src/medias/mix.png" alt="Logo Audio ToolZ" width="200" />
   <h1>Audio ToolZ</h1>
-  <p>Découpez, transformez et assemblez vos sons.</p>
-  <p>Éditeur audio à interface française · Windows portable · Traitements locaux</p>
-  <p><a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases">Versions publiées</a> · <a href="RELEASE_NOTES_1.6.md">Nouveautés v1.6</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="https://t.me/Audio_ToolZ">Communauté Telegram</a></p>
+  <p><strong>Éditeur audio en français pour découper, transformer et assembler vos sons.</strong></p>
+  <p>Windows portable · Traitements locaux · Sans installation</p>
+  <p>
+    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><strong>Télécharger</strong></a> ·
+    <a href="CHANGELOG.md">Journal des modifications</a> ·
+    <a href="https://t.me/Audio_ToolZ">Communauté Telegram</a>
+  </p>
 </div>
 
 ---
 
-## Votre atelier audio, du premier extrait au mix final
+## Présentation
 
-Préparer un échantillon, affiner une boucle, corriger un niveau, sculpter un son ou assembler plusieurs morceaux : Audio ToolZ réunit ces outils dans un espace de travail à interface française, avec documents en onglets, édition sur forme d’onde et préécoute des effets.
-
-La v1.6 est une grosse mise à jour : égaliseur paramétrique à sept bandes, fenêtre compresseur/limiteur, didacticiel avec ZØNYX et refonte graphique violet et vert néon.
-
-## Audio ToolZ en image
+Audio ToolZ réunit dans une seule fenêtre l'édition sur forme d'onde, six effets studio avec préécoute en direct, le traitement par lots et l'export dans les formats courants. Les traitements et l'encodage sont réalisés sur votre machine : vos fichiers ne quittent jamais votre ordinateur.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/e1e65796-d3d2-409c-bdcf-fe649f2b3a93" alt="Grande illustration de présentation d’Audio ToolZ" width="1000" />
+  <img src="https://github.com/user-attachments/assets/e1e65796-d3d2-409c-bdcf-fe649f2b3a93" alt="Illustration de présentation d'Audio ToolZ" width="900" />
 </p>
 
-Cette illustration de présentation est conservée ; elle ne remplace pas une capture exhaustive des nouveautés de la v1.6.
+## Installation
 
-## Une grosse mise à jour : la v1.6
+1. Ouvrez la [dernière release](https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest) et téléchargez l'archive ZIP.
+2. Extrayez l'archive entièrement.
+3. Ouvrez le dossier `Audio ToolZ` et lancez `Audio ToolZ.exe`.
 
-| Nouveauté | Pour votre travail audio |
-| --- | --- |
-| Égaliseur paramétrique à sept bandes | Réglez fréquence, gain et largeur Q, choisissez les formes de filtre et consultez le spectre ainsi que la réponse globale. |
-| Compresseur et limiteur | Travaillez la dynamique avec les modes COMP et LIMIT, le plafond, l’enveloppe et l’affichage de la réduction de gain. |
-| Didacticiel avec ZØNYX | Découvrez l’application avec la mascotte et retrouvez les liens vers la communauté et le soutien au projet. |
-| Refonte graphique | Retrouvez une interface harmonisée, des potards violets gradués et des accents vert néon. |
-| Préécoute pendant la lecture | Ajustez les effets en lecture normale, sans imposer de boucle, sur la sélection ou le morceau entier. |
-| Delay musical compact | Réglez temps musicaux, répétitions, volume et panoramique ; détectez le BPM directement dans le panneau. |
+Le dossier extrait contient exactement trois fichiers, à conserver ensemble :
 
-Le limiteur agit sur les crêtes d’échantillons ; il ne revendique pas de limitation true peak suréchantillonnée. Le BPM est nécessaire au calcul des temps musicaux du Delay, pas à l’égaliseur, au compresseur ni au limiteur. Ouvrir un effet ne lance pas automatiquement la lecture.
+```text
+Audio ToolZ/
+├── Audio ToolZ.exe
+├── Audio ToolZ.ico
+└── Desktop.ini
+```
 
-### Visualisations et finitions graphiques v1.6
+L'application est prévue pour Windows 64 bits et s'appuie sur WebView2. L'exécutable n'est pas signé numériquement : Windows peut donc afficher un avertissement au premier lancement. Le fichier `SHA256SUMS.txt` de la release permet de vérifier l'archive téléchargée. Les archives « Source code » proposées par GitHub contiennent le code du projet, pas l'application prête à lancer.
 
-Six modes accompagnent l’écoute : Oscilloscope, Spectre, Waveforme colorée, Vectorscope stéréo, Spectrogramme et Vumètre à aiguille stéréo. L’oscilloscope est utilisé sans préférence enregistrée, puis le dernier choix est mémorisé.
+## Les effets
 
-Le vumètre représente un niveau RMS en dBFS avec inertie visuelle : il ne s’agit pas d’un instrument VU analogique calibré.
+Chaque effet s'ouvre depuis le menu Effets. Vous réglez le son pendant la lecture, sur la sélection ou sur le morceau entier, puis vous appliquez le traitement une fois satisfait. Le bouton « ? » de chaque fenêtre explique le rôle des commandes.
 
-### Dernières finitions v1.6
+### Z-Égaliseur
 
-- Onde électrique vert néon attachée au titre, en courbes continues : son amplitude suit uniquement le niveau sonore RMS stéréo, sans BPM ni kicks. Elle s’atténue à ses extrémités et disparaît en pause, à l’arrêt ou pendant le silence.
-- Accueil illustré, fenêtre À propos réorganisée et historique des modifications défilant.
-- Survol du bouton « ? » limité au point d’interrogation lumineux.
-- Navigation de l’aperçu indépendante de la boucle, bornes ajustables pendant la lecture et aimantation conservée.
-- Préférences de réduction des animations respectées.
+Égaliseur paramétrique à sept bandes. Chaque bande règle la fréquence, le gain, la largeur Q et la forme du filtre. Le spectre d'entrée et la courbe de réponse globale s'affichent pour équilibrer le son.
 
-Retrouvez les détails et les limites dans les [notes de version](RELEASE_NOTES_1.6.md) et le [journal des modifications](CHANGELOG.md).
+### Z-Limit/Comp
 
-## Les outils du quotidien
+Compresseur et limiteur dans une même fenêtre, avec les modes COMP et LIMIT. Il contrôle la dynamique grâce à l'enveloppe, au plafond et à l'affichage de la réduction de gain. Le limiteur agit sur les crêtes d'échantillons : ce n'est pas un limiteur true peak suréchantillonné.
 
-### Éditer et écouter
+### Z-Delay
 
-- Ouvrez plusieurs documents en onglets et travaillez sur leur forme d’onde.
-- Sélectionnez, coupez, copiez, collez, rognez ou mettez un passage en silence.
-- Utilisez le mixage au collage, l’annulation, le rétablissement et les outils de zoom.
-- Écoutez en lecture normale, en boucle ou en sens inverse ; réglez volume, balance, vitesse et canaux actifs.
-- Détectez le tempo, affichez les repères rythmiques et activez l’aimantation pour affiner vos sélections.
+Échos calés sur le tempo, en Mono, Stéréo ou Ping-pong. Vous réglez les temps musicaux, les répétitions, le volume d'effet et le panoramique. La détection du BPM est accessible directement dans le panneau.
 
-### Transformer et assembler
+### Z-Pitcher
 
-- Appliquez des fondus, ajustez vitesse et hauteur, utilisez la réduction de bruit et les effets audio disponibles.
-- Préécoutez avant d’appliquer, sur une sélection ou sur le morceau entier.
-- Assemblez des fichiers, gérez les feuilles CUE, utilisez Auto-Cue, la découpe WAV et le traitement par lots.
-- Enregistrez depuis une entrée audio autorisée et sélectionnez vos périphériques selon les possibilités du système.
+Modifie la vitesse et la hauteur d'un passage, indépendamment l'une de l'autre, avec le moteur Signalsmith Stretch. Deux grands faders horizontaux règlent la vitesse de 0,5× à 2× et la hauteur de −12 à +12 demi-tons. Le résultat se compare en préécoute avant validation.
 
-L’assemblage juxtapose les pistes : ce n’est pas un séquenceur multipiste à superposition. Les anciennes fenêtres autonomes Volume/Gain et Normalisation ont été retirées ; le volume général, les gains internes et les traitements par lots restent disponibles.
+### Z-Fondus
+
+Adoucit le début ou la fin d'un passage avec un fondu linéaire, exponentiel ou en S.
+
+### Z-Reverbe
+
+Donne de l'espace au son. Trois niveaux se règlent séparément : le signal Direct, les premières réflexions et la traîne de réverbération. Le prédélai peut se caler sur le tempo.
+
+### Réduction de bruit spectrale
+
+Nettoie une prise en s'appuyant sur un profil de bruit capturé dans l'enregistrement.
+
+## Édition et lecture
+
+- Documents en onglets et édition sur forme d'onde : sélection, couper, copier, coller, rognage, silence, mixage au collage, annuler et rétablir.
+- Zoom très fort pour caler chaque coupe avec précision.
+- Lecture normale, en boucle ou inversée, avec volume, balance, vitesse et canaux actifs ; la barre d'espace démarre et arrête la lecture.
+- Détection du tempo, repères rythmiques et aimantation des sélections.
+- Traitement par lots, assemblage de fichiers, import et export de feuilles `.cue`, Auto-Cue et découpe WAV.
+- Enregistrement depuis une entrée audio autorisée.
+
+L'assemblage juxtapose les pistes : ce n'est pas un séquenceur multipiste à superposition.
+
+## Visualisations
+
+Six modes accompagnent l'écoute : oscilloscope, spectre, waveforme colorée, vectorscope stéréo, spectrogramme et vumètre à aiguille stéréo. Le dernier choix est mémorisé. Le vumètre indique un niveau RMS en dBFS avec inertie visuelle ; ce n'est pas un instrument VU analogique calibré.
 
 ## Formats et export
 
-La version Windows repose sur Tauri v2 et WebView2, avec le décodeur de secours Symphonia. La compatibilité à l’ouverture dépend du fichier, de son conteneur et du décodeur disponible.
+L'ouverture dépend du fichier, de son conteneur et du décodeur disponible. L'application lit notamment WAV, MP3, FLAC, OGG, AAC, ALAC et AIFF.
 
 | Export | Réglages proposés |
 | --- | --- |
@@ -81,46 +95,16 @@ La version Windows repose sur Tauri v2 et WebView2, avec le décodeur de secours
 | FLAC | Niveaux de compression 0, 2 ou 5 |
 | OGG Vorbis | Qualité de 1 à 10 |
 
-Les traitements et l’encodage sont réalisés localement, sans envoyer le contenu audio à un service d’encodage distant.
+## Didacticiel et vérification de configuration
 
-## Prise en main
+Au premier lancement, ZØNYX, la mascotte, vous guide à travers les outils. Une page vérifie localement votre configuration : carte mère, processeur, mémoire, carte graphique et périphériques audio. Un contrôle audio sans lecture sonore et une mesure indicative du temps de traitement terminent cette vérification. Le résultat est indicatif : il ne garantit pas les performances pour tous les effets et tous les fichiers. Aucun fichier personnel n'est analysé et rien n'est envoyé. Le didacticiel se rouvre depuis Outils, Paramètres, « Afficher le didacticiel ».
 
-1. Téléchargez le paquet Windows et extrayez le dossier complet.
-2. Lancez `Audio ToolZ.exe` et consultez le didacticiel avec ZØNYX.
-3. Ouvrez un fichier audio et lancez sa lecture.
-4. Sélectionnez un passage si nécessaire ; sinon les effets ciblent le morceau entier.
-5. Ajustez vos effets avec la préécoute, appliquez le traitement, puis exportez votre travail.
+## Bon à savoir
 
-Pour le Delay musical, détectez le BPM si nécessaire, choisissez un mode actif, ajoutez des répétitions et augmentez le volume d’effet. Ses valeurs initiales sont Off, zéro répétition et volume d’effet nul.
-
-## Distribution finale v1.6
-
-Le nom exact du paquet Windows x64 portable est :
-
-```text
-Audio ToolZ v1.6.zip
-```
-
-Après extraction :
-
-```text
-Audio ToolZ/
-├── Audio ToolZ.exe
-├── logo.ico
-└── desktop.ini
-```
-
-Conservez ces trois fichiers ensemble. Les empreintes SHA-256 de l’exécutable et du ZIP figurent dans le résumé de compilation, sans fichier de contrôle séparé à télécharger.
-
-Consultez les [versions publiées sur GitHub Releases](https://github.com/x-R0b0T-x/Audio-ToolZ/releases). Les paquets de développement disponibles dans Actions sont distincts des releases officielles ; l’intégration dans `main` ne publie pas à elle seule une release.
-
-## À savoir
-
-- La détection du tempo reste une estimation dépendant du contenu audio.
-- L’enregistrement nécessite une autorisation d’accès à l’entrée audio.
-- Le choix des périphériques et les dialogues de fichiers varient selon le navigateur et le système.
-- Les longs fichiers et l’historique d’édition peuvent consommer beaucoup de mémoire.
-- Les préférences mémorisées ne sauvegardent pas les documents : exportez votre travail avant de fermer l’application.
+- La détection du tempo reste une estimation qui dépend du contenu audio.
+- L'enregistrement nécessite l'autorisation d'accéder à une entrée audio.
+- Les longs fichiers et l'historique d'édition peuvent consommer beaucoup de mémoire.
+- Les préférences mémorisées ne sauvegardent pas vos documents : exportez votre travail avant de fermer l'application.
 
 ## Communauté et licence
 
