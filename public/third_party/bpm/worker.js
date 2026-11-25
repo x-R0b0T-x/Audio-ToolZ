@@ -4,9 +4,17 @@ self.onmessage=async function(event){
  try{
   if(!(mono instanceof Float32Array)||sampleRate!==44100)throw Error('Entrée PCM attendue à 44 100 Hz.');
   if(engine==='essentia'){
-   importScripts('./essentia/essentia-wasm.web.js','./essentia/essentia.js-core.js');
-   const module=await EssentiaWASM({locateFile:path=>new URL('./essentia/'+path,self.location.href).href});
-   const instance=new Essentia(module);let input,output;
+   const previousExports=self.exports;let backend;
+   self.exports={};
+   try{
+    importScripts('./essentia/essentia-wasm.umd.js');
+    backend=self.exports.EssentiaWASM;
+   }finally{
+    if(previousExports===undefined)delete self.exports;else self.exports=previousExports;
+   }
+   if(!backend||typeof backend!=='object')throw Error('Module UMD EssentiaWASM non initialisé.');
+   importScripts('./essentia/essentia.js-core.js');
+   const instance=new Essentia(backend);let input,output;
    try{input=instance.arrayToVector(mono);output=instance.RhythmExtractor2013(input);self.postMessage({bpm:output.bpm,beatsSeconds:Array.from(instance.vectorToArray(output.ticks)),confidenceRaw:output.confidence,version:'essentia.js 0.1.3 / '+instance.version});}
    finally{if(output)for(const value of Object.values(output))if(value&&typeof value.delete==='function')value.delete();if(input)input.delete();instance.shutdown();instance.delete();}
   }else if(engine==='aubio'){

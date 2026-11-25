@@ -26,9 +26,7 @@ def main():
   if metadata['version']!=version:raise RuntimeError('Wrong installed version: '+name)
   target=destination/folder;target.mkdir(parents=True,exist_ok=True)
   if name=='essentia.js':
-   assets=[source/'dist/essentia.js-core.js',source/'dist/essentia-wasm.web.js']
-   assets.extend((source/'dist').glob('essentia-wasm.web*.wasm'))
-   assets.extend((source/'dist').glob('essentia-wasm.wasm'))
+   assets=[source/'dist/essentia.js-core.js',source/'dist/essentia-wasm.umd.js']
   else:assets=aubio_runtime_assets(source)
   for asset in dict.fromkeys(assets):
    if not asset.is_file():raise RuntimeError('Missing runtime asset: '+str(asset))
