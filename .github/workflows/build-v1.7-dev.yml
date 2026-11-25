@@ -45,13 +45,6 @@ jobs:
             if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) { throw "Required icon missing: $icon" }
             if ((Get-Item -LiteralPath $icon).Length -eq 0) { throw "Required icon empty: $icon" }
           }
-      - name: Install frontend and build dependencies
-        shell: pwsh
-        run: |
-          npm install
-          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
-          npm install --no-save @tauri-apps/cli@2
-          if ($LASTEXITCODE -ne 0) { throw 'Tauri CLI installation failed' }
       - name: Apply complete user interface review
         shell: pwsh
         run: |
@@ -66,6 +59,20 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Visual feedback corrections failed' }
           git add -A -- src
           if ($LASTEXITCODE -ne 0) { throw 'Visual feedback staging failed' }
+      - name: Activate Signalsmith in Z-Pitcher without visual changes
+        shell: pwsh
+        run: |
+          python .github/corrections/integrate_pitcher_engine.py
+          if ($LASTEXITCODE -ne 0) { throw 'Signalsmith integration failed' }
+          git add -A -- src package.json
+          if ($LASTEXITCODE -ne 0) { throw 'Signalsmith staging failed' }
+      - name: Install frontend and build dependencies
+        shell: pwsh
+        run: |
+          npm install
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+          npm install --no-save @tauri-apps/cli@2 playwright
+          if ($LASTEXITCODE -ne 0) { throw 'Build and runtime test dependency installation failed' }
       - name: Audit all tracked corrected source
         run: node src/utils/reviewAudit.mjs
       - name: Verify locked Symphonia 0.6.1
@@ -89,6 +96,11 @@ jobs:
         run: npm run lint
       - name: Build frontend assets for Rust tests
         run: npm run build
+      - name: Install Chromium for actual Signalsmith audio tests
+        run: npx playwright install chromium
+      - name: Validate rendered pitch speed channels and cancellation under application CSP
+        timeout-minutes: 10
+        run: node .github/maintenance/verify_pitcher_runtime.mjs
       - name: Symphonia decoder regression tests
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml audio_fallback::tests -- --nocapture
       - name: Build portable Windows application
@@ -106,19 +118,19 @@ jobs:
           for name in ['finishing-v17.json','review-v17.json']:
               path=Path('.github/diagnostics')/name
               report=json.loads(path.read_text(encoding='utf-8'))
-              report['validation']='node-tests-typescript-frontend-decoder-tests-and-windows-build-passed'
+              report['validation']='node-tests-typescript-frontend-signalsmith-runtime-decoder-tests-and-windows-build-passed'
               path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Cannot update reports' }
-          git add -- .github/diagnostics/finishing-v17.json .github/diagnostics/review-v17.json
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot stage reports' }
+          git add -- package.json package-lock.json src .github/diagnostics/finishing-v17.json .github/diagnostics/review-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot stage validated sources and dependency lock' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
           if ($result -gt 1) { throw 'Cannot inspect staged changes' }
           if ($result -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build: validated development sources with approved visual feedback'
+            git commit -m 'feat: validated Signalsmith Pitcher and development sources'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
           }
           exit 0
