@@ -1,9 +1,24 @@
-import hashlib,json,os,re,shutil,subprocess,tempfile,urllib.request,zipfile
+import base64,binascii,hashlib,json,os,re,shutil,subprocess,tempfile,urllib.request,zipfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 PACKAGES=[('essentia.js','0.1.3','MTG/essentia.js','essentia'),('aubiojs','0.2.1','qiuxiang/aubiojs','aubio')]
 def command(*args,cwd=ROOT):return subprocess.check_output(args,cwd=cwd,text=True,encoding='utf-8').strip()
 def write(path,text):path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(text.encode('utf-8'))
+def require_wasm(payload,label):
+ if payload[:8]!=b'\x00asm\x01\x00\x00\x00':raise RuntimeError('Invalid WASM header: '+str(label))
+def aubio_runtime_assets(source):
+ loader=source/'build/aubio.js';sidecar=source/'build/aubio.wasm'
+ if not loader.is_file():raise RuntimeError('Missing runtime asset: '+str(loader))
+ if sidecar.is_file():
+  require_wasm(sidecar.read_bytes(),sidecar)
+  return [loader,sidecar]
+ text=loader.read_text(encoding='utf-8')
+ embedded=re.search(r'data:application/(?:octet-stream|wasm);base64,([A-Za-z0-9+/]+={0,2})',text)
+ if not embedded:raise RuntimeError('Aubio has neither a sidecar nor embedded WASM: '+str(loader))
+ try:payload=base64.b64decode(embedded.group(1),validate=True)
+ except (binascii.Error,ValueError) as error:raise RuntimeError('Invalid embedded Aubio WASM base64: '+str(loader)) from error
+ require_wasm(payload,loader)
+ return [loader]
 def main():
  destination=ROOT/'public/third_party/bpm';manifest=[]
  for name,version,repository,folder in PACKAGES:
@@ -14,10 +29,10 @@ def main():
    assets=[source/'dist/essentia.js-core.js',source/'dist/essentia-wasm.web.js']
    assets.extend((source/'dist').glob('essentia-wasm.web*.wasm'))
    assets.extend((source/'dist').glob('essentia-wasm.wasm'))
-  else:assets=[source/'build/aubio.js',source/'build/aubio.wasm']
+  else:assets=aubio_runtime_assets(source)
   for asset in dict.fromkeys(assets):
    if not asset.is_file():raise RuntimeError('Missing runtime asset: '+str(asset))
-   if asset.suffix=='.wasm' and asset.read_bytes()[:4]!=b'\x00asm':raise RuntimeError('Invalid WASM asset')
+   if asset.suffix=='.wasm':require_wasm(asset.read_bytes(),asset)
    shutil.copy2(asset,target/asset.name)
    manifest.append({'file':str((target/asset.name).relative_to(destination)).replace('\\','/'),'bytes':asset.stat().st_size,'sha256':hashlib.sha256(asset.read_bytes()).hexdigest()})
   license_files=[p for p in source.iterdir() if p.is_file() and p.name.lower().startswith(('license','copying'))]
