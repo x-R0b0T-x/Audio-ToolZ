@@ -14,7 +14,7 @@
     "src/utils/fileOpening.mjs",
     "src/utils/reviewV17.test.mjs"
   ],
-  "validation": "node-tests-typescript-frontend-decoder-tests-and-windows-build-passed",
+  "validation": "node-tests-typescript-frontend-offline-three-engine-smoke-decoder-tests-and-windows-build-passed",
   "pending": [
     "variable-tempo-detection-grid-and-effect-synchronization",
     "manual-Windows-visual-and-listening-review",
