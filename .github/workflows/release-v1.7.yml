@@ -1,0 +1,121 @@
+name: Audio ToolZ v1.7 - Official release candidate
+on:
+  push:
+    branches: [v.1.7-dev]
+    paths: ['.github/release/**', '.github/workflows/release-v1.7.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: audio-toolz-official-v1.7
+  cancel-in-progress: false
+jobs:
+  windows:
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ' && github.ref == 'refs/heads/v.1.7-dev'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Prepare exact official revision without changing development sources
+        shell: pwsh
+        run: |
+          $existing = git ls-remote origin refs/heads/release/v1.7 refs/tags/v1.7
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect release targets' }
+          if ($existing) { throw 'Release branch or tag already exists; refusing to overwrite' }
+          git switch -c release/v1.7
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot create release working branch' }
+          python .github/release/prepare_v17.py
+          if ($LASTEXITCODE -ne 0) { throw 'Official preparation failed' }
+      - name: Install application and validation tools
+        shell: pwsh
+        run: |
+          npm ci
+          if ($LASTEXITCODE -ne 0) { throw 'Locked dependency installation failed' }
+          npm install --no-save @tauri-apps/cli@2 playwright
+          if ($LASTEXITCODE -ne 0) { throw 'Validation tool installation failed' }
+      - name: Source audit
+        run: node src/utils/reviewAudit.mjs
+      - name: All regression tests with official version expectations
+        shell: pwsh
+        run: |
+          $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
+          if ($tests.Count -eq 0) { throw 'No regression tests' }
+          node --test @tests
+          if ($LASTEXITCODE -ne 0) { throw 'Official regression tests failed' }
+      - name: TypeScript check
+        run: npm run lint
+      - name: Frontend build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Actual Signalsmith validation under application CSP
+        timeout-minutes: 10
+        run: node .github/maintenance/verify_pitcher_runtime.mjs
+      - name: Rust decoder and configuration tests
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml -- --nocapture
+      - name: Build official Windows executable
+        run: npx tauri build --no-bundle
+      - name: Record official source commit
+        shell: pwsh
+        run: |
+          @'
+          import json
+          from pathlib import Path
+          p=Path('.github/diagnostics/official-v17.json')
+          report=json.loads(p.read_text(encoding='utf-8'))
+          report['validation']='node-typescript-frontend-signalsmith-runtime-rust-and-windows-build-passed'
+          p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { throw 'Official report failed' }
+          git add -- src package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json .github/release .github/diagnostics/official-v17.json
+          if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'release: validated official Audio ToolZ 1.7.0 sources'
+          if ($LASTEXITCODE -ne 0) { throw 'Official commit failed' }
+      - name: Package fresh official executable and verify Windows Shell extraction
+        run: python .github/release/package_v17.py
+      - name: Write official archive checksum
+        shell: pwsh
+        run: |
+          @'
+          import hashlib
+          from pathlib import Path
+          p=Path('single-output/Audio ToolZ v1.7.zip')
+          assert p.is_file() and p.stat().st_size>0
+          Path('single-output/SHA256SUMS.txt').write_text(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n',encoding='utf-8')
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { throw 'Checksum failed' }
+      - name: Upload official ZIP and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio.ToolZ.v1.7.official
+          path: |
+            single-output/Audio ToolZ v1.7.zip
+            single-output/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Push validated release branch without force
+        shell: pwsh
+        run: |
+          git push origin HEAD:refs/heads/release/v1.7
+          if ($LASTEXITCODE -ne 0) { throw 'Release push rejected; no existing changes overwritten' }
+          $sha = git rev-parse HEAD
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "Official candidate commit: $sha. Promotion to main and public v1.7 release still require approval."
+      - name: Upload official validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio.ToolZ.v1.7.official.validation
+          path: |
+            audit-output/
+            .github/diagnostics/official-v17.json
+          if-no-files-found: warn
