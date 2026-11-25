@@ -43,7 +43,7 @@ test('Delay restores the compact row, vertical mode switch and in-panel BPM dete
 });
 test('Delay reuses Audio ToolZ knob states with scoped violet and green styles',()=>{
  const controls=readFileSync('src/components/EffectControls.tsx','utf8'),states=readFileSync('src/components/knobStates.css','utf8'),css=readFileSync('src/components/delayPanel.css','utf8');
- assert.ok(controls.includes("import './knobStates.css'"));assert.ok(states.includes('.atz-knob:hover'));assert.ok(states.includes('.atz-knob.is-adjusting'));
- assert.ok(css.includes('background:#3d2466'));assert.ok(css.includes('color:#39ff14'));assert.ok(css.includes('.atz-delay-panel .atz-knob output'));
- assert.ok(css.includes('.atz-delay-row{display:flex'));assert.ok(!css.includes('grid-template-columns'));
+ assert.ok(controls.includes("import './knobStates.css'"));assert.ok(states.includes('.zonyx-knob:hover'));assert.ok(states.includes('.zonyx-knob.is-adjusting'));
+ assert.ok(css.includes('background:#3d2466'));assert.ok(css.includes('color:#39ff14'));assert.ok(css.includes('.zonyx-delay-panel .zonyx-knob output'));
+ assert.ok(css.includes('.zonyx-delay-row{display:flex'));assert.ok(!css.includes('grid-template-columns'));
 });

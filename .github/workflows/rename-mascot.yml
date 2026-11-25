@@ -1,0 +1,140 @@
+name: ZØNYX mascot migration - development only
+on:
+  push:
+    branches: [v.1.7-dev]
+    paths:
+      - .github/maintenance/rename_mascot.py
+      - .github/workflows/rename-mascot.yml
+      - src/utils/aboutTransport.test.mjs
+      - src/utils/finalUi.test.mjs
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: mascot-identity-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  migrate:
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ' && github.ref == 'refs/heads/v.1.7-dev'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: v.1.7-dev
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Test migration on an isolated fixture
+        run: python .github/maintenance/rename_mascot.py --self-test
+      - name: Apply and stage the guarded migration
+        shell: pwsh
+        run: |
+          python .github/maintenance/rename_mascot.py --apply
+          if ($LASTEXITCODE -ne 0) { throw 'Migration failed' }
+          git add -A
+          if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
+          git diff --cached --quiet
+          $result = $LASTEXITCODE
+          if ($result -gt 1) { throw 'Cannot inspect staged changes' }
+          if ($result -eq 1) { 'MIGRATION_CHANGED=true' >> $env:GITHUB_ENV }
+          else { 'MIGRATION_CHANGED=false' >> $env:GITHUB_ENV }
+          exit 0
+      - name: Restore build icons if missing, without staging them
+        if: env.MIGRATION_CHANGED == 'true'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path public/icon.ico) -or -not (Test-Path public/icon.png)) {
+            git restore --source=6af5c11 -- public/icon.ico public/icon.png
+            if ($LASTEXITCODE -ne 0) { throw 'Build icons unavailable' }
+          }
+      - name: Install frontend dependencies
+        if: env.MIGRATION_CHANGED == 'true'
+        run: npm install
+      - name: TypeScript check
+        if: env.MIGRATION_CHANGED == 'true'
+        run: npm run lint
+      - name: Build frontend
+        if: env.MIGRATION_CHANGED == 'true'
+        run: npm run build
+      - name: Run all source Node regression tests
+        if: env.MIGRATION_CHANGED == 'true'
+        shell: pwsh
+        run: |
+          $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
+          if ($tests.Count -eq 0) { throw 'No regression tests found' }
+          node --test @tests
+          if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed' }
+      - name: Audit active source names and colors
+        if: env.MIGRATION_CHANGED == 'true'
+        run: node src/utils/reviewAudit.mjs
+      - name: Reconcile Rust lock and verify exact Symphonia pin
+        if: env.MIGRATION_CHANGED == 'true'
+        shell: pwsh
+        run: |
+          $metadataJson = & cargo metadata --manifest-path src-tauri/Cargo.toml --format-version 1
+          if ($LASTEXITCODE -ne 0) { throw 'Rust dependency resolution failed' }
+          New-Item -ItemType Directory -Force audit-output | Out-Null
+          $metadataJson | Set-Content audit-output/rust-metadata.json -Encoding utf8
+          @'
+          import hashlib,json,tomllib
+          from pathlib import Path
+          def verify_rust_lock(manifest, locked, metadata):
+              requirement=manifest.get('dependencies',{}).get('symphonia')
+              if not isinstance(requirement,dict) or requirement.get('version')!='=0.6.1':
+                  raise RuntimeError('Manifest must retain the exact Symphonia =0.6.1 pin')
+              for label,packages in [('Cargo.lock',locked.get('package',[])),('Cargo metadata',metadata.get('packages',[]))]:
+                  versions=[p.get('version') for p in packages if p.get('name')=='symphonia']
+                  if versions!=['0.6.1']:
+                      raise RuntimeError(f'{label}: expected exactly one Symphonia 0.6.1 package, got {versions}')
+          manifest=tomllib.loads(Path('src-tauri/Cargo.toml').read_text(encoding='utf-8-sig'))
+          lock_path=Path('src-tauri/Cargo.lock')
+          lock_bytes=lock_path.read_bytes()
+          locked=tomllib.loads(lock_bytes.decode('utf-8-sig'))
+          metadata=json.loads(Path('audit-output/rust-metadata.json').read_text(encoding='utf-8-sig'))
+          verify_rust_lock(manifest,locked,metadata)
+          report={'symphoniaVersion':'0.6.1','sha256':hashlib.sha256(lock_bytes).hexdigest(),'hashScope':'runner-worktree-bytes'}
+          Path('audit-output/rust-lock-verification.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(report))
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { throw 'Rust dependency lock verification failed' }
+          git diff -- src-tauri/Cargo.lock | Set-Content audit-output/rust-lock.diff -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot record Rust lock changes' }
+      - name: Check native Rust application with locked dependencies
+        if: env.MIGRATION_CHANGED == 'true'
+        run: cargo check --locked --manifest-path src-tauri/Cargo.toml
+      - name: Commit and push only the validated migration and Rust lock
+        if: env.MIGRATION_CHANGED == 'true'
+        shell: pwsh
+        run: |
+          if ((git branch --show-current) -ne 'v.1.7-dev') { throw 'Wrong publication branch' }
+          if ((git rev-parse HEAD) -ne $env:GITHUB_SHA) { throw 'Unexpected source commit' }
+          $lockReport = Get-Content audit-output/rust-lock-verification.json -Raw | ConvertFrom-Json
+          $lockHash = (Get-FileHash src-tauri/Cargo.lock -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($lockHash -ne $lockReport.sha256) { throw 'Rust lock changed after verification' }
+          $path = '.github/diagnostics/zonyx-migration.json'
+          $report = Get-Content $path -Raw | ConvertFrom-Json
+          $report.validation = 'frontend-audit-tests-build-and-locked-cargo-check-passed'
+          $report | Add-Member -NotePropertyName rustLock -NotePropertyValue $lockReport -Force
+          $report | ConvertTo-Json -Depth 20 | Set-Content $path -Encoding utf8
+          git add -- $path src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) { throw 'Report and Rust lock staging failed' }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'refactor: adopt ZØNYX and synchronize Rust dependency lock'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          git push origin HEAD:refs/heads/v.1.7-dev
+          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; newer changes were not overwritten' }
+      - name: Upload migration and source reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zonyx-migration-reports
+          path: |
+            .github/diagnostics/zonyx-migration.json
+            audit-output/
+          if-no-files-found: warn

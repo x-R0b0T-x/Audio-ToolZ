@@ -4,7 +4,7 @@ import {audioEngine} from '../audio/engine';
 import './analyzerVisuals.css';
 export const analyzerModes:ReadonlyArray<readonly [VisualAnalyzerMode,string]>=[['oscilloscope','Oscilloscope'],['spectrum','Spectre'],['colored-waveform','Waveforme colorée'],['vectorscope','Vectorscope stéréo'],['spectrogram','Spectrogramme'],['vu-meter','Vumètre à aiguille']];
 export function AnalyzerSelect({mode,onChange}:{mode:VisualAnalyzerMode;onChange:(mode:VisualAnalyzerMode)=>void}){
-  return <select data-atz-control="visual-mode" aria-label="Visualisation audio" className="atz-analyzer-select" value={mode} onDoubleClick={()=>onChange('oscilloscope')} onChange={event=>{const selected=analyzerModes.find(([id])=>id===event.target.value);if(selected)onChange(selected[0]);}}>{analyzerModes.map(([id,label],index)=><option key={id} value={id}>{index+1}. {label}</option>)}</select>;
+  return <select data-zonyx-control="visual-mode" aria-label="Visualisation audio" className="zonyx-analyzer-select" value={mode} onDoubleClick={()=>onChange('oscilloscope')} onChange={event=>{const selected=analyzerModes.find(([id])=>id===event.target.value);if(selected)onChange(selected[0]);}}>{analyzerModes.map(([id,label],index)=><option key={id} value={id}>{index+1}. {label}</option>)}</select>;
 }
 export function rmsDb(samples:Float32Array):number{
   if(!samples.length)return -60;

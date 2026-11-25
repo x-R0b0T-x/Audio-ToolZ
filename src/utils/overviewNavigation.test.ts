@@ -50,6 +50,6 @@ test('overview handle shows the loop size and navigates the view without touchin
  assert.ok(!code.includes('doc.selection'));assert.ok(!code.includes('options.isLooping,'));assert.ok(!code.includes('audioEngine'));assert.ok(!code.includes('onSelectionChange'));
  const view=readFileSync('src/components/WaveformView.tsx','utf8');
  assert.ok(view.includes('useOverviewNavigation({canvas:overviewCanvasRef'));assert.ok(view.includes('data-testid="snap-kicks-toggle"'));assert.ok(!view.includes('SnapIndicatorPortal'));assert.ok(view.includes('overviewRangeRef.current[0]'));
- const space=readFileSync('src/utils/spaceTransport.mjs','utf8');assert.ok(space.includes("findTransportControl(controls,'loop')??findTransportControl(controls,'play')"));assert.ok(!space.includes('data-atz-loop'));assert.ok(!space.includes('audioEngine'));
+ const space=readFileSync('src/utils/spaceTransport.mjs','utf8');assert.ok(space.includes("findTransportControl(controls,'loop')??findTransportControl(controls,'play')"));assert.ok(!space.includes('data-zonyx-loop'));assert.ok(!space.includes('audioEngine'));
  const sync=readFileSync('src/utils/finalUi.ts','utf8');assert.ok(sync.includes('smoothPulse(level,desired,elapsed)'));assert.ok(sync.includes(':0;'));assert.ok(!sync.includes('now*rate/1000'));
 });

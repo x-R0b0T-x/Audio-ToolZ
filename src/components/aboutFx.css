@@ -1,9 +1,9 @@
-#root .atz-about-dialog .atz-about-hero{position:relative}
-#root .atz-about-dialog .atz-about-hero .atz-about-robot{grid-area:1/1}
-#root .atz-about-dialog .atz-about-hero .atz-about-actions{grid-area:1/2}
-#root .atz-about-dialog .atz-about-fx{grid-area:1/1;position:relative;z-index:0;align-self:stretch;justify-self:stretch;min-height:0;pointer-events:none}
-.atz-about-fx-wave{position:absolute;left:-40px;top:50%;width:100cqw;height:64px;translate:0 -50%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
-.atz-about-fx-wave svg{display:block;width:200%;height:100%;overflow:visible;animation:atz-fx-wave 5s linear infinite;will-change:transform}
-.atz-about-fx-wave path{fill:none;stroke:#39ff14;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 7px #39ff1499)}
-@keyframes atz-fx-wave{to{transform:translateX(-50%)}}
-@media(prefers-reduced-motion:reduce){.atz-about-fx-wave svg{animation:none}}
+#root .zonyx-about-dialog .zonyx-about-hero{position:relative}
+#root .zonyx-about-dialog .zonyx-about-hero .zonyx-about-robot{grid-area:1/1}
+#root .zonyx-about-dialog .zonyx-about-hero .zonyx-about-actions{grid-area:1/2}
+#root .zonyx-about-dialog .zonyx-about-fx{grid-area:1/1;position:relative;z-index:0;align-self:stretch;justify-self:stretch;min-height:0;pointer-events:none}
+.zonyx-about-fx-wave{position:absolute;left:-40px;top:50%;width:100cqw;height:64px;translate:0 -50%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.zonyx-about-fx-wave svg{display:block;width:200%;height:100%;overflow:visible;animation:zonyx-fx-wave 5s linear infinite;will-change:transform}
+.zonyx-about-fx-wave path{fill:none;stroke:#39ff14;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 7px #39ff1499)}
+@keyframes zonyx-fx-wave{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.zonyx-about-fx-wave svg{animation:none}}

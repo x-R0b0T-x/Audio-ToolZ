@@ -1,0 +1,40 @@
+html:root{--bg-canvas:#17131f;--bg-surface:#21192b;--bg-elevated:#2b2038;--bg-hover:#382847;--bg-input:#191320;--bg-panel:var(--bg-surface);--border-subtle:#49345d;--border-strong:#79518f;--wave-bg:#100d16;--wave-selection-border:var(--accent-secondary);--zonyx-purple:#b34dff;--zonyx-button-bg:#7928b5}
+#zonyx-tutorial-root .zonyx-tuto-head{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center}
+#zonyx-tutorial-root .zonyx-tuto-head>h2{grid-column:2;grid-row:1;justify-self:center;text-align:center;font-weight:700}
+#zonyx-tutorial-root .zonyx-tuto-head>.zonyx-tuto-close{grid-column:3;grid-row:1;justify-self:end}
+#zonyx-tutorial-root .zonyx-tuto-copy h4{color:var(--accent-secondary,#39ff14)}
+#zonyx-tutorial-root .zonyx-tuto-copy strong{color:var(--zonyx-purple)}
+#root .zonyx-advanced>header{display:grid;grid-template-columns:80px minmax(0,1fr) 80px;align-items:center}
+#root .zonyx-advanced>header>h2{grid-column:2;grid-row:1;justify-self:center;text-align:center;min-width:0;margin:0;font-weight:700!important;white-space:nowrap!important;overflow-wrap:normal;word-break:normal;font-size:clamp(12px,1.4vw,18px)}
+#root .zonyx-advanced>header>.zonyx-effect-header-actions{grid-column:3;grid-row:1;justify-self:end}
+.zonyx-effect-name{display:inline-flex!important;flex-direction:row!important;flex-wrap:nowrap!important;white-space:nowrap!important;align-items:center;gap:0;vertical-align:middle}
+.zonyx-effect-name>span{flex:0 0 auto;white-space:nowrap!important}
+.zonyx-help-bar h2{font-weight:700!important;white-space:nowrap}
+#root .zonyx-reverb .zonyx-rv-faders input::-webkit-slider-runnable-track{background:#000}
+#root .zonyx-reverb .zonyx-rv-faders input::-moz-range-track{background:#000}
+#root .zonyx-delay-panel>main>p{display:none}
+#root .zonyx-delay-panel>footer>span{display:none}
+.zonyx-welcome-vinyl{animation:zonyx-welcome-vinyl-spin 1.8s linear infinite;transform-origin:center;pointer-events:none}
+@keyframes zonyx-welcome-vinyl-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.zonyx-settings-panel{width:min(560px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border-strong);border-radius:12px;background:var(--bg-surface);color:var(--text-primary);font-size:12px}
+.zonyx-settings-panel>header{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border-subtle);background:var(--bg-elevated)}
+.zonyx-settings-panel h2{margin:0;text-align:center;font-size:14px;font-weight:700}
+.zonyx-settings-panel>main{overflow:auto;padding:16px;display:grid;gap:16px}
+.zonyx-settings-panel section{display:grid;gap:9px;padding:12px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--bg-input)}
+.zonyx-settings-panel h3{display:flex;align-items:center;gap:8px;margin:0;color:var(--accent-secondary);font-weight:700}
+.zonyx-settings-panel p{margin:0;line-height:1.5;color:var(--text-secondary)}
+.zonyx-settings-icon{width:16px;height:16px;flex:none;color:var(--accent-secondary)!important}
+.zonyx-settings-panel button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;padding:6px 12px;border:1px solid var(--zonyx-purple);border-radius:7px;background:var(--zonyx-button-bg);color:var(--text-primary);font-weight:600;cursor:pointer}
+.zonyx-settings-panel button svg{width:15px;height:15px;flex:none}
+.zonyx-settings-panel button:disabled{opacity:.5;cursor:default}
+.zonyx-settings-panel .zonyx-settings-close{width:32px;padding:0;background:transparent}
+.zonyx-settings-panel select{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:7px;background:var(--bg-surface);color:var(--text-primary)}
+.zonyx-settings-panel select:disabled{opacity:.5}
+.zonyx-settings-actions{display:flex;flex-wrap:wrap;gap:8px}
+.zonyx-settings-devices{display:grid;gap:5px;max-height:160px;overflow:auto}
+.zonyx-settings-devices>button{justify-content:space-between;text-align:left}
+.zonyx-settings-devices>button[aria-pressed=true]{border-color:var(--accent-secondary);box-shadow:inset 0 0 0 1px var(--accent-secondary)}
+.zonyx-settings-check{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.zonyx-settings-check input{accent-color:var(--accent-secondary)}
+.zonyx-settings-panel>footer{display:flex;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--border-subtle);background:var(--bg-elevated)}
+@media(prefers-reduced-motion:reduce){.zonyx-welcome-vinyl{animation:none}}

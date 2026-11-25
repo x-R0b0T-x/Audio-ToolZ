@@ -233,6 +233,7 @@ fn main() {
             open_recent,
             pick_audio_files,
             audio_fallback::decode_audio_fallback,
+            configuration_scan::scan_configuration_section,
             open_community_url
         ])
         .run(tauri::generate_context!())
@@ -240,3 +241,4 @@ fn main() {
 }
 
 mod audio_fallback;
+mod configuration_scan;

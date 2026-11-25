@@ -1,6 +1,11 @@
+import './utils/mascotIdentity.mjs';
+import {useEffect} from 'react';
+import {FileOpeningOverlay} from './components/FileOpeningOverlay';
+import './components/finishingV17.css';
 import {installDescriptions} from './utils/finalUi';
 import {installPreviewLoopGuard} from './utils/previewLoopGuard';
 import {installContextMenuGuard} from './utils/contextMenuGuard';
+import {installWelcomeLogo} from './utils/welcomeLogo';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {Tutorial} from './components/Tutorial';
@@ -9,17 +14,17 @@ import {installTextExceptions} from './utils/textExceptions';
 import './index.css';
 import './windowClose.css';
 import './textReadability.css';
-
+import './components/interfaceConsistency.css';
+function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7';},[]);return null;}
 const root = document.getElementById('root')!;
-createRoot(root).render(<App />);
+createRoot(root).render(<><App /><BuildTitle /><FileOpeningOverlay /></>);
 installPreviewLoopGuard();
 installContextMenuGuard();
 installControlGestures(root);
 installTextExceptions(root);
-
 installDescriptions(root);
-
+installWelcomeLogo(root);
 const tutorialHost = document.createElement('div');
-tutorialHost.id = 'atz-tutorial-root';
+tutorialHost.id = 'zonyx-tutorial-root';
 document.body.appendChild(tutorialHost);
 createRoot(tutorialHost).render(<Tutorial />);

@@ -8,7 +8,7 @@ import './aboutLayout.css';
 import './aboutFx.css';
 
 interface InfoModalProps { open: boolean; onClose: () => void; }
-export const APP_VERSION = 'v1.6';
+export const APP_VERSION = 'v1.7';
 const DEFAULT_WIDTH = 500;
 const WAVE_PATH = Array.from({ length: 4 }, (_, i) => { const o = i * 200; return `M${o} 50 H${o + 55} L${o + 65} 46 L${o + 75} 50 L${o + 85} 50 L${o + 93} 14 L${o + 105} 88 L${o + 115} 36 L${o + 123} 50 H${o + 200}`; }).join(' ');
 
@@ -63,28 +63,28 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
     };
   }, [open, onClose]);
   if (!open) return null;
-  return <div role="dialog" aria-modal="true" aria-labelledby="about-title" className="atz-about-dialog fixed z-50 rounded-xl border border-[var(--border-strong)] shadow-2xl flex flex-col overflow-hidden bg-[var(--bg-surface)] text-[var(--text-primary)]" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
+  return <div role="dialog" aria-modal="true" aria-labelledby="about-title" className="zonyx-about-dialog fixed z-50 rounded-xl border border-[var(--border-strong)] shadow-2xl flex flex-col overflow-hidden bg-[var(--bg-surface)] text-[var(--text-primary)]" style={{ left: box.x, top: box.y, width: box.w, height: box.h }}>
     <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] cursor-grab select-none" onMouseDown={(e) => { if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return; drag.current = { x: e.clientX - box.x, y: e.clientY - box.y }; }}>
-      <h2 id="about-title" className="text-sm font-semibold"><span data-atz-brand="audio">Audio </span><span data-atz-brand="tool">Tool</span><span data-atz-brand="z">Z</span> {APP_VERSION.split(' ')[0]}</h2>
+      <h2 id="about-title" className="text-sm font-semibold"><span data-zonyx-brand="audio">Audio </span><span data-zonyx-brand="tool">Tool</span><span data-zonyx-brand="z">Z</span> {APP_VERSION.split(' ')[0]}</h2>
       <button type="button" aria-label="Fermer" onClick={onClose}><X size={18} /></button>
     </div>
-    <div className="atz-about-body">
-      <div className="atz-about-brand">
-        <div className="atz-about-hero"><div className="atz-about-fx" aria-hidden="true"><span className="atz-about-fx-wave"><svg viewBox="0 0 800 100" preserveAspectRatio="none" focusable="false"><path d={WAVE_PATH} vectorEffect="non-scaling-stroke" /></svg></span></div><AboutRobot src={robotUrl} /><div className="atz-about-actions">
-          <a className="atz-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
-          <a className="atz-about-community" href="https://github.com/x-R0b0T-x/Audio-ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Visiter le dépôt GitHub</a>
-          <a className="atz-about-community" href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Faire un don</a>
+    <div className="zonyx-about-body">
+      <div className="zonyx-about-brand">
+        <div className="zonyx-about-hero"><div className="zonyx-about-fx" aria-hidden="true"><span className="zonyx-about-fx-wave"><svg viewBox="0 0 800 100" preserveAspectRatio="none" focusable="false"><path d={WAVE_PATH} vectorEffect="non-scaling-stroke" /></svg></span></div><AboutRobot src={robotUrl} /><div className="zonyx-about-actions">
+          <a className="zonyx-about-community" href="https://t.me/Audio_ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Rejoindre la communauté Telegram</a>
+          <a className="zonyx-about-community" href="https://github.com/x-R0b0T-x/Audio-ToolZ" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Visiter le dépôt GitHub</a>
+          <a className="zonyx-about-community" href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8" target="_blank" rel="noopener noreferrer" onClick={openCommunity}>Faire un don</a>
         </div></div>
-        {communityError && <p className="atz-about-community-error" role="alert">{communityError}</p>}
+        {communityError && <p className="zonyx-about-community-error" role="alert">{communityError}</p>}
       </div>
-      <section aria-labelledby="about-changelog-title" className="atz-about-changes">
+      <section aria-labelledby="about-changelog-title" className="zonyx-about-changes">
         <h3 id="about-changelog-title" className="text-sm font-bold">Changlog depuis la v1.5</h3>
-        <div className="atz-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
+        <div className="zonyx-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
           {[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}
         </div>
       </section>
     </div>
-    <div aria-label="Redimensionner la fenêtre À propos" title="Glisser pour redimensionner" data-resizing={resizing ? 'true' : undefined} className="atz-about-resize absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize" onMouseDown={(e) => {
+    <div aria-label="Redimensionner la fenêtre À propos" title="Glisser pour redimensionner" data-resizing={resizing ? 'true' : undefined} className="zonyx-about-resize absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize" onMouseDown={(e) => {
       if (e.button !== 0) return;
       e.preventDefault();
       resize.current = { x: e.clientX, y: e.clientY, w: box.w, h: box.h };

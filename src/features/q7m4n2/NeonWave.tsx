@@ -28,5 +28,5 @@ export function NeonWave({samples,pulse}:{samples:RefObject<Float32Array|null>;p
   };
   frame=requestAnimationFrame(draw);return()=>cancelAnimationFrame(frame);
  },[samples,pulse]);
- return <canvas ref={canvas} className="atz-party-wave" aria-hidden="true"/>;
+ return <canvas ref={canvas} className="zonyx-party-wave" aria-hidden="true"/>;
 }

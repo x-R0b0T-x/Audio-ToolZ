@@ -41,7 +41,7 @@ export function useBeatSync(doc:AudioDocument|null){
   };
   const tick=(now:number)=>{
    const elapsed=last?(now-last)/1000:1/60;last=now;
-   const next=document.querySelector<HTMLImageElement>('.atz-about-robot>img');
+   const next=document.querySelector<HTMLImageElement>('.zonyx-about-robot>img');
    if(next!==image){resetImage();image=next;if(!image){stopDetection();attempted=false;tempoError='';}}
    if(image||(audioEngine.isPlaying&&!reduced.matches))detectRobotTempo();
    const target=document.querySelector<HTMLElement>('[data-testid="snap-kicks-toggle"]');if(target!==snap){resetSnap();snap=target;}
@@ -76,12 +76,12 @@ export function useBeatSync(doc:AudioDocument|null){
 }
 export function installDescriptions(root:HTMLElement){
  const removeSpaceTransport=installSpaceTransport({isPlaying:()=>audioEngine.isPlaying,isRecording:()=>audioEngine.isRecording});
- const tip=document.createElement('div');tip.id='atz-description';tip.setAttribute('role','tooltip');
+ const tip=document.createElement('div');tip.id='zonyx-description';tip.setAttribute('role','tooltip');
  Object.assign(tip.style,{position:'fixed',zIndex:'2147483647',maxWidth:'min(340px, calc(100vw - 16px))',padding:'8px 12px',border:'1px solid #39ff14',borderRadius:'7px',background:'#17131f',color:'#fff',font:'12px/1.45 system-ui',boxShadow:'0 0 6px #39ff14aa,0 0 14px #39ff1455',pointerEvents:'none'});
  let current:HTMLElement|null=null,title:string|null=null,described:string|null=null,timer=0;
  const hide=()=>{window.clearTimeout(timer);tip.remove();if(current){if(title!==null)current.setAttribute('title',title);if(described===null)current.removeAttribute('aria-describedby');else current.setAttribute('aria-describedby',described);}current=null;};
  const show=(event:Event)=>{
-  if(event.target instanceof Element&&event.target.closest('.atz-knob,.atz-parameter')){hide();return;}
+  if(event.target instanceof Element&&event.target.closest('.zonyx-knob,.zonyx-parameter')){hide();return;}
   if(!(event.target instanceof Element)||current?.contains(event.target))return;
   const node=event.target.closest<HTMLElement>('[title]');if(!node||!root.contains(node))return;
   hide();current=node;title=node.getAttribute('title');described=node.getAttribute('aria-describedby');node.removeAttribute('title');

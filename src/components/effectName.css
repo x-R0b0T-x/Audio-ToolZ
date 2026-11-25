@@ -1,0 +1,3 @@
+.zonyx-effect-name>.zonyx-name-z{color:#b34dff!important}.zonyx-effect-name>.zonyx-name-dash{color:#fff!important}.zonyx-effect-name>.zonyx-name-effect{color:#39ff14!important}
+/* Menus stay monochrome; effect window titles keep their three colors. */
+#root#root [role="menu"] .zonyx-effect-name,#root#root [role="menu"] .zonyx-effect-name>span{color:#fff!important}

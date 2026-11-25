@@ -10,7 +10,7 @@ test('About links are precisely allowed by the native opener',()=>{const info=re
 test('changelog main heading has the exact requested caption and an explicit green override',()=>{
  const info=readFileSync('src/components/InfoModal.tsx','utf8'),css=readFileSync('src/components/headerParticles.css','utf8'),base=readFileSync('src/textReadability.css','utf8');
  assert.ok(info.includes('id="about-changelog-title" className="text-sm font-bold">Changlog depuis la v1.5</h3>'));
- assert.ok(css.includes('#root .atz-about-dialog #about-changelog-title{color:#39ff14!important}'));
+ assert.ok(css.includes('#root .zonyx-about-dialog #about-changelog-title{color:#39ff14!important}'));
  assert.ok(base.includes('font-weight:700!important'));
 });
 test('robot uses only the tempo clock and expands to 170 percent',()=>{
@@ -33,7 +33,10 @@ test('shared tempo detection serves About or active animated playback and retain
  assert.ok(code.includes('stopDetection();attempted=false'));assert.ok(code.includes('disposed=true;stopDetection()'));
  assert.ok(code.includes('if(disposed||worker!==current)return;'));assert.ok(code.includes('worker?.terminate()'));
  assert.ok(code.includes('export function readHeaderTempo()'));assert.ok(code.includes('headerTempo=robotTempo'));
- assert.ok(particles.includes('audioEngine.readLiveMeters()'));assert.ok(particles.includes('meters.leftRms,meters.rightRms'));assert.ok(!particles.includes('readHeaderTempo'));assert.ok(!particles.includes('getCurrentSample'));assert.ok(!particles.includes('kick'));
+ const meterName=particles.match(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*audioEngine\.readLiveMeters\(\)/)?.[1];assert.ok(meterName,'Header wave must read the live stereo meters');
+ const meter=meterName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ for(const suffix of ['Rms','Peak'])assert.match(particles,new RegExp(`Math\\.max\\(\\s*${meter}\\.left${suffix}\\s*,\\s*${meter}\\.right${suffix}\\s*\\)`));
+ assert.ok(!particles.includes('readHeaderTempo'));assert.ok(!particles.includes('getCurrentSample'));assert.ok(!particles.includes('kick'));
  assert.ok(worker.includes('detectBpmAndBeats(channels,sampleRate)'));assert.ok(worker.includes('result.beatSamples[0]??0'));
 });
 test('boom pulses have a fast attack, gradual return and bounded scale on every beat',()=>{
@@ -52,31 +55,32 @@ test('About keeps two columns, the robot on the left, and reserves room for its 
  const css=readFileSync('src/components/aboutLayout.css','utf8');
  assert.ok(css.includes('grid-template-columns:minmax(0,1.1fr) minmax(150px,1fr)'));
  assert.ok(!css.includes('@container'));assert.ok(!/grid-template-columns:minmax\(0,1fr\)[;}]/.test(css));
- assert.ok(css.includes('padding:var(--atz-room,24px) 12px var(--atz-room,24px) 40px'));
- assert.ok(css.includes('--atz-art-size:var(--atz-fit-size,150px)'));
- assert.ok(css.includes('transform-origin:var(--atz-ox,50%) var(--atz-oy,50%)'));
- assert.ok(css.includes('left:calc(50% + var(--atz-dx,0px))'));assert.ok(css.includes('top:calc(50% + var(--atz-dy,50%))')||css.includes('top:calc(50% + var(--atz-dy,0px))'));
- assert.ok(css.includes('.atz-about-robot{--atz-art-size'));assert.ok(css.includes('z-index:0'));assert.ok(css.includes('.atz-about-actions{position:relative;z-index:1'));
+ assert.ok(css.includes('padding:var(--zonyx-room,24px) 12px var(--zonyx-room,24px) 40px'));
+ assert.ok(css.includes('--zonyx-art-size:var(--zonyx-fit-size,150px)'));
+ assert.ok(css.includes('transform-origin:var(--zonyx-ox,50%) var(--zonyx-oy,50%)'));
+ assert.ok(css.includes('left:calc(50% + var(--zonyx-dx,0px))'));assert.ok(css.includes('top:calc(50% + var(--zonyx-dy,50%))')||css.includes('top:calc(50% + var(--zonyx-dy,0px))'));
+ assert.ok(css.includes('.zonyx-about-robot{--zonyx-art-size'));assert.ok(css.includes('z-index:0'));assert.ok(css.includes('.zonyx-about-actions{position:relative;z-index:1'));
  assert.ok(css.includes('overflow-x:hidden;overflow-y:auto'));
 });
 test('robot is fitted to its visible drawing and to the block of three links',()=>{
  const code=readFileSync('src/components/AboutRobot.tsx','utf8');
  assert.ok(code.includes('alphaBounds(ctx.getImageData'));assert.ok(code.includes('fitRobot(bounds,block,'));
  assert.ok(code.includes('last.getBoundingClientRect().bottom-first.getBoundingClientRect().top'));
- assert.ok(code.includes('.atz-about-actions'));assert.ok(code.includes('ResizeObserver'));assert.ok(code.includes('--atz-fit-size'));assert.ok(code.includes('--atz-room'));
+ assert.ok(code.includes('.zonyx-about-actions'));assert.ok(code.includes('ResizeObserver'));assert.ok(code.includes('--zonyx-fit-size'));assert.ok(code.includes('--zonyx-room'));
  assert.ok(code.includes('<img src={src}'));
 });
 test('About link halos are thinner, sharper and faster',()=>{
  const css=readFileSync('src/components/aboutLayout.css','utf8');
- assert.ok(css.includes('animation:atz-about-ring 1.6s linear infinite'));
- const seconds=Number(css.match(/atz-about-ring ([0-9.]+)s linear/)?.[1]);assert.ok(seconds>0&&seconds<=2);
- assert.ok(css.includes('conic-gradient(from var(--atz-halo-angle)'));assert.ok(css.includes('mask-composite:exclude'));assert.ok(css.includes('inset:-2px;padding:2px'));
- assert.ok(!css.includes('atz-about-bright-halo'));assert.ok(!css.includes('drop-shadow(0 0 18px'));assert.ok(css.includes('drop-shadow(0 0 2px rgba(57,255,20,.75))'));
- assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));assert.ok(css.includes('.atz-about-actions>a::before{animation:none}'));
+ assert.ok(css.includes('animation:zonyx-about-ring 1.6s linear infinite'));
+ const seconds=Number(css.match(/zonyx-about-ring ([0-9.]+)s linear/)?.[1]);assert.ok(seconds>0&&seconds<=2);
+ assert.ok(css.includes('conic-gradient(from var(--zonyx-halo-angle)'));assert.ok(css.includes('mask-composite:exclude'));assert.ok(css.includes('inset:-2px;padding:2px'));
+ assert.ok(!css.includes('zonyx-about-bright-halo'));assert.ok(!css.includes('drop-shadow(0 0 18px'));assert.ok(css.includes('drop-shadow(0 0 2px rgba(57,255,20,.75))'));
+ assert.ok(css.includes('@media(prefers-reduced-motion:reduce)'));assert.ok(css.includes('.zonyx-about-actions>a::before{animation:none}'));
 });
 test('Space transport is installed once with the global descriptions and only uses existing controls',()=>{
  const code=readFileSync('src/utils/finalUi.ts','utf8'),space=readFileSync('src/utils/spaceTransport.mjs','utf8');
  assert.ok(code.includes('installSpaceTransport({isPlaying:()=>audioEngine.isPlaying,isRecording:()=>audioEngine.isRecording})'));assert.ok(code.includes('removeSpaceTransport();hide();'));
- assert.ok(space.includes("'.atz-advanced-backdrop'"));assert.ok(space.includes('addEventListener(\'keydown\',down,true)'));assert.ok(space.includes('control.element.click()'));
+ assert.ok(space.includes('doc.querySelectorAll(CONTROLS)'));assert.ok(space.includes('Fenêtre de contrôle flottante'));assert.ok(space.includes('addEventListener(\'keydown\',down,true)'));
+ assert.match(space,/activate\s*:\s*([A-Za-z_$][\w$]*)\s*=>\s*\1\.element\.click\(\)/);
  assert.ok(!space.includes('audioEngine'));
 });

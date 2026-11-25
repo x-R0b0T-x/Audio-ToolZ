@@ -29,8 +29,8 @@ function nativeField(target: Element, boundary: Element): HTMLInputElement | HTM
   return null;
 }
 export function defaultValue(field: HTMLInputElement | HTMLSelectElement): string | boolean | null {
-  if (field.hasAttribute('data-atz-default')) {
-    const value = field.getAttribute('data-atz-default')!;
+  if (field.hasAttribute('data-zonyx-default')) {
+    const value = field.getAttribute('data-zonyx-default')!;
     return field instanceof HTMLInputElement && field.type === 'checkbox' ? value === 'true' : value;
   }
   if (field instanceof HTMLInputElement && ['text','file','hidden'].includes(field.type)) return null;
@@ -109,7 +109,9 @@ export function installControlGestures(root: HTMLElement): () => void {
   const accumulated = new WeakMap<Element, number>();
   const wheel = (event: WheelEvent) => {
     if (!(event.target instanceof Element) || event.ctrlKey || !event.deltaY) return;
-    const field = event.target.closest('input[type="range"], input[type="number"], [role="slider"]');
+    const stereo = event.target.closest('.zonyx-rv-stereo');
+    if (stereo && event.target.closest('.zonyx-value-entry input')) return;
+    const field = event.target.closest('input[type="range"], input[type="number"], [role="slider"]') ?? stereo?.querySelector('[role="slider"]');
     if (!(field instanceof HTMLElement) || !root.contains(field) || field.matches(':disabled, [aria-disabled="true"]')) return;
     if (field instanceof HTMLInputElement && field.readOnly) return;
     event.preventDefault(); event.stopPropagation();

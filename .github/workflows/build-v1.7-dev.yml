@@ -1,0 +1,137 @@
+name: Audio ToolZ v1.7-dev - Windows validation
+on:
+  push:
+    branches: [v.1.7-dev]
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/**', '.github/corrections/**', '.github/workflows/build-v1.7-dev.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: reverb-dev-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows:
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ' && github.ref == 'refs/heads/v.1.7-dev'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: v.1.7-dev
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Repair embedded Rust escape and preflight Python generators
+        run: python .github/corrections/repair_final_lot_encoding.py
+      - name: Prepare approved sources and complete final lot
+        shell: pwsh
+        run: |
+          python .github/corrections/knob_feedback.py
+          if ($LASTEXITCODE -ne 0) { throw 'Knob corrections failed' }
+          python .github/corrections/integrate_pitcher_engine.py
+          if ($LASTEXITCODE -ne 0) { throw 'Signalsmith integration failed' }
+          python .github/corrections/apply_final_lot.py
+          if ($LASTEXITCODE -ne 0) { throw 'Final lot failed' }
+          git add -- src src-tauri/src package.json .github/diagnostics/final-lot.json .github/corrections/apply_final_lot.py
+          if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
+      - name: Restore application icons if missing
+        shell: pwsh
+        run: |
+          foreach ($icon in @('public/icon.ico','public/icon.png')) {
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) {
+              git restore --source=6af5c11 --worktree -- $icon
+              if ($LASTEXITCODE -ne 0) { throw "Cannot restore $icon" }
+            }
+            if ((Get-Item -LiteralPath $icon).Length -eq 0) { throw "Empty icon $icon" }
+          }
+      - name: Install build and runtime dependencies
+        shell: pwsh
+        run: |
+          npm install
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+          npm install --no-save @tauri-apps/cli@2 playwright
+          if ($LASTEXITCODE -ne 0) { throw 'Build tools installation failed' }
+      - name: Source audit
+        run: node src/utils/reviewAudit.mjs
+      - name: All Node regression tests
+        shell: pwsh
+        run: |
+          $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
+          if ($tests.Count -eq 0) { throw 'No regression tests' }
+          node --test @tests
+          if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed' }
+      - name: TypeScript check
+        run: npm run lint
+      - name: Frontend build
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Actual Signalsmith audio validation under application CSP
+        timeout-minutes: 10
+        run: node .github/maintenance/verify_pitcher_runtime.mjs
+      - name: Verify locked Symphonia
+        shell: pwsh
+        run: |
+          $raw = & cargo metadata --locked --manifest-path src-tauri/Cargo.toml --format-version 1
+          if ($LASTEXITCODE -ne 0) { throw 'Locked resolution failed' }
+          $metadata = $raw | ConvertFrom-Json
+          $symphonia = @($metadata.packages | Where-Object { $_.name -eq 'symphonia' })
+          if ($symphonia.Count -ne 1 -or $symphonia[0].version -ne '0.6.1') { throw 'Expected Symphonia 0.6.1' }
+      - name: Rust decoder and configuration regression tests
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml -- --nocapture
+      - name: Build portable Windows application
+        run: npx tauri build --no-bundle
+      - name: Record tested development sources
+        shell: pwsh
+        run: |
+          if ((git branch --show-current) -ne 'v.1.7-dev') { throw 'Wrong branch' }
+          if ((git rev-parse HEAD) -ne $env:GITHUB_SHA) { throw 'Unexpected checkout' }
+          git diff --exit-code -- src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) { throw 'Rust lock changed' }
+          @'
+          import json
+          from pathlib import Path
+          p=Path('.github/diagnostics/final-lot.json')
+          report=json.loads(p.read_text(encoding='utf-8'))
+          report['validation']='node-typescript-frontend-signalsmith-runtime-rust-and-windows-build-passed'
+          p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          '@ | python -
+          if ($LASTEXITCODE -ne 0) { throw 'Report failed' }
+          git add -- src src-tauri/src package.json package-lock.json .github/diagnostics/final-lot.json .github/corrections/apply_final_lot.py
+          if ($LASTEXITCODE -ne 0) { throw 'Staging failed' }
+          git diff --cached --quiet
+          $result = $LASTEXITCODE
+          if ($result -gt 1) { throw 'Diff failed' }
+          if ($result -eq 1) {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'feat: validated final feedback, horizontal Pitcher and configuration tutorial'
+            if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          }
+          exit 0
+      - name: Package and verify Windows Shell extraction
+        run: python .github/maintenance/package-v17.py
+      - name: Upload portable ZIP without wrapping
+        uses: actions/upload-artifact@v7
+        with:
+          path: single-output/Audio ToolZ v1.7-dev.zip
+          archive: false
+          if-no-files-found: error
+      - name: Publish validated sources without force
+        shell: pwsh
+        run: |
+          git push origin HEAD:refs/heads/v.1.7-dev
+          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; no newer changes overwritten; ZIP already uploaded' }
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Audio.ToolZ.v1.7-dev.validation
+          path: |
+            audit-output/
+            .github/diagnostics/final-lot.json
+          if-no-files-found: warn

@@ -22,10 +22,10 @@ test('loop handles remain prior to loop playback actions',()=>{
 });
 test('compact selector exposes six modes without restoring artwork or VU bars',()=>{
   const source=read('src/components/ControlWindow.tsx'),visuals=read('src/components/AnalyzerVisuals.tsx');
-  for(const absent of ['data-atz-control-art','mixArtworkUrl','vuCanvasRef','Analyseur temps réel'])assert.ok(!source.includes(absent));
+  for(const absent of ['data-zonyx-control-art','mixArtworkUrl','vuCanvasRef','Analyseur temps réel'])assert.ok(!source.includes(absent));
   for(const retained of ['<AnalyzerSelect ','ref={visCanvasRef}','w-full h-24','loadPersistedUiState().visualMode','onVolumeChange','onBalanceChange','onSpeedChange'])assert.ok(source.includes(retained));
   for(const mode of modes)assert.ok(visuals.includes("'"+mode+"'"));
-  assert.ok(visuals.includes('<select data-atz-control="visual-mode"'));
+  assert.ok(visuals.includes('<select data-zonyx-control="visual-mode"'));
   assert.ok(visuals.includes('onDoubleClick={()=>onChange(\'oscilloscope\')}'));
   assert.ok(visuals.includes('readStereoSpectrumSnapshots()'));
   assert.ok(visuals.includes('readStereoWaveformSnapshots()'));
