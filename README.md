@@ -1,6 +1,6 @@
 <div align="center">
   <img src="src/medias/mix.png" alt="Logo Audio ToolZ" width="220" />
-  <h1>Audio ToolZ v1.6</h1>
+  <h1>Audio ToolZ</h1>
   <p>Découpez, transformez et assemblez vos sons.</p>
   <p>Éditeur audio à interface française · Windows portable · Traitements locaux</p>
   <p><a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases">Versions publiées</a> · <a href="RELEASE_NOTES_1.6.md">Nouveautés v1.6</a> · <a href="CHANGELOG.md">Changelog</a> · <a href="https://t.me/Audio_ToolZ">Communauté Telegram</a></p>
