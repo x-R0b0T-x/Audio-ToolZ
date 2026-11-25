@@ -120,7 +120,7 @@ export function installControlGestures(root: HTMLElement): () => void {
     const sum = (Math.sign(old) === Math.sign(delta) ? old : 0) + delta;
     if (Math.abs(sum) < 40) { accumulated.set(field, sum); return; }
     accumulated.set(field, 0);
-    const direction = (sum < 0 ? 1 : -1) * (field.closest('.zonyx-rv-stereo') ? -1 : 1);
+    const direction = sum < 0 ? 1 : -1;
     if (field instanceof HTMLInputElement) {
       const step = field.step && field.step !== 'any' ? Number(field.step) : 1;
       const value = Number(field.value);

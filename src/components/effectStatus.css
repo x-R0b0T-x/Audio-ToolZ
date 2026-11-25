@@ -18,3 +18,13 @@
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link::before{content:'';width:12px;height:16px;margin-right:10px;background:currentColor;clip-path:polygon(0 0,40% 0,100% 50%,40% 100%,0 100%,60% 50%);vertical-align:middle;transform:rotate(0deg)}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link[aria-expanded=true]::before{transform:rotate(-90deg)}
 @media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;stroke:#fff;opacity:1}#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:none;filter:drop-shadow(0 0 8px #39ff14)}}
+
+/* Temporary status fade */
+#root#root .zonyx-effect-status>output{opacity:0;visibility:hidden;transition:opacity 250ms ease-out,visibility 0s 250ms}
+#root#root .zonyx-effect-status.is-control-active>output{opacity:1;visibility:visible;transition:opacity 60ms ease-out,visibility 0s}
+@media(prefers-reduced-motion:reduce){#root#root .zonyx-effect-status>output{transition:none}}
+
+/* White footer button labels */
+#root#root#root .zonyx-advanced>footer>button{color:#fff!important;text-shadow:none!important}
+#root#root#root .zonyx-advanced>footer>button:not(:disabled):is(:hover,:focus-visible){color:#fff!important;text-shadow:none!important;border-color:#39ff14!important;box-shadow:0 0 8px #39ff1480!important;filter:none!important}
+#root#root#root .zonyx-advanced>footer>button:is(:hover,:focus-visible)>*{color:#fff!important;text-shadow:none!important}

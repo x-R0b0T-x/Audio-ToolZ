@@ -21,3 +21,9 @@
 .zonyx-help-topic .zonyx-help-link:is(:hover,:focus-visible){color:var(--zonyx-help-green);outline:1px solid var(--zonyx-help-green)}
 .zonyx-help-topic p{margin:4px 0 12px 20px}.zonyx-help-topic p[hidden]{display:none}
 @media(max-width:520px){.zonyx-help-layout{grid-template-columns:70px minmax(0,1fr)}.zonyx-help-professor{width:70px}}
+
+/* Borderless reviewed help */
+.zonyx-help-dialog.zonyx-help-dialog{border:0!important;box-shadow:0 18px 48px #000c!important}
+.zonyx-help-dialog .zonyx-help-topic .zonyx-help-link{border:0!important;box-shadow:none!important}
+.zonyx-help-dialog .zonyx-help-topic .zonyx-help-link:is(:hover,:focus-visible){outline:none!important}
+.zonyx-help-dialog .zonyx-help-topic .zonyx-help-link:focus-visible{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}

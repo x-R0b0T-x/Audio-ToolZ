@@ -2,6 +2,7 @@ import {signedDbLabel} from '../utils/presentationFormat';
 import React, { useEffect, useRef } from 'react';
 import {useControlActivity} from '../utils/useControlActivity';
 import './knobStates.css';
+import {KnobTicks} from './KnobTicks';
 import { audioEngine } from '../audio/engine';
 import type { DelayMode } from '../audio/musicalDelay';
 
@@ -92,20 +93,11 @@ export const Knob: React.FC<KnobProps> = (p) => {
         }
       }}>
       <svg width={p.small ? 72 : 100} height={p.small ? 72 : 100} viewBox="0 0 100 100" aria-hidden="true">
-        {Array.from({ length: tickCount }, (_, i) => {
-          const tickFraction = i / Math.max(1, tickCount - 1);
-          const a = (-135 + tickFraction * 270) * Math.PI / 180;
-          const active = bipolar
-            ? (tickCount === 3
-              ? (i === 1 && p.value === 0) || (i === 0 && p.value < 0) || (i === 2 && p.value > 0)
-              : fraction <= 0.5 ? (tickFraction >= fraction - 0.02 && tickFraction <= 0.51) : (tickFraction >= 0.49 && tickFraction <= fraction + 0.02))
-            : tickFraction <= fraction + 1e-6;
-          return <line key={i} x1={50 + Math.sin(a) * 38} y1={50 - Math.cos(a) * 38} x2={50 + Math.sin(a) * 45} y2={50 - Math.cos(a) * 45} stroke="#39ff14" opacity={active?1:.75} strokeWidth={tickCount === 3 && i === 1 ? '2.5' : '2'} />;
-        })}
+        <KnobTicks fraction={fraction} count={tickCount} center={50} inner={38} outer={45}/>
         <circle cx="50" cy="50" r="31" fill="#3d2466" stroke="#bd93f9" strokeWidth="2" />
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />
         <line x1="50" y1="29" x2="50" y2="22" stroke="#45f882" strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${angle} 50 50)`} />
-      </svg>
+      </svg>{p.label==="Panoramique de départ"&&<div className="zonyx-pan-labels" aria-hidden="true"><span>Gauche</span><span>Droite</span></div>}
     </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
   </div>;
 };
