@@ -36,6 +36,17 @@ jobs:
           $tests = @(Get-ChildItem src -Recurse -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
           node --test @tests
           if ($LASTEXITCODE -ne 0) { throw 'Regression tests failed' }
+      - name: Restore and verify required runtime icons
+        shell: pwsh
+        run: |
+          foreach ($icon in @('public/icon.ico', 'public/icon.png')) {
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) {
+              git restore --source=6af5c11 --worktree -- $icon
+              if ($LASTEXITCODE -ne 0) { throw "Cannot restore required icon: $icon" }
+            }
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) { throw "Required icon missing: $icon" }
+            if ((Get-Item -LiteralPath $icon).Length -eq 0) { throw "Required icon empty: $icon" }
+          }
       - name: Frontend build
         run: npm run build
       - name: Publish corrected development sources
