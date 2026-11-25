@@ -1,18 +1,21 @@
 #root#root .zonyx-advanced>footer{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
 #root#root .zonyx-advanced>footer>button{flex:0 0 auto}
-#root#root .zonyx-effect-status{display:flex;align-items:center;gap:10px;flex:1 1 0;min-width:0;text-align:left}
-#root#root .zonyx-effect-status>output{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#39ff14;font-variant-numeric:tabular-nums}
-#root#root .zonyx-status-badge{display:block;flex:0 0 76px;height:36px;filter:drop-shadow(0 0 5px #39ff1480)}
+#root#root .zonyx-advanced>footer>.zonyx-effect-status{display:flex;align-items:center;justify-content:flex-start;gap:10px;flex:1 1 0;min-width:0;margin:0;padding:0;text-align:left}
+#root#root .zonyx-advanced>footer>.zonyx-effect-status>output{display:block;flex:0 1 auto;min-width:0;width:auto;margin:0!important;padding:0;text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#39ff14!important;font-variant-numeric:tabular-nums}
+#root#root .zonyx-status-badge{display:block;flex:0 0 76px;height:36px;margin:0;filter:drop-shadow(0 0 2px #39ff1450)}
 #root#root .zonyx-status-badge svg{display:block;width:76px;height:36px;overflow:visible}
-#root#root .zonyx-status-shape{fill:#39ff14}
-#root#root .zonyx-status-chevron{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse 1.5s linear infinite;opacity:.35}
-#root#root .zonyx-status-chevron-1{animation-delay:.5s}
-#root#root .zonyx-status-chevron-2{animation-delay:1s}
-@keyframes zonyx-chevron-pulse{0%,32%{opacity:1;filter:drop-shadow(0 0 2px white)}33%,100%{opacity:.35;filter:none}}
+#root#root .zonyx-status-shape{fill:#182e1b;stroke:#39ff14;stroke-width:1.5}
+#root#root .zonyx-status-chevron{fill:none;stroke:#39ff14;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse 1.5s linear infinite;opacity:.3}
+#root#root .zonyx-status-chevron-1{animation-delay:-1s}
+#root#root .zonyx-status-chevron-2{animation-delay:-.5s}
+@keyframes zonyx-chevron-pulse{0%,32%{opacity:1;filter:drop-shadow(0 0 3px #39ff14)}33%,100%{opacity:.3;filter:none}}
+#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:zonyx-control-halo .7s ease-in-out infinite alternate}
+#root#root .zonyx-effect-status.is-control-active .zonyx-status-shape{fill:#24512a}
+@keyframes zonyx-control-halo{from{filter:drop-shadow(0 0 5px #39ff14)}to{filter:drop-shadow(0 0 12px #39ff14) brightness(1.35)}}
 #root#root .zonyx-rv-info{height:auto;display:block}
 #root#root .zonyx-rv-info>output,#root#root .zonyx-eq-frequency{display:none}
 #root#root .zonyx-rv-info>span:empty{display:none}
 #root#root .zonyx-rv-info>span{display:block;text-align:left}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link::before{content:'';width:12px;height:16px;margin-right:10px;background:currentColor;clip-path:polygon(0 0,40% 0,100% 50%,40% 100%,0 100%,60% 50%);vertical-align:middle;transform:rotate(0deg)}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link[aria-expanded=true]::before{transform:rotate(-90deg)}
-@media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;opacity:1}#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:none;filter:drop-shadow(0 0 8px #39ff14)}}
