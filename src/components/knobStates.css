@@ -5,8 +5,8 @@
 #root#root .zonyx-parameter>button[role=slider]>svg>circle,#root#root .zonyx-knob [role=slider]>svg>circle{stroke:#bd93f9!important;filter:none!important}
 #root#root [role=slider]>svg>line[data-zonyx-tick]{stroke-width:2!important;stroke-linecap:round;vector-effect:non-scaling-stroke;filter:none!important;opacity:1!important}
 #root#root [role=slider]>svg>line[data-zonyx-tick=idle]{stroke:#fff!important}
-#root#root [role=slider]>svg>line[data-zonyx-tick=neighbor]{stroke:#39ff14!important;opacity:.25!important}
-#root#root [role=slider]>svg>line[data-zonyx-tick=selected]{stroke:#39ff14!important;filter:drop-shadow(0 0 3px #39ff14)!important}
+#root#root [role=slider]>svg>line[data-zonyx-tick=neighbor]{stroke:#39ff14!important;opacity:.65!important;filter:drop-shadow(0 0 3px #39ff14)!important}
+#root#root [role=slider]>svg>line[data-zonyx-tick=selected]{stroke:#39ff14!important;filter:drop-shadow(0 0 5px #39ff14) drop-shadow(0 0 8px #39ff1480)!important}
 #root#root .zonyx-parameter>button[role=slider]>svg>line:last-child,#root#root .zonyx-knob [role=slider]>svg>line:last-child{stroke:#fff!important;filter:none!important}
 #root#root [role=slider]:focus-visible>svg>line:last-child{stroke:#39ff14!important}
 #root#root fieldset:disabled [role=slider]>svg>line[data-zonyx-tick],#root#root [role=slider][aria-disabled=true]>svg>line[data-zonyx-tick]{stroke:#fff!important;filter:none!important;opacity:.4!important}

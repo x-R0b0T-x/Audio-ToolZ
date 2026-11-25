@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import {useControlActivity} from '../utils/useControlActivity';
 import './knobStates.css';
 import {KnobTicks} from './KnobTicks';
+import {PositionLabel} from './PositionLabel';
 import { audioEngine } from '../audio/engine';
 import type { DelayMode } from '../audio/musicalDelay';
 
@@ -97,7 +98,7 @@ export const Knob: React.FC<KnobProps> = (p) => {
         <circle cx="50" cy="50" r="31" fill="#3d2466" stroke="#bd93f9" strokeWidth="2" />
         <circle cx="50" cy="50" r="27" fill="#7043aa" stroke="#8b5ec6" />
         <line x1="50" y1="29" x2="50" y2="22" stroke="#45f882" strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${angle} 50 50)`} />
-      </svg>{p.label==="Panoramique de départ"&&<div className="zonyx-pan-labels" aria-hidden="true"><span>Gauche</span><span>Droite</span></div>}
+      </svg>{p.label==="Panoramique de départ"&&<div className="zonyx-pan-labels" style={{width:p.small?72:100}} aria-hidden="true"><PositionLabel fraction={fraction} position={0}>Gauche</PositionLabel><PositionLabel fraction={fraction} position={1}>Droite</PositionLabel><PositionLabel fraction={fraction} position={.5}>Centre</PositionLabel></div>}
     </div><output className="text-[11px] text-center text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
   </div>;
 };

@@ -20,7 +20,7 @@
 @media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;stroke:#fff;opacity:1}#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:none;filter:drop-shadow(0 0 8px #39ff14)}}
 
 /* Temporary status fade */
-#root#root .zonyx-effect-status>output{opacity:0;visibility:hidden;transition:opacity 250ms ease-out,visibility 0s 250ms}
+#root#root .zonyx-effect-status>output{opacity:0;visibility:hidden;transition:opacity 1500ms linear,visibility 0s 1500ms}
 #root#root .zonyx-effect-status.is-control-active>output{opacity:1;visibility:visible;transition:opacity 60ms ease-out,visibility 0s}
 @media(prefers-reduced-motion:reduce){#root#root .zonyx-effect-status>output{transition:none}}
 

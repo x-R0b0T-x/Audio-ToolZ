@@ -4,7 +4,7 @@ import {audioEngine} from '../audio/engine';
 import {renderSignalsmith,splicePitcher} from '../audio/signalsmithPitcher';
 import {targetRange} from '../audio/effectsModel.mjs';
 import {createPreviewExit,restoreUnappliedPreview} from '../utils/effectReview.mjs';
-import {Fader} from './EffectControls';
+import {PitcherFader} from './PitcherFader';
 import {EffectPanel} from './EffectPanel';
 type Props={document:AudioDocument;onStopPreview:()=>void;onClose:()=>void;onApply:(channels:Float32Array[],label:string,selection?:AudioSelection)=>void};
 type Result={id:number;speed:number;pitch:number;channels:Float32Array[];selection:{startSample:number;endSample:number}};
@@ -55,5 +55,5 @@ export function PitcherModal(p:Props){
  const ready=!busy&&!error&&range.end>range.start&&result?.id===serial.current&&result?.speed===speed&&result?.pitch===pitch;
  const cancel=()=>{exit.current!.discard();latest.current.onClose();};
  const apply=()=>{const r=cache.current;if(!ready||!r||r.id!==serial.current||r.speed!==wanted.current.speed||r.pitch!==wanted.current.pitch)return;exit.current!.apply(()=>{latest.current.onApply(r.channels,'Z-Pitcher',r.selection);controller.current?.abort();});};
- return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-pitcher" role="dialog" aria-modal="true" aria-labelledby="pitcher-title"><header><h2 id="pitcher-title">Z-Pitcher</h2><button type="button" aria-label="Fermer" onClick={cancel}>×</button></header><main><div className="zonyx-legacy-controls"><Fader label="Vitesse" value={speed} defaultValue={1} min={.5} max={2} step={.05} display={`${speed} ×`} onChange={setSpeed}/><Fader label="Hauteur" value={pitch} defaultValue={0} min={-12} max={12} step={1} display={`${pitch} demi-tons`} onChange={setPitch}/></div>{busy&&<p role="status">Calcul Signalsmith Stretch…</p>}{error&&<p role="alert">{error}</p>}</main><footer><button type="button" onClick={cancel}>Annuler</button><button type="button" disabled={!ready} onClick={apply}>Appliquer</button></footer></EffectPanel></div>;
+ return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-pitcher" role="dialog" aria-modal="true" aria-labelledby="pitcher-title"><header><h2 id="pitcher-title">Z-Pitcher</h2><button type="button" aria-label="Fermer" onClick={cancel}>×</button></header><main><div className="zonyx-legacy-controls"><PitcherFader kind="speed" value={speed} onChange={setSpeed}/><PitcherFader kind="pitch" value={pitch} onChange={setPitch}/></div><span className="zonyx-pitcher-progress" aria-busy={busy}/>{error&&<p role="alert">{error}</p>}</main><footer><button type="button" onClick={cancel}>Annuler</button><button type="button" disabled={!ready} onClick={apply}>Appliquer</button></footer></EffectPanel></div>;
 }

@@ -1,0 +1,11 @@
+.zonyx-config-frame{border:1px solid #a15eff;border-radius:10px;padding:14px;background:#171021;box-shadow:0 0 12px #a15eff22;min-width:0}
+#root .zonyx-config-private,.zonyx-tuto .zonyx-config-private{font-size:11px;color:white!important;opacity:.8;margin:0 0 10px}
+.zonyx-config-status{color:#39ff14;font:600 12px system-ui;margin-bottom:10px}
+.zonyx-config-list{height:clamp(200px,36vh,360px);overflow-y:auto;overscroll-behavior:contain;scrollbar-color:#39ff14 #241733;scrollbar-width:thin;padding:0 10px 0 0}
+.zonyx-config-list::-webkit-scrollbar{width:9px}.zonyx-config-list::-webkit-scrollbar-track{background:#241733;border-radius:8px}.zonyx-config-list::-webkit-scrollbar-thumb{background:#39ff14;border:1px solid #b8ffaa;border-radius:8px;box-shadow:inset 0 0 5px #39ff14}
+.zonyx-config-list>section{border-bottom:1px solid #bd93f933;padding:10px 0}
+.zonyx-tuto .zonyx-config-list h4{color:#bd93f9!important;margin:0 0 6px;font-weight:700}
+.zonyx-tuto .zonyx-config-list p{color:white!important;margin:4px 0;font-size:12px;overflow-wrap:anywhere}
+.zonyx-tuto .zonyx-config-list [data-state=ok] h4,.zonyx-tuto .zonyx-config-success h4{color:#39ff14!important}
+.zonyx-tuto .zonyx-config-list [data-state=error] h4{color:#ffadb8!important}
+.zonyx-config-success{padding:16px 0 8px}.zonyx-config-success h4{font-size:22px;text-shadow:0 0 7px #39ff1470}.zonyx-config-success small{color:#bd93f9;font-size:10px}

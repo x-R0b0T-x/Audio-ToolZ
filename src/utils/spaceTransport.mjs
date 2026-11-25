@@ -12,7 +12,7 @@ const space=e=>e.code==='Space'||e.key===' '||e.key==='Spacebar';
 export function isTextEntry(event){const node=event.composedPath?.()[0]??event.target;return Boolean(node?.isContentEditable||node?.closest?.('textarea,[contenteditable=""],[contenteditable="true"],[contenteditable="plaintext-only"],input:not([type]),input[type="text"],input[type="search"],input[type="url"],input[type="tel"],input[type="email"],input[type="password"]'));}
 const swallow=e=>{e.preventDefault();e.stopPropagation?.();e.stopImmediatePropagation?.();};
 export function createSpaceTransport(env){let held=false;return {
- keydown(e){if(!space(e)||e.ctrlKey||e.altKey||e.metaKey||e.shiftKey||e.isComposing||isTextEntry(e)||env.recording())return false;swallow(e);if(e.repeat||held)return true;held=true;const controls=env.controls(),action=env.playing()?'pause':env.loopPreferred?.()?'loop':'play';const control=findTransportControl(controls,action)??(action==='loop'?findTransportControl(controls,'play'):null);if(control)env.activate(control);return true;},
+ keydown(e){if(!space(e)||e.ctrlKey||e.altKey||e.metaKey||e.shiftKey||e.isComposing||isTextEntry(e)||env.recording())return false;swallow(e);if(e.repeat||held)return true;held=true;const controls=env.controls(),action=env.playing()?'stop':env.loopPreferred?.()?'loop':'play';const control=findTransportControl(controls,action)??(action==='loop'?findTransportControl(controls,'play'):null);if(control)env.activate(control);return true;},
  keyup(e){if(!space(e))return false;const claimed=held;held=false;if(claimed)swallow(e);return claimed;},reset(){held=false;}
 };}
 export function installSpaceTransport(deps,target=window){const doc=target.document;let preferred=null;

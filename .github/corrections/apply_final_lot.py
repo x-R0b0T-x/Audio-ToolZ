@@ -121,7 +121,7 @@ public static class AudioToolZGpu {
 '@
 @([AudioToolZGpu]::Read()) | ConvertTo-Json -Depth 4 -Compress
 '''
-files['src-tauri/src/configuration_scan.rs']='''use serde_json::Value;
+files['src-tauri/src/configuration_scan.rs']=r'''use serde_json::Value;
 fn query(section:&str)->Result<String,String>{
  let q=match section {
   "board"=>"@(Get-CimInstance Win32_BaseBoard -Property Manufacturer,Product -OperationTimeoutSec 8 | Select-Object @{n='Fabricant';e={$_.Manufacturer}},@{n='Modele';e={$_.Product}}) | ConvertTo-Json -Compress",
