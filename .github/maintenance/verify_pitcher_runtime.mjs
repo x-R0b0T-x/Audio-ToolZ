@@ -4,12 +4,17 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4179','--strictPort'],{stdio:'inherit'});
 let browser;
+const diagnostics=[];
+const report=data=>{mkdirSync('audit-output',{recursive:true});writeFileSync('audit-output/signalsmith-runtime.json',JSON.stringify({engine:'signalsmith-stretch@1.3.2',environment:'headless Chromium on Windows; application CSP enforced; WebView2 listening review still required',diagnostics,...data},null,2)+'\n');};
 try{
  let available=false;
  for(let i=0;i<120;i++){try{const response=await fetch('http://127.0.0.1:4179/');if(response.ok){available=true;break;}}catch{}await new Promise(r=>setTimeout(r,500));}
  assert.ok(available,'Vite test server unavailable');
  browser=await chromium.launch({headless:true});
  const page=await browser.newPage();
+ page.on('console',message=>{if(message.type()==='error'||message.type()==='warning'){const entry={type:message.type(),text:message.text()};diagnostics.push(entry);console.error(JSON.stringify(entry));}});
+ page.on('pageerror',error=>{const entry={type:'pageerror',text:String(error)};diagnostics.push(entry);console.error(JSON.stringify(entry));});
+ page.on('requestfailed',request=>{const entry={type:'requestfailed',url:request.url(),error:request.failure()?.errorText};diagnostics.push(entry);console.error(JSON.stringify(entry));});
  const config=JSON.parse(readFileSync('src-tauri/tauri.conf.json','utf8'));
  await page.route('http://127.0.0.1:4179/',route=>route.fulfill({status:200,contentType:'text/html',headers:{'Content-Security-Policy':config.app.security.csp},body:'<!doctype html><title>Signalsmith runtime validation</title>'}));
  await page.goto('http://127.0.0.1:4179/');
@@ -30,6 +35,5 @@ try{
   record.metrics.forEach((m,i)=>{assert.equal(m.length,Math.round(96000/record.speed));assert.ok(m.finite);assert.ok(m.rms>.01,'Rendered silence');const expected=(i?660:440)*2**(record.pitch/12);assert.ok(Math.abs(m.frequency-expected)/expected<.06,`Wrong pitch: ${JSON.stringify(record)}`);});
  }
  assert.ok(results.cancelled);assert.ok(results.sourcePreserved);
- mkdirSync('audit-output',{recursive:true});
- writeFileSync('audit-output/signalsmith-runtime.json',JSON.stringify({engine:'signalsmith-stretch@1.3.2',validation:'passed',environment:'headless Chromium on Windows; application CSP enforced; WebView2 listening review still required',...results},null,2)+'\n');
-}finally{await browser?.close();server.kill();}
+ report({validation:'passed',...results});
+}catch(error){report({validation:'failed',error:String(error),stack:error?.stack});throw error;}finally{await browser?.close();server.kill();}
