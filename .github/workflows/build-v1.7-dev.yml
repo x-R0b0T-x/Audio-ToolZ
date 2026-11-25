@@ -2,7 +2,7 @@ name: Audio ToolZ v1.7-dev - Windows validation
 on:
   push:
     branches: [v.1.7-dev]
-    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/**', '.github/workflows/build-v1.7-dev.yml']
+    paths: ['src/**', 'src-tauri/**', 'package.json', '.github/maintenance/**', '.github/corrections/**', '.github/workflows/knob-feedback-dev.yml', '.github/workflows/build-v1.7-dev.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -37,9 +37,13 @@ jobs:
       - name: Restore application icons if missing
         shell: pwsh
         run: |
-          if (-not (Test-Path public/icon.ico) -or -not (Test-Path public/icon.png)) {
-            git restore --source=6af5c11 -- public/icon.ico public/icon.png
-            if ($LASTEXITCODE -ne 0) { throw 'Icons unavailable' }
+          foreach ($icon in @('public/icon.ico', 'public/icon.png')) {
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) {
+              git restore --source=6af5c11 --worktree -- $icon
+              if ($LASTEXITCODE -ne 0) { throw "Cannot restore required icon: $icon" }
+            }
+            if (-not (Test-Path -LiteralPath $icon -PathType Leaf)) { throw "Required icon missing: $icon" }
+            if ((Get-Item -LiteralPath $icon).Length -eq 0) { throw "Required icon empty: $icon" }
           }
       - name: Install frontend and build dependencies
         shell: pwsh
@@ -55,11 +59,19 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'User interface review failed' }
           git add -A -- src .github/diagnostics/review-v17.json
           if ($LASTEXITCODE -ne 0) { throw 'Review staging failed' }
+      - name: Apply approved visual feedback before Windows validation
+        shell: pwsh
+        run: |
+          python .github/corrections/knob_feedback.py
+          if ($LASTEXITCODE -ne 0) { throw 'Visual feedback corrections failed' }
+          git add -A -- src
+          if ($LASTEXITCODE -ne 0) { throw 'Visual feedback staging failed' }
       - name: Audit all tracked corrected source
         run: node src/utils/reviewAudit.mjs
       - name: Verify locked Symphonia 0.6.1
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force audit-output | Out-Null
           $raw = & cargo metadata --locked --manifest-path src-tauri/Cargo.toml --format-version 1
           if ($LASTEXITCODE -ne 0) { throw 'Locked Cargo resolution failed' }
           $metadata = $raw | ConvertFrom-Json
@@ -106,23 +118,23 @@ jobs:
           if ($result -eq 1) {
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'revert: retire external BPM engines and restore native detection'
+            git commit -m 'build: validated development sources with approved visual feedback'
             if ($LASTEXITCODE -ne 0) { throw 'Source commit failed' }
           }
           exit 0
       - name: Package and verify Windows Shell extraction
         run: python .github/maintenance/package-v17.py
-      - name: Publish validated development sources without force
-        shell: pwsh
-        run: |
-          git push origin HEAD:refs/heads/v.1.7-dev
-          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; newer changes were not overwritten' }
       - name: Upload exact portable ZIP without wrapping
         uses: actions/upload-artifact@v7
         with:
           path: single-output/Audio ToolZ v1.7-dev.zip
           archive: false
           if-no-files-found: error
+      - name: Publish validated development sources without force
+        shell: pwsh
+        run: |
+          git push origin HEAD:refs/heads/v.1.7-dev
+          if ($LASTEXITCODE -ne 0) { throw 'Push rejected; newer changes were not overwritten; validated ZIP already uploaded' }
       - name: Upload validation reports
         if: always()
         uses: actions/upload-artifact@v4
