@@ -13,7 +13,8 @@ compile(source,str(p),'exec')
 tree=ast.parse(source,filename=str(p))
 blocks=[node.value.value for node in ast.walk(tree) if isinstance(node,ast.Assign) and isinstance(node.value,ast.Constant) and isinstance(node.value.value,str) and any(isinstance(target,ast.Subscript) and isinstance(target.slice,ast.Constant) and target.slice.value=='src-tauri/src/configuration_scan.rs' for target in node.targets)]
 if len(blocks)!=1 or r"\u{feff}" not in blocks[0]:raise RuntimeError('Rust unicode escape was not preserved')
+if "env.playing()?'stop':" not in source or 'src/components/finalLot.test.mjs' not in source:raise RuntimeError('Complete Play Stop lot and its regression tests are required')
 for other in (ROOT/'.github/corrections').glob('*.py'):
  compile(source if other==p else other.read_text(encoding='utf-8'),str(other),'exec')
 p.write_text(source,encoding='utf-8')
-print({'pythonSyntax':'passed','embeddedRustUnicode':'preserved','checkedGenerators':len(list((ROOT/'.github/corrections').glob('*.py')))})
+print({'pipeline':'complete-v1.7-dev-windows','pythonSyntax':'passed','embeddedRustUnicode':'preserved','completePlayStopLot':'present','checkedGenerators':len(list((ROOT/'.github/corrections').glob('*.py')))})
