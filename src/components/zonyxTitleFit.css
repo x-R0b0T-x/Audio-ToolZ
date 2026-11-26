@@ -1,0 +1,2 @@
+/* Le cadre du titre d'une fenetre d'effet s'ajuste a la longueur du nom. */
+#root#root#root .zonyx-advanced>header>h2{width:fit-content;max-width:100%;justify-self:center;padding:2px 14px}

@@ -1,0 +1,13 @@
+/* Bouton BPM actif : symbole vert qui pulse avec les temps forts, sans cadre. */
+@layer zonyx-header-motion{
+#root#root button.zonyx-toolbar-action[aria-pressed=true]:not(:disabled){background-color:transparent!important;border-color:var(--border-subtle)!important;box-shadow:none!important}
+#root#root button.zonyx-toolbar-action[aria-pressed=true]:not(:disabled) svg{color:#39ff14!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,calc(.12 + .3*var(--zonyx-pulse,0)))!important;filter:drop-shadow(0 0 calc(2px + 7px*var(--zonyx-pulse,0)) rgba(57,255,20,calc(.45 + .55*var(--zonyx-pulse,0))))!important}
+}
+
+/* Fenetre de controle : plus de carre vert, le symbole s'illumine. */
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;background-color:transparent!important;color:#39ff14!important;outline:none}
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button:not(:disabled):is(:hover,:focus-visible) svg{filter:drop-shadow(0 0 3px rgba(57,255,20,.6))}
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button[style*="--accent-primary"]:not(:disabled){background-color:transparent!important;border-color:var(--border-subtle)!important;color:#39ff14!important}
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button[style*="--accent-primary"]:not(:disabled) svg{filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 8px #39ff14) drop-shadow(0 0 14px rgba(57,255,20,.7))}
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button[style*="border-color: var(--record-color)"]:not(:disabled){background-color:transparent!important;border-color:var(--border-subtle)!important;color:#ff5555!important}
+#root#root#root aside[aria-label="Fenêtre de contrôle flottante"] button[style*="border-color: var(--record-color)"]:not(:disabled) svg{filter:drop-shadow(0 0 3px #ff5555) drop-shadow(0 0 8px #ff5555) drop-shadow(0 0 14px rgba(255,85,85,.7))}

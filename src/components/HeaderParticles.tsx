@@ -5,7 +5,7 @@ import './headerParticles.css';
 const PAD=64,HEIGHT=144,MID=HEIGHT/2,MAX_AMP=21,MAX_SEGMENTS=90;
 type Branch={at:number;dir:number;len:number;life:number;violet:boolean;seed:number[]};
 type Arc={env:Float32Array;jit:Float32Array;avg:number;cool:number;branches:Branch[]};
-const newArc=():Arc=>({env:new Float32Array(MAX_SEGMENTS+1),jit:Float32Array.from({length:MAX_SEGMENTS+1},()=>Math.random()),avg:0,cool:0,branches:[]});
+const newArc=():Arc=>({env:new Float32Array(MAX_SEGMENTS+2),jit:Float32Array.from({length:MAX_SEGMENTS+2},()=>Math.random()),avg:0,cool:0,branches:[]});
 export function HeaderParticles(){
  const host=useRef<HTMLSpanElement>(null);
  useEffect(()=>{
@@ -27,13 +27,13 @@ export function HeaderParticles(){
    level+=(target-level)*(1-Math.exp(-dt/(target>level?.012:.075)));
    phase+=dt*(14+18*level);
    if(level<.002){clear();frame=requestAnimationFrame(tick);return;}
-   const spectrum=audioEngine.readStereoSpectrumSnapshots(),up=1-Math.exp(-dt/.025),down=1-Math.exp(-dt/.09);
+   const spectrum=audioEngine.readStereoSpectrumSnapshots(),waveforms=audioEngine.readStereoWaveformSnapshots(),up=1-Math.exp(-dt/.025),down=1-Math.exp(-dt/.09);
    refresh+=dt;const flicker=refresh>.045;if(flicker)refresh=0;
    canvases.forEach((c,i)=>{
     const ctx=c.getContext('2d'),arc=arcs[i];if(!ctx||!arc)return;
     ctx.clearRect(0,0,c.width,c.height);
     const surface=parseFloat(c.style.width),width=surface-2*PAD;if(!(width>=2))return;
-    const n=Math.max(6,Math.min(MAX_SEGMENTS,Math.round(width/14))),step=width/n,bins=i===0?spectrum.left:spectrum.right,top=Math.min(bins.length-1,300);
+    const n=Math.max(6,Math.min(MAX_SEGMENTS,Math.round(width/14))),step=width/n,bins=i===0?spectrum.left:spectrum.right,wave=i===0?waveforms.left:waveforms.right,top=Math.min(bins.length-1,300);
     for(let k=0;k<=n;k++){
      const a=Math.max(1,Math.round(Math.pow(top,k/(n+1)))),b=Math.max(a+1,Math.round(Math.pow(top,(k+1)/(n+1))));
      let sum=0,count=0;for(let j=a;j<=b&&j<bins.length;j++){sum+=bins[j];count++;}
@@ -48,20 +48,26 @@ export function HeaderParticles(){
      for(let q=0;q<(bass-arc.avg>.28?2:1);q++)arc.branches.push({at:Math.max(1,Math.floor(n*(.1+Math.random()*.5))),dir:Math.random()<.5?-1:1,len:Math.max(3,Math.round(n*(.14+Math.random()*.16))),life:1,violet:strong,seed:Array.from({length:12},()=>Math.random())});
     }
     arc.avg+=(bass-arc.avg)*Math.min(1,dt*3);
-    const pts:number[][]=[[0,MID]];
-    for(let k=1;k<n;k++){
-     const x=k*step,envelope=Math.min(1,x/10)*Math.pow(1-x/width,.5),amp=envelope*(MAX_AMP*arc.env[k]*(.55+.45*arc.jit[k])+1.2*level),sign=k%2?-1:1;
-     pts.push([x,MID+sign*amp+waveOffset(x,width,phase,level)*.12]);
+    let norm=.15;for(let j=0;j<wave.length;j+=4)norm=Math.max(norm,Math.abs(wave[j]));
+    const count=Math.max(2,Math.round(width/3)),pts:number[][]=[],vio:number[][]=[];
+    for(let k=0;k<=count;k++){
+     const x=k/count*width,t=x/step,k0=Math.min(n-1,Math.floor(t)),frac=t-k0,e=(arc.env[k0]*(1-frac)+arc.env[k0+1]*frac)*(.9+.1*arc.jit[k0]);
+     const envelope=Math.min(1,x/10)*Math.pow(1-x/width,.55),w=wave[Math.min(wave.length-1,Math.floor(x/width*(wave.length-1)))]/norm;
+     pts.push([x,MID+envelope*MAX_AMP*w*(.35+.65*Math.min(1,level*1.2))*(.5+.5*Math.min(1,e*1.6))+waveOffset(x,width,phase,level)*.08]);
+     vio.push([x,MID+envelope*MAX_AMP*.8*Math.min(1,e*1.5+.15*level)*Math.sin(x/(34+26*(1-e))*Math.PI*2-phase*1.2)]);
     }
-    pts.push([width,MID]);
     ctx.save();ctx.scale(c.width/surface,c.height/HEIGHT);if(i===0){ctx.translate(surface,0);ctx.scale(-1,1);}ctx.translate(PAD,0);
-    ctx.lineCap='round';ctx.lineJoin='miter';ctx.miterLimit=3;
+    ctx.lineCap='round';ctx.lineJoin='round';
     const g=ctx.createLinearGradient(0,0,width,0);g.addColorStop(0,'#baffaa');g.addColorStop(.12,'#39ff14');g.addColorStop(.5,'#39ff14a0');g.addColorStop(.85,'#39ff1440');g.addColorStop(1,'#39ff1400');
     const core=ctx.createLinearGradient(0,0,width,0);core.addColorStop(0,'#ffffff');core.addColorStop(.2,'#e2ffd9');core.addColorStop(.6,'#39ff1490');core.addColorStop(1,'#39ff1400');
+    const violet=ctx.createLinearGradient(0,0,width,0);violet.addColorStop(0,'#e6c2ff');violet.addColorStop(.15,'#b34dff');violet.addColorStop(.6,'#b34dffb0');violet.addColorStop(1,'#b34dff00');
+    stroke(ctx,vio,violet,2.2,16,level*1.1,'#b34dff');
+    stroke(ctx,vio,'#f1dcff',.7,0,level*.7,'#b34dff');
     for(let q=arc.branches.length-1;q>=0;q--){
      const br=arc.branches[q];br.life-=dt/.14;
-     if(br.life<=0||!pts[br.at]){arc.branches.splice(q,1);continue;}
-     let px=pts[br.at][0],py=pts[br.at][1];const bp:number[][]=[[px,py]];
+     const anchor=pts[Math.min(count-1,Math.round(br.at/n*count))];
+     if(br.life<=0||!anchor){arc.branches.splice(q,1);continue;}
+     let px=anchor[0],py=anchor[1];const bp:number[][]=[[px,py]];
      for(let s=1;s<=br.len;s++){px+=step*.9;py+=br.dir*step*(.3+.5*br.seed[s%12])*(s%2?1:-.4);py=Math.max(8,Math.min(HEIGHT-8,py));bp.push([px,py]);}
      const colour=br.violet?'#b34dff':'#39ff14';
      stroke(ctx,bp,colour,1.8,12,br.life*level*1.4,colour);stroke(ctx,bp,'#ffffff',.8,0,br.life*Math.min(1,level*1.6),colour);
