@@ -22,10 +22,11 @@
 .zonyx-pitcher-progress{display:none}
 @media(max-width:600px){.zonyx-pitcher-scale{font-size:9px}}
 
-/* Halo des faders : survol, clic maintenu, clavier et molette. Couleur propre au fader. */
-#root#root#root input[type=range]{--zonyx-fader-glow:#39ff14}
+/* Halo des faders : uniquement sur la poignee (le bouton), de la couleur du fader. */
+#root#root#root input[type=range]{--zonyx-fader-glow:#39ff14;overflow:visible;filter:none}
 #root#root#root .zonyx-gain input[type=range]{--zonyx-fader-glow:var(--zonyx-control-color,#39ff14)}
-#root#root#root input[type=range]:not(:disabled):is(:hover,:active,:focus-visible),#root#root#root .zonyx-gain.is-adjusting input[type=range]:not(:disabled){filter:drop-shadow(0 0 3px var(--zonyx-fader-glow)) drop-shadow(0 0 9px var(--zonyx-fader-glow))!important}
+#root#root#root input[type=range]:not(:disabled):is(:active,:focus-visible)::-webkit-slider-thumb,#root#root#root input[type=range]:not(:disabled)::-webkit-slider-thumb:hover,#root#root#root .zonyx-gain.is-adjusting input[type=range]:not(:disabled)::-webkit-slider-thumb{box-shadow:0 0 4px var(--zonyx-fader-glow),0 0 10px var(--zonyx-fader-glow),0 0 20px var(--zonyx-fader-glow)!important}
+#root#root#root input[type=range]:not(:disabled):is(:active,:focus-visible)::-moz-range-thumb,#root#root#root input[type=range]:not(:disabled)::-moz-range-thumb:hover{box-shadow:0 0 4px var(--zonyx-fader-glow),0 0 10px var(--zonyx-fader-glow),0 0 20px var(--zonyx-fader-glow)!important}
 
 /* Bouton d'aide ? : sans cadre, vert lumineux au survol. */
 #root#root#root button.zonyx-help-trigger{border:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;color:#fff!important;text-shadow:none!important}
