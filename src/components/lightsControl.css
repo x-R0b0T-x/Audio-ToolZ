@@ -1,3 +1,6 @@
+/* Menus deroulants (Fichier, Edition, Effets, Outils) : le cadre s'ajuste aux noms. */
+#root#root#root nav[aria-label="Menu principal"] [role=menu]{width:max-content!important;min-width:9rem;max-width:min(30rem,calc(100vw - 24px))}
+
 /* Bouton BPM actif : symbole vert qui pulse avec les temps forts, sans cadre. */
 @layer zonyx-header-motion{
 #root#root button.zonyx-toolbar-action[aria-pressed=true]:not(:disabled){background-color:transparent!important;border-color:var(--border-subtle)!important;box-shadow:none!important}
