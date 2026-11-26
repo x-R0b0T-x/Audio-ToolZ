@@ -1,9 +1,10 @@
-/* Les proprietes standards scrollbar-width/color desactivent les styles ::-webkit-scrollbar (donc le halo vert) : on les neutralise partout et on ne les force que si ::-webkit-scrollbar n'existe pas. */
+/* Les proprietes standards scrollbar-width/color desactivent les styles ::-webkit-scrollbar : on les neutralise partout et on ne les force que si ::-webkit-scrollbar n'existe pas. */
 *{scrollbar-width:auto!important;scrollbar-color:auto!important}
 @supports not selector(::-webkit-scrollbar){*{scrollbar-width:thin!important;scrollbar-color:#39ff14 #241733!important}}
-*::-webkit-scrollbar{width:10px;height:10px;background:#241733}
+*::-webkit-scrollbar{width:12px;height:12px;background:#241733}
 *::-webkit-scrollbar-track{background:#241733;border-radius:8px}
-*::-webkit-scrollbar-thumb{background:#39ff14;border:1px solid #b8ffaa;border-radius:8px;box-shadow:inset 0 0 5px #39ff14}
-*::-webkit-scrollbar-thumb:hover{background:#5dff3d;box-shadow:inset 0 0 6px #d4ffc9,0 0 6px #39ff14}
-*::-webkit-scrollbar-thumb:active{background:#a4ff8c;border-color:#fff;box-shadow:inset 0 0 8px #fff,inset 0 0 14px #39ff14,0 0 8px #39ff14,0 0 16px #39ff14}
+*::-webkit-scrollbar-thumb{background-color:#39ff14;background-clip:padding-box;border:2px solid transparent;border-radius:8px;box-shadow:inset 0 0 5px #39ff14}
+*::-webkit-scrollbar-thumb:hover{background-color:#6dff4f;box-shadow:inset 0 0 6px #d4ffc9}
+*::-webkit-scrollbar-thumb:active,[data-zonyx-scroll]::-webkit-scrollbar-thumb{background-color:#b6ff9e;box-shadow:inset 0 0 8px #fff,inset 0 0 12px #39ff14}
+[data-zonyx-scroll]::-webkit-scrollbar-track{background:#241733;box-shadow:inset 0 0 9px 2px #39ff14b0}
 *::-webkit-scrollbar-corner{background:#241733}
