@@ -5,22 +5,23 @@
 @keyframes zonyx-halo-turn{0%,100%{box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}25%{box-shadow:0 -4px 9px 1px #39ff1480,0 4px 9px 1px #b34dff99}50%{box-shadow:4px 0 9px 1px #39ff1480,-4px 0 9px 1px #b34dff99}75%{box-shadow:0 4px 9px 1px #39ff1480,0 -4px 9px 1px #b34dff99}}
 @media(prefers-reduced-motion:reduce){:where(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before,.zonyx-halo-always::before{animation:none;box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}}
 
-/* Barre d'outils et titres de menus : meme couche que headerMotion.css (les !important de couche l'emportent sur le reste). */
+/* Effet plaque de verre : au survol, seuls le symbole ou le texte passent en vert. Aucun cadre, aucun rectangle.
+   Meme couche que headerMotion.css (les !important de couche l'emportent sur le reste). */
 @layer zonyx-header-motion{
-#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){box-shadow:none!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.3)!important}
-#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible) svg{color:#39ff14!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.3)!important;filter:drop-shadow(0 0 2px #39ff14) drop-shadow(0 0 6px #39ff14cc) drop-shadow(0 0 12px #39ff1480)!important}
-#root#root button.zonyx-menu-trigger:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;color:#39ff14!important;text-shadow:0 0 4px #39ff14,0 0 10px #39ff14aa,0 0 18px #39ff1466}
+#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){box-shadow:none!important;background-color:transparent!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.12)!important}
+#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible) svg{color:#39ff14!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.12)!important;filter:drop-shadow(0 0 2.5px rgba(57,255,20,.5))!important}
+#root#root button.zonyx-menu-trigger:not(:disabled):is(:hover,:focus-visible),#root#root button.zonyx-menu-trigger[aria-expanded=true]{box-shadow:none!important;background-color:transparent!important;background:transparent!important;color:#39ff14!important;text-shadow:none}
 }
 
-/* Menus deroulants et choix d'effets : texte vert lumineux au survol, sans cadre. */
-#root#root#root [role=menu] button:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;color:#39ff14!important;text-shadow:0 0 4px #39ff14,0 0 10px #39ff14aa,0 0 18px #39ff1466}
+/* Menus deroulants et choix d'effets : texte vert au survol, tres legere lueur, sans rectangle. */
+#root#root#root [role=menu] button:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;background-color:transparent!important;background:transparent!important;color:#39ff14!important;text-shadow:0 0 5px rgba(57,255,20,.45)}
 #root#root#root [role=menu] button:not(:disabled):is(:hover,:focus-visible) :is(span,small,.zonyx-effect-name,.zonyx-effect-name>span){color:#39ff14!important}
 
-/* Faders des fenetres d'effets : cercle blanc autour de la poignee, puis halo (couleur de bande dans l'egaliseur, vert ailleurs). */
-#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-webkit-slider-thumb,#root#root#root#root .zonyx-advanced .zonyx-gain.is-adjusting input[type=range]:not(:disabled)::-webkit-slider-thumb{border:3px solid #fff!important}
-#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-moz-range-thumb{border:3px solid #fff!important}
+/* Faders des fenetres d'effets : cercle blanc autour de la poignee, puis halo fort (couleur de bande dans l'egaliseur, vert ailleurs). */
+#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-webkit-slider-thumb,#root#root#root#root .zonyx-advanced .zonyx-gain.is-adjusting input[type=range]:not(:disabled)::-webkit-slider-thumb{border:3px solid #fff!important;box-shadow:0 0 6px var(--zonyx-fader-glow,#39ff14),0 0 14px var(--zonyx-fader-glow,#39ff14),0 0 28px var(--zonyx-fader-glow,#39ff14),0 0 46px var(--zonyx-fader-glow,#39ff14),0 0 66px var(--zonyx-fader-glow,#39ff14)!important}
+#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-moz-range-thumb{border:3px solid #fff!important;box-shadow:0 0 6px var(--zonyx-fader-glow,#39ff14),0 0 14px var(--zonyx-fader-glow,#39ff14),0 0 28px var(--zonyx-fader-glow,#39ff14),0 0 46px var(--zonyx-fader-glow,#39ff14)!important}
 
-/* Egaliseur : points numerotes, entourage blanc et halo de la couleur de la bande. */
+/* Egaliseur : points numerotes, entourage blanc et halo fort de la couleur de la bande. */
 #root#root .zonyx-eq-point[data-eq-band="0"]{--zonyx-point-color:#a65de0}
 #root#root .zonyx-eq-point[data-eq-band="1"]{--zonyx-point-color:#df69b3}
 #root#root .zonyx-eq-point[data-eq-band="2"]{--zonyx-point-color:#df8762}
@@ -28,7 +29,7 @@
 #root#root .zonyx-eq-point[data-eq-band="4"]{--zonyx-point-color:#84c866}
 #root#root .zonyx-eq-point[data-eq-band="5"]{--zonyx-point-color:#61bcb5}
 #root#root .zonyx-eq-point[data-eq-band="6"]{--zonyx-point-color:#6499df}
-#root#root#root#root .zonyx-advanced button.zonyx-eq-point:is(:hover,:active,:focus,:focus-visible){border-color:#fff!important;outline:none!important;box-shadow:0 0 6px var(--zonyx-point-color),0 0 14px var(--zonyx-point-color),0 0 26px var(--zonyx-point-color)!important}
+#root#root#root#root .zonyx-advanced button.zonyx-eq-point:is(:hover,:active,:focus,:focus-visible){border-color:#fff!important;outline:none!important;box-shadow:0 0 6px var(--zonyx-point-color),0 0 14px var(--zonyx-point-color),0 0 28px var(--zonyx-point-color),0 0 46px var(--zonyx-point-color),0 0 66px var(--zonyx-point-color)!important}
 
 /* Potards : effet diode. Cran selectionne a fond, deux crans de chaque cote de plus en plus faibles, lumiere diffuse. */
 #root#root#root [role=slider]:not([aria-disabled=true])>svg>line[data-zonyx-tick=selected]{stroke:#e4ffd9!important;stroke-width:2.6!important;opacity:1!important;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px #39ff14) drop-shadow(0 0 9px #39ff14) drop-shadow(0 0 16px #39ff14) drop-shadow(0 0 26px #39ff14aa)!important}
@@ -42,9 +43,9 @@
 @keyframes zonyx-title-turn{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){#root#root#root .zonyx-advanced>header>h2::before{animation:none;transform:translate(-50%,-50%)}}
 
-/* Pastille d'etat en bas a gauche : plus petite, fleches plus rapides. */
-#root#root#root .zonyx-status-badge{flex:0 0 64px;height:30px}
-#root#root#root .zonyx-status-badge svg{width:64px;height:30px}
+/* Pastille d'etat en bas a gauche : nettement plus petite, fleches plus rapides. */
+#root#root#root .zonyx-status-badge{flex:0 0 52px;height:25px}
+#root#root#root .zonyx-status-badge svg{width:52px;height:25px}
 #root#root#root .zonyx-status-chevron{animation-duration:1.15s}
 #root#root#root .zonyx-status-chevron-1{animation-delay:-.767s}
 #root#root#root .zonyx-status-chevron-2{animation-delay:-.383s}
