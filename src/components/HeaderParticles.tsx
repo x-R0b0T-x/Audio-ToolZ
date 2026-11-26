@@ -25,7 +25,8 @@ export function HeaderParticles(){
    if(!audioEngine.isPlaying||reduced.matches||document.hidden){levels[0]=0;levels[1]=0;clear();arcs.forEach(a=>{a.branches.length=0;a.avg=0;a.env.fill(0);});frame=requestAnimationFrame(tick);return;}
    const m=audioEngine.readLiveMeters(),sides=[[m.leftRms,m.leftPeak],[m.rightRms,m.rightPeak]];
    sides.forEach(([rms,peak],i)=>{const target=rms<.0015?0:waveLevel(true,rms,Math.max(rms,peak*.45));levels[i]+=(target-levels[i])*(1-Math.exp(-dt/(target>levels[i]?.012:.075)));});
-   phase+=dt*(14+18*Math.max(levels[0],levels[1]));
+   const loud=Math.max(m.leftRms,m.rightRms),top=Math.max(m.leftPeak,m.rightPeak);
+   phase+=dt*(14+18*waveLevel(true,loud,Math.max(loud,top*.45)));
    if(Math.max(levels[0],levels[1])<.002){clear();arcs.forEach(a=>{a.branches.length=0;a.avg=0;a.env.fill(0);});frame=requestAnimationFrame(tick);return;}
    const spectrum=audioEngine.readStereoSpectrumSnapshots(),waveforms=audioEngine.readStereoWaveformSnapshots(),up=1-Math.exp(-dt/.025),down=1-Math.exp(-dt/.09);
    refresh+=dt;const flicker=refresh>.045;if(flicker)refresh=0;
@@ -35,9 +36,9 @@ export function HeaderParticles(){
     const level=levels[i];
     if(level<.002){arc.branches.length=0;arc.avg=0;arc.env.fill(0);return;}
     const surface=parseFloat(c.style.width),width=surface-2*PAD;if(!(width>=2))return;
-    const n=Math.max(6,Math.min(MAX_SEGMENTS,Math.round(width/14))),step=width/n,bins=i===0?spectrum.left:spectrum.right,wave=i===0?waveforms.left:waveforms.right,top=Math.min(bins.length-1,300);
+    const n=Math.max(6,Math.min(MAX_SEGMENTS,Math.round(width/14))),step=width/n,bins=i===0?spectrum.left:spectrum.right,wave=i===0?waveforms.left:waveforms.right,top2=Math.min(bins.length-1,300);
     for(let k=0;k<=n;k++){
-     const a=Math.max(1,Math.round(Math.pow(top,k/(n+1)))),b=Math.max(a+1,Math.round(Math.pow(top,(k+1)/(n+1))));
+     const a=Math.max(1,Math.round(Math.pow(top2,k/(n+1)))),b=Math.max(a+1,Math.round(Math.pow(top2,(k+1)/(n+1))));
      let sum=0,count=0;for(let j=a;j<=b&&j<bins.length;j++){sum+=bins[j];count++;}
      const e=Math.min(1,(count?Math.pow(sum/count/255,1.25):0)*(1+1.4*k/n));
      arc.env[k]+=(e-arc.env[k])*(e>arc.env[k]?up:down);
