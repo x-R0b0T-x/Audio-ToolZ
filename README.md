@@ -1,7 +1,6 @@
 <div align="center">
   <h1>Audio ToolZ</h1>
   <p><strong>L'éditeur audio qui comprend votre tempo.</strong></p>
-  <p>Détection automatique du BPM · Sélections aimantées aux kicks · Boucles parfaites en quelques clics</p>
   <p>Sampling · Mastering · Boucles · Remix · 100 % local · Windows portable</p>
   <img src="src/medias/ZØNYXRobot..png" alt="ZØNYX, la mascotte d'Audio ToolZ" width="200" />
   <p>
@@ -34,21 +33,19 @@
 
 ## Le point fort : le tempo et l'aimant à kicks
 
-Très peu d'éditeurs audio vous aident vraiment à faire des boucles. Audio ToolZ fait le travail à votre place :
+Très peu d'éditeurs audio vous aident vraiment à faire des boucles. Audio ToolZ s'en charge :
 
 1. **Il détecte le BPM** du morceau dès l'ouverture du fichier.
 2. **Il repère les kicks** et les transitoires de percussion.
 3. **Il aimante vos barres de sélection** sur ces kicks : début et fin de sélection tombent exactement sur le temps, sans zoom ni tâtonnement.
 
-Résultat : vous découpez une boucle de 1, 2 ou 4 mesures en quelques secondes, elle tourne sans clic ni décalage, et vous l'exportez. Les effets calés sur le tempo (comme le Z-Delay) restent parfaitement en rythme avec votre boucle.
+Résultat : vous découpez une boucle de 1, 2 ou 4 mesures en quelques secondes, elle tourne sans clic ni décalage, et vous l'exportez. Les effets calés sur le tempo, comme le Z-Delay, restent en rythme avec votre boucle. Producteurs, DJ et beatmakers y trouvent un gain de temps immédiat.
 
-Pour qui ? Les producteurs, les DJ, les beatmakers et tous ceux qui travaillent au sample.
-
-> La détection du tempo est une estimation algorithmique : elle est très fiable sur les morceaux au rythme marqué et peut hésiter sur les contenus complexes.
+> La détection du tempo est une estimation algorithmique : très fiable sur les morceaux au rythme marqué, elle peut hésiter sur les contenus complexes.
 
 ### Une interface soignée, et ZØNYX à vos côtés
 
-Audio ToolZ ne ressemble pas à un vieil utilitaire : thème sombre, formes d'onde colorées, faders fluides et visualisations en temps réel. Et vous n'êtes jamais seul : **ZØNYX**, la mascotte robot du logiciel, vous accompagne au fil de l'application, des premiers pas jusqu'à l'export.
+Thème sombre, formes d'onde colorées, faders fluides, visualisations en temps réel. **ZØNYX**, la mascotte robot du logiciel, vous accompagne du premier lancement jusqu'à l'export.
 
 ---
 
@@ -58,9 +55,7 @@ Vous faites du **sampling** ? Vous avez besoin de couper net un kick, de pitcher
 
 Vous faites du **mastering** ? Vous voulez sculpter les fréquences sur une courbe visuelle, compresser intelligemment en voyant la réduction de gain en temps réel, puis limiter proprement avant d'exporter en WAV 32 bits float.
 
-Vous préparez des **boucles** ? Audio ToolZ détecte le tempo, aimante vos sélections sur les kicks, et vous laisse découper, rogner, fondre et exporter en quelques clics.
-
-> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel. Et tout ça tourne **sur votre machine**, aucun fichier ne quitte votre ordinateur.
+> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel.
 
 ---
 
@@ -70,10 +65,10 @@ Vous préparez des **boucles** ? Audio ToolZ détecte le tempo, aimante vos sél
   <img src="prez/01%20Interface.png" alt="L'interface principale d'Audio ToolZ" width="900" />
 </p>
 
-L'interface est pensée pour aller droit au but. Ce que vous voyez ici :
+Ce que vous voyez ici :
 
 - **Forme d'onde stéréo** : Les deux canaux (G et D) s'affichent séparément, en violet et vert. La sélection active (en surbrillance) correspond exactement à la zone qui sera traitée par l'effet ou exportée. Zoomez au maximum pour caler chaque coupe au sample près.
-- **Repères BPM** : La barre de statut indique **137.0 BPM** détecté automatiquement. L'aimant à kicks est activé : vos sélections s'accrochent aux transitoires du groove.
+- **Repères BPM** : La barre de statut affiche le tempo détecté (**137.0 BPM** ici), et l'aimant à kicks est activé.
 - **Fenêtre de contrôle** : Volume (+0.0 dB), Balance (0 %), Vitesse (1.00×), et en bas un mini-aperçu **Waveforme colorée** pour naviguer sur tout le morceau d'un coup d'œil.
 - **Lecture précise** : Curseur à **01:40.049**, sélection de 14 secondes. Lecture normale, en boucle, inversée, ou canal par canal.
 - **Onglets** : Ouvrez plusieurs fichiers en même temps et passez de l'un à l'autre sans perdre vos sélections.
@@ -247,7 +242,7 @@ Sélection, couper, copier, coller, rognage, silence, mixage au collage, annuler
 <td width="50%" valign="top">
 
 **Tempo et aimant à kicks**<br>
-Détection automatique du BPM. L'aimant snap vos sélections sur les transitoires de percussion, plus besoin de zoomer pour trouver le bon sample.
+Le point fort du logiciel, détaillé en haut de cette page : BPM détecté et sélections aimantées aux kicks.
 
 </td>
 </tr>
@@ -347,7 +342,6 @@ Configuration requise : Windows 10 ou 11 en 64 bits (WebView2 inclus). Aucune in
 
 - Le **vumètre** indique un niveau RMS en dBFS avec inertie visuelle, ce n'est pas un instrument VU analogique calibré à −18 dBFS.
 - Le **limiteur** agit sur les crêtes d'échantillons (sample peak), ce n'est pas un limiteur true peak suréchantillonné.
-- La **détection du tempo** est une estimation algorithmique, elle dépend du contenu audio et peut se tromper sur des morceaux complexes.
 - **Vos fichiers ne quittent jamais votre machine** : tous les traitements, encodages et analyses sont réalisés en local.
 
 ---
