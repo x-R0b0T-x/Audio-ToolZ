@@ -4,9 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
-use tauri::State;
+use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 use uuid::Uuid;
@@ -38,6 +39,7 @@ struct AppState {
     recent_store_path: PathBuf,
     pending: Mutex<HashMap<String, PendingEntry>>,
     recent_lock: Mutex<()>,
+    close_guard: AtomicBool,
 }
 
 fn resolve_portable_user_data() -> PathBuf {
@@ -214,17 +216,39 @@ fn open_community_url(app: tauri::AppHandle, url: String) -> Result<(), String> 
         .map_err(|e| format!("Impossible d'ouvrir le navigateur : {e}"))
 }
 
+#[tauri::command]
+fn set_close_guard(state: State<AppState>, active: bool) {
+    state.close_guard.store(active, Ordering::SeqCst);
+}
+
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 fn main() {
     let state = AppState {
         recent_store_path: resolve_portable_user_data(),
         pending: Mutex::new(HashMap::new()),
         recent_lock: Mutex::new(()),
+        close_guard: AtomicBool::new(false),
     };
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(state)
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let guarded = window.state::<AppState>().close_guard.load(Ordering::SeqCst);
+                if guarded {
+                    api.prevent_close();
+                    if let Some(view) = window.app_handle().get_webview_window(window.label()) {
+                        let _ = view.eval("window.dispatchEvent(new CustomEvent('audio-toolz:close-requested'))");
+                    }
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_recent_files,
             clear_recent_files,
@@ -234,7 +258,9 @@ fn main() {
             pick_audio_files,
             audio_fallback::decode_audio_fallback,
             configuration_scan::scan_configuration_section,
-            open_community_url
+            open_community_url,
+            set_close_guard,
+            quit_app
         ])
         .run(tauri::generate_context!())
         .expect("Erreur au démarrage d'Audio ToolZ");

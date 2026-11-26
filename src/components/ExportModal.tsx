@@ -131,6 +131,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           const writable = await handle.createWritable();
           await writable.write(blob);
           await writable.close();
+          window.dispatchEvent(new Event('audio-toolz:exported'));
           onExported(finalName, format);
           onClose();
           return;
@@ -152,6 +153,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
 
+      window.dispatchEvent(new Event('audio-toolz:exported'));
       onExported(finalName, format);
       onClose();
     } catch (err) {
