@@ -1,16 +1,26 @@
-/* Halo tournant vert/violet (comme la section A propos) : uniquement au survol et au focus clavier. */
-:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button){position:relative;isolation:isolate}
-:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button)::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity 160ms ease}
-:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before{opacity:1;animation:zonyx-halo-turn 4s linear infinite}
+/* Halo tournant vert/violet (comme la section A propos). Specificite nulle (:where) pour rester surchargeable. */
+:where(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button){position:relative;isolation:isolate}
+:where(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button)::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity 160ms ease}
+:where(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before,.zonyx-halo-always::before{opacity:1;animation:zonyx-halo-turn 4s linear infinite}
 @keyframes zonyx-halo-turn{0%,100%{box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}25%{box-shadow:0 -4px 9px 1px #39ff1480,0 4px 9px 1px #b34dff99}50%{box-shadow:4px 0 9px 1px #39ff1480,-4px 0 9px 1px #b34dff99}75%{box-shadow:0 4px 9px 1px #39ff1480,0 -4px 9px 1px #b34dff99}}
-@media(prefers-reduced-motion:reduce){:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before{animation:none;box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}}
+@media(prefers-reduced-motion:reduce){:where(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before,.zonyx-halo-always::before{animation:none;box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}}
 
-/* Barre d'outils : plus de carre vert, le symbole s'illumine en vert. */
-#root#root .zonyx-toolbar-action:not(:disabled):is(:hover,:focus-visible){--icon-stroke:#39ff14;--icon-highlight:#39ff14;--icon-accent:#39ff14;--icon-fill:rgba(57,255,20,.3);color:#39ff14;box-shadow:none!important}
-#root#root .zonyx-toolbar-action svg{transition:filter 150ms ease}
-#root#root .zonyx-toolbar-action:not(:disabled):is(:hover,:focus-visible) svg{filter:drop-shadow(0 0 2px #39ff14) drop-shadow(0 0 6px #39ff14cc) drop-shadow(0 0 11px #39ff1480)}
+/* Barre d'outils et titres de menus : meme couche que headerMotion.css (les !important de couche l'emportent sur le reste). */
+@layer zonyx-header-motion{
+#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible){box-shadow:none!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.3)!important}
+#root#root button.zonyx-toolbar-action:not(:disabled):not([aria-disabled=true]):is(:hover,:focus-visible) svg{color:#39ff14!important;--icon-stroke:#39ff14!important;--icon-highlight:#39ff14!important;--icon-accent:#39ff14!important;--icon-fill:rgba(57,255,20,.3)!important;filter:drop-shadow(0 0 2px #39ff14) drop-shadow(0 0 6px #39ff14cc) drop-shadow(0 0 12px #39ff1480)!important}
+#root#root button.zonyx-menu-trigger:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;color:#39ff14!important;text-shadow:0 0 4px #39ff14,0 0 10px #39ff14aa,0 0 18px #39ff1466}
+}
 
-/* Egaliseur : les numeros de bande gardent leur couleur, y compris pour le halo. */
+/* Menus deroulants et choix d'effets : texte vert lumineux au survol, sans cadre. */
+#root#root#root [role=menu] button:not(:disabled):is(:hover,:focus-visible){box-shadow:none!important;color:#39ff14!important;text-shadow:0 0 4px #39ff14,0 0 10px #39ff14aa,0 0 18px #39ff1466}
+#root#root#root [role=menu] button:not(:disabled):is(:hover,:focus-visible) :is(span,small,.zonyx-effect-name,.zonyx-effect-name>span){color:#39ff14!important}
+
+/* Faders des fenetres d'effets : cercle blanc autour de la poignee, puis halo (couleur de bande dans l'egaliseur, vert ailleurs). */
+#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-webkit-slider-thumb,#root#root#root#root .zonyx-advanced .zonyx-gain.is-adjusting input[type=range]:not(:disabled)::-webkit-slider-thumb{border:3px solid #fff!important}
+#root#root#root#root .zonyx-advanced input[type=range]:not(:disabled):is(:hover,:active,:focus-visible)::-moz-range-thumb{border:3px solid #fff!important}
+
+/* Egaliseur : points numerotes, entourage blanc et halo de la couleur de la bande. */
 #root#root .zonyx-eq-point[data-eq-band="0"]{--zonyx-point-color:#a65de0}
 #root#root .zonyx-eq-point[data-eq-band="1"]{--zonyx-point-color:#df69b3}
 #root#root .zonyx-eq-point[data-eq-band="2"]{--zonyx-point-color:#df8762}
@@ -18,4 +28,23 @@
 #root#root .zonyx-eq-point[data-eq-band="4"]{--zonyx-point-color:#84c866}
 #root#root .zonyx-eq-point[data-eq-band="5"]{--zonyx-point-color:#61bcb5}
 #root#root .zonyx-eq-point[data-eq-band="6"]{--zonyx-point-color:#6499df}
-#root#root .zonyx-eq-point:is(:hover,:active,:focus-visible){box-shadow:0 0 4px var(--zonyx-point-color),0 0 10px var(--zonyx-point-color),0 0 20px var(--zonyx-point-color)!important;outline:none}
+#root#root#root#root .zonyx-advanced button.zonyx-eq-point:is(:hover,:active,:focus,:focus-visible){border-color:#fff!important;outline:none!important;box-shadow:0 0 6px var(--zonyx-point-color),0 0 14px var(--zonyx-point-color),0 0 26px var(--zonyx-point-color)!important}
+
+/* Potards : effet diode. Cran selectionne a fond, deux crans de chaque cote de plus en plus faibles, lumiere diffuse. */
+#root#root#root [role=slider]:not([aria-disabled=true])>svg>line[data-zonyx-tick=selected]{stroke:#e4ffd9!important;stroke-width:2.6!important;opacity:1!important;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px #39ff14) drop-shadow(0 0 9px #39ff14) drop-shadow(0 0 16px #39ff14) drop-shadow(0 0 26px #39ff14aa)!important}
+#root#root#root [role=slider]:not([aria-disabled=true])>svg>line[data-zonyx-tick=neighbor]{stroke:#6dff4f!important;opacity:.85!important;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 8px #39ff14aa) drop-shadow(0 0 14px #39ff1466)!important}
+#root#root#root [role=slider]:not([aria-disabled=true])>svg>line[data-zonyx-distance="2"]{stroke:#39ff14!important;opacity:.5!important;filter:drop-shadow(0 0 3px #39ff1480) drop-shadow(0 0 9px #39ff1440)!important}
+
+/* Titres des fenetres d'effets : meme cadre que le logo Audio ToolZ, deux halos qui tournent. */
+#root#root#root .zonyx-advanced>header>h2{position:relative;isolation:isolate;overflow:hidden;padding:3px 18px;border-radius:10px;line-height:1.4;filter:drop-shadow(0 0 5px rgba(57,255,20,.8)) drop-shadow(0 0 8px rgba(179,77,255,.8))}
+#root#root#root .zonyx-advanced>header>h2::before{content:"";position:absolute;z-index:-2;width:170%;aspect-ratio:1;left:50%;top:50%;background:conic-gradient(from 0deg,rgba(179,77,255,.25) 0deg 25deg,#39ff14 55deg 120deg,rgba(57,255,20,.25) 150deg 200deg,#b34dff 235deg 300deg,rgba(179,77,255,.25) 330deg 360deg);animation:zonyx-title-turn 10s linear infinite}
+#root#root#root .zonyx-advanced>header>h2::after{content:"";position:absolute;z-index:-1;inset:3px;border-radius:7px;background:var(--bg-elevated)}
+@keyframes zonyx-title-turn{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#root#root#root .zonyx-advanced>header>h2::before{animation:none;transform:translate(-50%,-50%)}}
+
+/* Pastille d'etat en bas a gauche : plus petite, fleches plus rapides. */
+#root#root#root .zonyx-status-badge{flex:0 0 64px;height:30px}
+#root#root#root .zonyx-status-badge svg{width:64px;height:30px}
+#root#root#root .zonyx-status-chevron{animation-duration:1.15s}
+#root#root#root .zonyx-status-chevron-1{animation-delay:-.767s}
+#root#root#root .zonyx-status-chevron-2{animation-delay:-.383s}
