@@ -86,7 +86,7 @@ jobs:
                   p.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           '@ | python -
           if ($LASTEXITCODE -ne 0) { throw 'Cleanup report failed' }
-          git add -A -- .github src RELEASE_NOTES_1.6.md
+          git add -- .github/diagnostics/repository-cleanup-2.json
           if ($LASTEXITCODE -ne 0) { throw 'Report staging failed' }
           git diff --cached --quiet
           $result = $LASTEXITCODE
