@@ -1,0 +1,47 @@
+{
+  "baseCommit": "0dc5c07b08fe7a06d2e1519876db5964fcacb3a4",
+  "validation": "node-typescript-frontend-signalsmith-runtime-rust-windows-build-and-shell-extraction-passed",
+  "removed": [
+    ".github/art-review/333-info.json",
+    ".github/art-review/333-preview.b64.txt",
+    ".github/art-review/333-preview.jpg",
+    ".github/clean-16.applied",
+    ".github/diagnostics/final-lot.json",
+    ".github/finishing-playback-v1.applied",
+    ".github/maintenance/statusLabels.mjs",
+    ".github/optional-bpm-v1.applied",
+    ".github/refresh-loop-ui-v1.applied",
+    ".github/release/notes-v1.7.md",
+    ".github/scripts/check-live-preview.cjs",
+    ".github/scripts/finalize-amplitude-wave-16.py",
+    ".github/scripts/finalize-candidate-16.py",
+    ".github/scripts/finalize-control-16.py",
+    ".github/scripts/finishing-playback.py",
+    ".github/scripts/fix-tutorial-buttons-16.py",
+    ".github/scripts/optional-bpm.py",
+    ".github/scripts/package-single-16.py",
+    ".github/scripts/polish-six-16.py",
+    ".github/scripts/prepare-clean-16.py",
+    ".github/scripts/rename-archive-16.py",
+    ".github/scripts/verify-about-ring.py",
+    ".github/workflows/build-v1.6.yml",
+    ".github/workflows/package-v1.6.yml",
+    ".github/workflows/single-v1.6.yml",
+    "RELEASE_NOTES_1.6.md"
+  ],
+  "preservedBecauseReferenced": {},
+  "notTouched": [
+    "application source",
+    "tests",
+    "used media",
+    "licenses",
+    "dependency manifests and lockfiles",
+    "published releases and their assets",
+    "branches and tags"
+  ],
+  "retainedBuildTools": [
+    ".github/workflows/validate.yml",
+    ".github/maintenance/verify_pitcher_runtime.mjs",
+    ".github/release/package_v17.py"
+  ]
+}
