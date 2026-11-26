@@ -11,7 +11,7 @@ export function HeaderParticles(){
  useEffect(()=>{
   const node=host.current;if(!node)return;
   const canvases=Array.from(node.querySelectorAll('canvas')),reduced=matchMedia('(prefers-reduced-motion: reduce)'),arcs=canvases.map(()=>newArc());
-  let frame=0,last=0,level=0,phase=0,refresh=0;
+  let frame=0,last=0,phase=0,refresh=0;const levels=[0,0];
   const clear=()=>canvases.forEach(c=>c.getContext('2d')?.clearRect(0,0,c.width,c.height));
   const resize=()=>{const r=node.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);canvases.forEach((c,i)=>{const width=Math.max(0,Math.min(360,i===0?r.left-12:innerWidth-r.right-12));c.style.width=`${width+2*PAD}px`;c.style.height=`${HEIGHT}px`;c.width=Math.round((width+2*PAD)*dpr);c.height=Math.round(HEIGHT*dpr);});};
   const observer=new ResizeObserver(resize);observer.observe(node);window.addEventListener('resize',resize);resize();
@@ -22,16 +22,18 @@ export function HeaderParticles(){
   };
   const tick=(now:number)=>{
    const dt=last?Math.min(.1,(now-last)/1000):1/60;last=now;
-   if(!audioEngine.isPlaying||reduced.matches||document.hidden){level=0;clear();arcs.forEach(a=>{a.branches.length=0;a.avg=0;a.env.fill(0);});frame=requestAnimationFrame(tick);return;}
-   const m=audioEngine.readLiveMeters(),rms=Math.max(m.leftRms,m.rightRms),peak=Math.max(m.leftPeak,m.rightPeak),target=waveLevel(true,rms,Math.max(rms,peak*.45));
-   level+=(target-level)*(1-Math.exp(-dt/(target>level?.012:.075)));
-   phase+=dt*(14+18*level);
-   if(level<.002){clear();frame=requestAnimationFrame(tick);return;}
+   if(!audioEngine.isPlaying||reduced.matches||document.hidden){levels[0]=0;levels[1]=0;clear();arcs.forEach(a=>{a.branches.length=0;a.avg=0;a.env.fill(0);});frame=requestAnimationFrame(tick);return;}
+   const m=audioEngine.readLiveMeters(),sides=[[m.leftRms,m.leftPeak],[m.rightRms,m.rightPeak]];
+   sides.forEach(([rms,peak],i)=>{const target=rms<.0015?0:waveLevel(true,rms,Math.max(rms,peak*.45));levels[i]+=(target-levels[i])*(1-Math.exp(-dt/(target>levels[i]?.012:.075)));});
+   phase+=dt*(14+18*Math.max(levels[0],levels[1]));
+   if(Math.max(levels[0],levels[1])<.002){clear();arcs.forEach(a=>{a.branches.length=0;a.avg=0;a.env.fill(0);});frame=requestAnimationFrame(tick);return;}
    const spectrum=audioEngine.readStereoSpectrumSnapshots(),waveforms=audioEngine.readStereoWaveformSnapshots(),up=1-Math.exp(-dt/.025),down=1-Math.exp(-dt/.09);
    refresh+=dt;const flicker=refresh>.045;if(flicker)refresh=0;
    canvases.forEach((c,i)=>{
     const ctx=c.getContext('2d'),arc=arcs[i];if(!ctx||!arc)return;
     ctx.clearRect(0,0,c.width,c.height);
+    const level=levels[i];
+    if(level<.002){arc.branches.length=0;arc.avg=0;arc.env.fill(0);return;}
     const surface=parseFloat(c.style.width),width=surface-2*PAD;if(!(width>=2))return;
     const n=Math.max(6,Math.min(MAX_SEGMENTS,Math.round(width/14))),step=width/n,bins=i===0?spectrum.left:spectrum.right,wave=i===0?waveforms.left:waveforms.right,top=Math.min(bins.length-1,300);
     for(let k=0;k<=n;k++){
@@ -48,7 +50,7 @@ export function HeaderParticles(){
      for(let q=0;q<(bass-arc.avg>.28?2:1);q++)arc.branches.push({at:Math.max(1,Math.floor(n*(.1+Math.random()*.5))),dir:Math.random()<.5?-1:1,len:Math.max(3,Math.round(n*(.14+Math.random()*.16))),life:1,violet:strong,seed:Array.from({length:12},()=>Math.random())});
     }
     arc.avg+=(bass-arc.avg)*Math.min(1,dt*3);
-    let norm=.15;for(let j=0;j<wave.length;j+=4)norm=Math.max(norm,Math.abs(wave[j]));
+    let norm=.35;for(let j=0;j<wave.length;j+=4)norm=Math.max(norm,Math.abs(wave[j]));
     const count=Math.max(2,Math.round(width/3)),pts:number[][]=[],vio:number[][]=[];
     for(let k=0;k<=count;k++){
      const x=k/count*width,t=x/step,k0=Math.min(n-1,Math.floor(t)),frac=t-k0,e=(arc.env[k0]*(1-frac)+arc.env[k0+1]*frac)*(.9+.1*arc.jit[k0]);
