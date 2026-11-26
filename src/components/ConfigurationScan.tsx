@@ -9,7 +9,7 @@ const headings:Record<string,string>={Nom:'Nom',Fabricant:'Fabricant',Modele:'Mo
 function lines(value:unknown):string[]{const entries=Array.isArray(value)?value:value&&typeof value==='object'?[value]:[];return entries.flatMap(entry=>entry&&typeof entry==='object'?Object.entries(entry).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').map(([k,v])=>`${headings[k]??k} : ${String(v)}`):[]);}
 export function ConfigurationScan(){
  const [rows,setRows]=useState<Row[]>([]),[phase,setPhase]=useState('Initialisation'),[finished,setFinished]=useState(false),[verdict,setVerdict]=useState<'pending'|'success'|'warning'|'error'>('pending'),[detail,setDetail]=useState(''),[host,setHost]=useState<HTMLElement|null>(null);
- const viewport=useRef<HTMLDivElement>(null);
+ const viewport=useRef<HTMLDivElement>(null),follow=useRef(true);
  useEffect(()=>{setHost(viewport.current?.closest('.zonyx-tuto')?.querySelector<HTMLElement>('.zonyx-tuto-art')??null);},[]);
  useEffect(()=>{
   const aborter=new AbortController();
@@ -43,8 +43,19 @@ export function ConfigurationScan(){
   };void scan();return()=>aborter.abort();
  },[]);
  useEffect(()=>{
+  const node=viewport.current;if(!node)return;
+  const leave=()=>{follow.current=false;};
+  const atEnd=()=>node.scrollHeight-node.clientHeight-node.scrollTop<4;
+  const wheel=(e:WheelEvent)=>{if(e.deltaY<0)leave();};
+  const keys=(e:KeyboardEvent)=>{if(['ArrowUp','PageUp','Home'].includes(e.key))leave();};
+  const press=(e:PointerEvent)=>{if(e.target===node&&e.offsetX>=node.clientWidth)leave();};
+  const scrolled=()=>{if(atEnd())follow.current=true;};
+  node.addEventListener('wheel',wheel,{passive:true});node.addEventListener('touchmove',leave,{passive:true});node.addEventListener('keydown',keys);node.addEventListener('pointerdown',press);node.addEventListener('scroll',scrolled,{passive:true});
+  return()=>{node.removeEventListener('wheel',wheel);node.removeEventListener('touchmove',leave);node.removeEventListener('keydown',keys);node.removeEventListener('pointerdown',press);node.removeEventListener('scroll',scrolled);};
+ },[]);
+ useEffect(()=>{
   const node=viewport.current;if(!node)return;let frame=0,last:number|null=null;
-  const tick=(now:number)=>{const target=Math.max(0,node.scrollHeight-node.clientHeight);if(matchMedia('(prefers-reduced-motion: reduce)').matches){node.scrollTo({top:target,behavior:'auto'});return;}const elapsed=last===null?0:now-last;last=now;node.scrollTop=advanceScanScroll(node.scrollTop,target,elapsed);if(target-node.scrollTop>.5)frame=requestAnimationFrame(tick);else node.scrollTop=target;};
+  const tick=(now:number)=>{if(!follow.current)return;const target=Math.max(0,node.scrollHeight-node.clientHeight);if(matchMedia('(prefers-reduced-motion: reduce)').matches){node.scrollTo({top:target,behavior:'auto'});return;}const elapsed=last===null?0:now-last;last=now;node.scrollTop=advanceScanScroll(node.scrollTop,target,elapsed);if(target-node.scrollTop>.5)frame=requestAnimationFrame(tick);else node.scrollTop=target;};
   frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);
  },[rows,finished]);
  const result=verdict==='success'?'Bravo, vous pouvez utiliser Audio ToolZ sans problème.':verdict==='warning'?'Attention, votre configuration risque de faire ramer le logiciel.':'Attention, le fonctionnement d’Audio ToolZ n’a pas pu être vérifié.';

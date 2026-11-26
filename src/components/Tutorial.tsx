@@ -105,21 +105,30 @@ export function Tutorial(){
  useEffect(()=>{
   if(!open)return;
   const controller=new AbortController();
-  let stop:(()=>void)|undefined,starting=false;
+  let stop:(()=>void)|undefined,starting=false,silenced=audioEngine.isPlaying;
+  const silence=()=>{
+   silenced=true;
+   if(!stop)return;
+   const end=stop;stop=undefined;
+   fadeOutDecodedLoops(.5);
+   window.setTimeout(end,550);
+  };
   const start=async()=>{
-   if(starting||stop||controller.signal.aborted)return;
+   if(audioEngine.isPlaying)silenced=true;
+   if(silenced||starting||stop||controller.signal.aborted)return;
    starting=true;
    try{
     const response=await fetch(musicUrl,{signal:controller.signal});
     if(!response.ok)throw new Error('OGG unavailable');
     const end=await audioEngine.playAuxiliaryLoop(await response.arrayBuffer(),{signal:controller.signal,onWaveform:value=>{samples.current=value;},onPulse:value=>{pulse.current=value;}});
-    if(controller.signal.aborted)end();else stop=end;
+    if(controller.signal.aborted||silenced||audioEngine.isPlaying)end();else stop=end;
    }catch{/* nouvel essai au prochain clic */}finally{starting=false;}
   };
   const retry=()=>{void start();};
+  const watch=window.setInterval(()=>{if(audioEngine.isPlaying)silence();},150);
   void start();
   window.addEventListener('pointerdown',retry,true);
-  return()=>{controller.abort();window.removeEventListener('pointerdown',retry,true);stop?.();stop=undefined;samples.current=null;pulse.current=0;};
+  return()=>{controller.abort();window.clearInterval(watch);window.removeEventListener('pointerdown',retry,true);stop?.();stop=undefined;samples.current=null;pulse.current=0;};
  },[open]);
  useEffect(()=>{
   if(!open)return;
@@ -127,6 +136,7 @@ export function Tutorial(){
   if(root)root.inert=true;
   dialog.current?.focus({preventScroll:true});
   const key=(e:KeyboardEvent)=>{
+   if(e.code==='Space'&&!closingRef.current&&!(e.target instanceof HTMLElement&&e.target.closest('button,input,a,textarea,select')))return;
    e.stopPropagation();
    if(closingRef.current)return;
    if(e.key==='Escape'){e.preventDefault();close();}

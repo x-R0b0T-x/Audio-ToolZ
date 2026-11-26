@@ -1,2 +1,2 @@
-export const advanceScanScroll=(position,target,elapsed)=>Math.min(target,position+48*Math.max(0,Math.min(elapsed,100))/1000);
+export const advanceScanScroll=(position,target,elapsed)=>{const seconds=Math.max(0,Math.min(elapsed,100))/1000;return Math.min(target,position+Math.max(48,(target-position)*5)*seconds);};
 export const scanVerdict=(audioOk,processingMs,durationMs)=>!audioOk||!Number.isFinite(processingMs)||processingMs<0||!Number.isFinite(durationMs)||durationMs<=0?'error':processingMs>durationMs?'warning':'success';

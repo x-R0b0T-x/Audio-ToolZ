@@ -15,7 +15,9 @@ export function smoothNeedle(previous:number,target:number,elapsed:number):numbe
   const amount=1-Math.exp(-Math.max(0,Math.min(100,elapsed))/300);
   return previous+(target-previous)*amount;
 }
-type State={time:number;column:number;needles:number[];history:HTMLCanvasElement};
+const STOPS:Array<[number,[number,number,number]]>=[[0,[10,60,34]],[.2,[22,163,74]],[.42,[69,248,130]],[.62,[250,204,21]],[.8,[255,85,51]],[1,[255,42,85]]];
+const PALETTE=Array.from({length:256},(_,i)=>{const level=i/255;let k=1;while(k<STOPS.length-1&&level>STOPS[k][0])k++;const [a,ca]=STOPS[k-1],[b,cb]=STOPS[k],t=Math.max(0,Math.min(1,(level-a)/(b-a))),c=ca.map((v,j)=>Math.round(v+(cb[j]-v)*t));return `rgb(${c[0]},${c[1]},${c[2]})`;});
+type State={time:number;column:number;needles:number[];history:HTMLCanvasElement;panes?:HTMLCanvasElement[]};
 const states=new WeakMap<HTMLCanvasElement,State>();
 export function drawExtraAnalyzer(ctx:CanvasRenderingContext2D,w:number,h:number,mode:VisualAnalyzerMode,running:boolean):boolean{
   if(!['vectorscope','spectrogram','vu-meter'].includes(mode))return false;
@@ -36,22 +38,27 @@ export function drawExtraAnalyzer(ctx:CanvasRenderingContext2D,w:number,h:number
       ctx.strokeStyle='#39ff14';ctx.shadowColor='#b34dff';ctx.shadowBlur=3;ctx.stroke();
     }
   }else if(mode==='spectrogram'){
-    const history=state.history,width=Math.max(1,Math.round(w)),height=Math.max(1,Math.round(h));
-    if(history.width!==width||history.height!==height){history.width=width;history.height=height;}
-    const paint=history.getContext('2d');
-    if(paint&&running&&now-state.column>=40){
-      state.column=now;paint.drawImage(history,-1,0);paint.fillStyle='#080a14';paint.fillRect(width-1,0,1,height);
-      const spectrum=audioEngine.readStereoSpectrumSnapshots();
-      const n=Math.min(spectrum.left.length,spectrum.right.length);
-      for(let y=0;y<height;y++){
-        const bin=Math.min(n-1,Math.max(0,Math.floor(Math.pow(Math.max(2,n),1-y/height))-1));
-        const level=n?Math.max(spectrum.left[bin]||0,spectrum.right[bin]||0)/255:0;
-        if(level<.02)continue;
-        paint.fillStyle=`rgba(${Math.round(57+122*level)},${Math.round(255-178*level)},${Math.round(20+235*level)},${level})`;
-        paint.fillRect(width-1,y,1,1);
-      }
+    const gap=4,paneW=Math.max(1,Math.floor((w-gap)/2)),height=Math.max(1,Math.round(h));
+    if(!state.panes)state.panes=[document.createElement('canvas'),document.createElement('canvas')];
+    const panes=state.panes;
+    for(const pane of panes)if(pane.width!==paneW||pane.height!==height){pane.width=paneW;pane.height=height;}
+    if(running&&now-state.column>=40){
+      state.column=now;
+      const spectrum=audioEngine.readStereoSpectrumSnapshots(),sides=[spectrum.left,spectrum.right];
+      panes.forEach((history,side)=>{
+        const paint=history.getContext('2d');if(!paint)return;
+        paint.drawImage(history,-1,0);paint.fillStyle='#080a14';paint.fillRect(paneW-1,0,1,height);
+        const bins=sides[side],n=bins.length;
+        for(let y=0;y<height;y++){
+          const bin=Math.min(n-1,Math.max(0,Math.floor(Math.pow(Math.max(2,n),1-y/height))-1));
+          const level=n?(bins[bin]||0)/255:0;
+          if(level<.02)continue;
+          paint.fillStyle=PALETTE[Math.max(0,Math.min(255,Math.round(level*255)))];paint.fillRect(paneW-1,y,1,1);
+        }
+      });
     }
-    ctx.drawImage(history,0,0,w,h);ctx.fillStyle='#fff';ctx.fillText('Fréquences ↑',6,12);
+    ctx.drawImage(panes[0],0,0,paneW,h);ctx.drawImage(panes[1],paneW+gap,0,paneW,h);
+    ctx.fillStyle='#fff';ctx.fillText('Gauche · Fréquences ↑',6,12);ctx.fillText('Droite · Fréquences ↑',paneW+gap+6,12);
   }else{
     const channels=[stereo.left,stereo.right],colors=['#39ff14','#b34dff'];
     for(let side=0;side<2;side++){

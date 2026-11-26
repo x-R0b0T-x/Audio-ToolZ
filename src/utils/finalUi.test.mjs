@@ -6,10 +6,10 @@ import {beatPulse,loopSelection,robotBeatPulse} from './finalUiMath.mjs';
 test('beat pulse follows sample position and beat origin',()=>{assert.equal(beatPulse(0,120,48000),1);assert.ok(beatPulse(12000,120,48000)<1e-10);assert.equal(beatPulse(24000,120,48000),1);assert.equal(beatPulse(25000,120,48000,1000),1);assert.equal(beatPulse(-24000,120,48000),1);assert.equal(beatPulse(0,0,48000),0);});
 test('loop click retains current end or starts a pending new region',()=>{assert.deepEqual(loopSelection(30,80),{startSample:30,endSample:80});assert.deepEqual(loopSelection(90,80),{startSample:90,endSample:90});assert.deepEqual(loopSelection(80,80),{startSample:80,endSample:80});});
 test('stopped preview guard precedes audio replacement and fallback playback',()=>{const app=readFileSync('src/App.tsx','utf8'),start=app.indexOf('onStartPreview='),body=app.slice(start,start+2400),guard=body.indexOf('if(!audioEngine.isPlaying){setIsPreviewPlaying(false);return;}');assert.ok(start>=0&&guard>=0);assert.ok(guard<body.indexOf('audioEngine.replacePreviewAudio'));assert.ok(guard<body.indexOf('audioEngine.play('));});
-test('About links are precisely allowed by the native opener',()=>{const info=readFileSync('src/components/InfoModal.tsx','utf8'),rust=readFileSync('src-tauri/src/main.rs','utf8');for(const url of ['https://github.com/x-R0b0T-x/Audio-ToolZ','https://www.paypal.com/ncp/payment/GAUJE54VM28T8']){assert.ok(info.includes(url));assert.ok(rust.includes('target != "'+url+'"'));}});
+test('About links are precisely allowed by the native opener',()=>{const info=readFileSync('src/components/InfoModal.tsx','utf8'),rust=readFileSync('src-tauri/src/main.rs','utf8');for(const url of ['https://github.com/x-R0b0T-x/Audio-ToolZ','https://www.paypal.com/ncp/payment/GAUJE54VM28T8']){assert.ok(info.includes(url));assert.ok(rust.includes('target != \"'+url+'\"'));}});
 test('changelog main heading has the exact requested caption and an explicit green override',()=>{
  const info=readFileSync('src/components/InfoModal.tsx','utf8'),css=readFileSync('src/components/headerParticles.css','utf8'),base=readFileSync('src/textReadability.css','utf8');
- assert.ok(info.includes('id="about-changelog-title" className="text-sm font-bold">Changlog depuis la v1.5</h3>'));
+ assert.ok(info.includes('id="about-changelog-title" className="text-sm font-bold">Changements depuis la version 1.6</h3>'));
  assert.ok(css.includes('#root .zonyx-about-dialog #about-changelog-title{color:#39ff14!important}'));
  assert.ok(base.includes('font-weight:700!important'));
 });

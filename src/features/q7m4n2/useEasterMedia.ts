@@ -8,13 +8,14 @@ export function useEasterMedia(){
  const robot=useRef<HTMLImageElement>(null),samples=useRef<Float32Array|null>(null),pulse=useRef(0);
  useEffect(()=>{
   const controller=new AbortController(),reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
-  let stop:(()=>void)|undefined;setProblem('');
+  let stop:(()=>void)|undefined,lastScale=-1;setProblem('');
   void(async()=>{
    const response=await fetch(musicUrl,{signal:controller.signal});
    if(!response.ok)throw new Error('OGG unavailable');
    const end=await audioEngine.playAuxiliaryLoop(await response.arrayBuffer(),{signal:controller.signal,onWaveform:value=>{samples.current=value;},onPulse:value=>{
     pulse.current=value;
-    if(robot.current)robot.current.style.setProperty('scale',String(1+(reduced.matches?0:.24*value)));
+    const scale=1+(reduced.matches?0:.24*value);
+    if(robot.current&&Math.abs(scale-lastScale)>.004){lastScale=scale;robot.current.style.setProperty('scale',String(scale));}
    }});
    if(controller.signal.aborted)end();else stop=end;
   })().catch(()=>{if(!controller.signal.aborted)setProblem('Lecture du son indisponible. Réessayez.');});
