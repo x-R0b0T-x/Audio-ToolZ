@@ -1,0 +1,21 @@
+/* Halo tournant vert/violet (comme la section A propos) : uniquement au survol et au focus clavier. */
+:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button){position:relative;isolation:isolate}
+:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button)::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity 160ms ease}
+:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before{opacity:1;animation:zonyx-halo-turn 4s linear infinite}
+@keyframes zonyx-halo-turn{0%,100%{box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}25%{box-shadow:0 -4px 9px 1px #39ff1480,0 4px 9px 1px #b34dff99}50%{box-shadow:4px 0 9px 1px #39ff1480,-4px 0 9px 1px #b34dff99}75%{box-shadow:0 4px 9px 1px #39ff1480,0 -4px 9px 1px #b34dff99}}
+@media(prefers-reduced-motion:reduce){:is(.zonyx-halo-btn,#root .zonyx-advanced>footer>button,#root [aria-labelledby="export-modal-title"] footer button):not(:disabled):is(:hover,:focus-visible)::before{animation:none;box-shadow:-4px 0 9px 1px #39ff1480,4px 0 9px 1px #b34dff99}}
+
+/* Barre d'outils : plus de carre vert, le symbole s'illumine en vert. */
+#root#root .zonyx-toolbar-action:not(:disabled):is(:hover,:focus-visible){--icon-stroke:#39ff14;--icon-highlight:#39ff14;--icon-accent:#39ff14;--icon-fill:rgba(57,255,20,.3);color:#39ff14;box-shadow:none!important}
+#root#root .zonyx-toolbar-action svg{transition:filter 150ms ease}
+#root#root .zonyx-toolbar-action:not(:disabled):is(:hover,:focus-visible) svg{filter:drop-shadow(0 0 2px #39ff14) drop-shadow(0 0 6px #39ff14cc) drop-shadow(0 0 11px #39ff1480)}
+
+/* Egaliseur : les numeros de bande gardent leur couleur, y compris pour le halo. */
+#root#root .zonyx-eq-point[data-eq-band="0"]{--zonyx-point-color:#a65de0}
+#root#root .zonyx-eq-point[data-eq-band="1"]{--zonyx-point-color:#df69b3}
+#root#root .zonyx-eq-point[data-eq-band="2"]{--zonyx-point-color:#df8762}
+#root#root .zonyx-eq-point[data-eq-band="3"]{--zonyx-point-color:#d6cb65}
+#root#root .zonyx-eq-point[data-eq-band="4"]{--zonyx-point-color:#84c866}
+#root#root .zonyx-eq-point[data-eq-band="5"]{--zonyx-point-color:#61bcb5}
+#root#root .zonyx-eq-point[data-eq-band="6"]{--zonyx-point-color:#6499df}
+#root#root .zonyx-eq-point:is(:hover,:active,:focus-visible){box-shadow:0 0 4px var(--zonyx-point-color),0 0 10px var(--zonyx-point-color),0 0 20px var(--zonyx-point-color)!important;outline:none}
