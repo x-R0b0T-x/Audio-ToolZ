@@ -5,7 +5,7 @@
 #root#root#root .zonyx-pan-labels>.zonyx-position-label:nth-child(1){left:18.18%;transform:translateX(-100%)}
 #root#root#root .zonyx-pan-labels>.zonyx-position-label:nth-child(2){left:81.82%}
 #root#root#root .zonyx-pan-labels>.zonyx-position-label:nth-child(3){left:50%;transform:translateX(-50%)}
-#root#root#root button.zonyx-resize-grip{color:#20b957!important;opacity:1!important;filter:none!important}
+#root#root#root button.zonyx-resize-grip{color:#39ff14!important;opacity:1!important;filter:none!important}
 #root#root#root button.zonyx-resize-grip:is(:hover,:focus-visible,:active,.is-resizing){color:#39ff14!important;filter:drop-shadow(0 0 3px #39ff14) drop-shadow(0 0 7px #39ff1480)!important}
 #root#root#root .zonyx-pitcher .zonyx-legacy-controls{display:flex;flex-direction:column;gap:28px;width:min(680px,100%);margin:auto;padding:10px 24px 18px;box-sizing:border-box}
 #root#root#root .zonyx-pitcher-fader{display:flex;flex-direction:column;gap:8px;width:100%;color:white}
@@ -21,3 +21,12 @@
 #root#root#root .zonyx-pitcher-fader>output{text-align:center;color:white!important;font:600 13px monospace}
 .zonyx-pitcher-progress{display:none}
 @media(max-width:600px){.zonyx-pitcher-scale{font-size:9px}}
+
+/* Halo des faders : survol, clic maintenu, clavier et molette. Couleur propre au fader. */
+#root#root#root input[type=range]{--zonyx-fader-glow:#39ff14}
+#root#root#root .zonyx-gain input[type=range]{--zonyx-fader-glow:var(--zonyx-control-color,#39ff14)}
+#root#root#root input[type=range]:not(:disabled):is(:hover,:active,:focus-visible),#root#root#root .zonyx-gain.is-adjusting input[type=range]:not(:disabled){filter:drop-shadow(0 0 3px var(--zonyx-fader-glow)) drop-shadow(0 0 9px var(--zonyx-fader-glow))!important}
+
+/* Bouton d'aide ? : sans cadre, vert lumineux au survol. */
+#root#root#root button.zonyx-help-trigger{border:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;color:#fff!important;text-shadow:none!important}
+#root#root#root button.zonyx-help-trigger:is(:hover,:focus-visible,:active,[aria-expanded=true]){border:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;color:#39ff14!important;text-shadow:0 0 6px #39ff14,0 0 14px #39ff14!important}

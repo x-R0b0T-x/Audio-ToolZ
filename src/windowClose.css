@@ -15,6 +15,7 @@ aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"]
 aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]):not(:disabled):is(:hover,:focus-visible){color:#39ff14!important}
 aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]):not(:disabled):is(:hover,:focus-visible)>svg{filter:drop-shadow(0 0 3px #39ff14)!important}
 .zonyx-advanced footer button{color:#fff!important}
-.zonyx-advanced footer button:not(:disabled):is(:hover,:focus-visible){color:#39ff14!important}
+.zonyx-advanced footer button:not(:disabled):is(:hover,:focus-visible){color:#fff!important}
+[role="dialog"] footer button,[role="dialog"] footer button:not(:disabled):is(:hover,:focus-visible,:active),.zonyx-settings-panel>footer button:not(:disabled):is(:hover,:focus-visible,:active){color:#fff!important}
 @media(prefers-reduced-motion:reduce){button:is([aria-label^="Fermer" i],[title^="Fermer" i],[aria-label^="Close" i],[title^="Close" i],.zonyx-party-close,:has(>svg.lucide-x)),aside[aria-label="Fenêtre de contrôle flottante"] button:is([title="Déplier"],[title="Réduire"]){transition:none!important}}
 }
