@@ -1,0 +1,3 @@
+.zonyx-spinning-logo{display:block;width:28px;height:28px;flex:none;object-fit:contain;user-select:none;pointer-events:none;animation:zonyx-vinyl-33 1.8s linear infinite;will-change:transform}
+@keyframes zonyx-vinyl-33{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.zonyx-spinning-logo{animation:none}}
