@@ -60,7 +60,7 @@ Vous faites du **mastering** ? Vous voulez sculpter les fréquences sur une cour
 
 Vous préparez des **boucles** ? Audio ToolZ détecte le tempo, aimante vos sélections sur les kicks, et vous laisse découper, rogner, fondre et exporter en quelques clics.
 
-> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel. Et tout ça tourne **sur votre machine** — aucun fichier ne quitte votre ordinateur.
+> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel. Et tout ça tourne **sur votre machine**, aucun fichier ne quitte votre ordinateur.
 
 ---
 
@@ -72,21 +72,21 @@ Vous préparez des **boucles** ? Audio ToolZ détecte le tempo, aimante vos sél
 
 L'interface est pensée pour aller droit au but. Ce que vous voyez ici :
 
-- **Forme d'onde stéréo** — Les deux canaux (G et D) s'affichent séparément, en violet et vert. La sélection active (en surbrillance) correspond exactement à la zone qui sera traitée par l'effet ou exportée. Zoomez au maximum pour caler chaque coupe au sample près.
-- **Repères BPM** — La barre de statut indique **137.0 BPM** détecté automatiquement. L'aimant à kicks est activé : vos sélections s'accrochent aux transitoires du groove.
-- **Fenêtre de contrôle** — Volume (+0.0 dB), Balance (0 %), Vitesse (1.00×), et en bas un mini-aperçu **Waveforme colorée** pour naviguer sur tout le morceau d'un coup d'œil.
-- **Lecture précise** — Curseur à **01:40.049**, sélection de 14 secondes. Lecture normale, en boucle, inversée, ou canal par canal.
-- **Onglets** — Ouvrez plusieurs fichiers en même temps et passez de l'un à l'autre sans perdre vos sélections.
+- **Forme d'onde stéréo** : Les deux canaux (G et D) s'affichent séparément, en violet et vert. La sélection active (en surbrillance) correspond exactement à la zone qui sera traitée par l'effet ou exportée. Zoomez au maximum pour caler chaque coupe au sample près.
+- **Repères BPM** : La barre de statut indique **137.0 BPM** détecté automatiquement. L'aimant à kicks est activé : vos sélections s'accrochent aux transitoires du groove.
+- **Fenêtre de contrôle** : Volume (+0.0 dB), Balance (0 %), Vitesse (1.00×), et en bas un mini-aperçu **Waveforme colorée** pour naviguer sur tout le morceau d'un coup d'œil.
+- **Lecture précise** : Curseur à **01:40.049**, sélection de 14 secondes. Lecture normale, en boucle, inversée, ou canal par canal.
+- **Onglets** : Ouvrez plusieurs fichiers en même temps et passez de l'un à l'autre sans perdre vos sélections.
 
 ---
 
 ## Les 6 effets studio
 
-Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer** — et seulement à ce moment-là, la modification est écrite dans la forme d'onde.
+Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer**, et seulement à ce moment-là, la modification est écrite dans la forme d'onde.
 
 ---
 
-### Z-Égaliseur — Sculpter le son fréquence par fréquence
+### Z-Égaliseur : Sculpter le son fréquence par fréquence
 
 <p align="center">
   <img src="prez/03%20Z-Égaliseur.png" alt="Z-Égaliseur paramétrique 7 bandes" width="860" />
@@ -95,53 +95,53 @@ Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lectur
 Le Z-Égaliseur est un **égaliseur paramétrique 7 bandes** avec visualisation du spectre en direct. C'est l'outil de base du mastering et du sound design.
 
 **Ce que vous voyez ici :**
-- La courbe blanche est la **réponse globale** de votre égalisation — vous la sculptez en déplaçant les points directement sur le graphe.
-- Le spectre violet en arrière-plan est le **contenu fréquentiel réel** de votre audio — vous savez exactement où booster ou couper.
+- La courbe blanche est la **réponse globale** de votre égalisation, vous la sculptez en déplaçant les points directement sur le graphe.
+- Le spectre violet en arrière-plan est le **contenu fréquentiel réel** de votre audio, vous savez exactement où booster ou couper.
 - À droite, **7 faders verticaux colorés** (un par bande) pour des réglages précis au demi-dB.
 - Chaque bande a sa **fréquence centrale**, son **gain** (ici de −18 à +18 dB) et sa **pente** (12 dB/oct.).
 
 **Dans quel cas l'utiliser ?**
 - **Sampling** : vous avez un sample qui manque de punch ? Boostez les bas-médiums (200–400 Hz), coupez les médiums parasites (1–3 kHz), montez les aigus pour l'air.
-- **Mastering** : corrigez la balance tonale de votre mix avant d'exporter — trop de graves, médiums voilés, aigus trop agressifs.
+- **Mastering** : corrigez la balance tonale de votre mix avant d'exporter, trop de graves, médiums voilés, aigus trop agressifs.
 - **Boucles** : un sample vocal qui empiète sur votre groove ? Un high-pass à 100 Hz et il disparaît du bas du spectre.
 
 ---
 
-### Z-Limit/Comp — Contrôler la dynamique
+### Z-Limit/Comp : Contrôler la dynamique
 
-<table>
+<table align="center">
 <tr>
 <td width="50%"><img src="prez/05%20Z-Limiteur.png" alt="Z-Limit/Comp en mode LIMIT" width="440"></td>
 <td width="50%"><img src="prez/06%20Z-Compresseur.png" alt="Z-Limit/Comp en mode COMP" width="440"></td>
 </tr>
 <tr>
-<td align="center"><b>Mode LIMIT</b> — Gain +6.9 dB · Plafond 0.0 dBFS · Attaque 1.0 ms · Relâchement 120 ms</td>
-<td align="center"><b>Mode COMP</b> — Ratio 4.0 · Seuil −6.0 dBFS · Coude +6.0 · Attaque 7.3 ms · Relâchement 269 ms</td>
+<td align="center"><b>Mode LIMIT</b> : Gain +6.9 dB · Plafond 0.0 dBFS · Attaque 1.0 ms · Relâchement 120 ms</td>
+<td align="center"><b>Mode COMP</b> : Ratio 4.0 · Seuil −6.0 dBFS · Coude +6.0 · Attaque 7.3 ms · Relâchement 269 ms</td>
 </tr>
 </table>
 
 Deux outils en un : un **limiteur** et un **compresseur** dans la même fenêtre, avec un affichage graphique de la réduction de gain en temps réel.
 
-**Mode LIMIT — Pour la finition :**
+**Mode LIMIT, pour la finition :**
 - **Gain** (+6.9 dB) : vous montez le niveau global.
-- **Plafond** (0.0 dBFS) : le limiteur coupe tout ce qui dépasse — pas d'écrêtage numérique, même après un gros gain.
+- **Plafond** (0.0 dBFS) : le limiteur coupe tout ce qui dépasse, pas d'écrêtage numérique, même après un gros gain.
 - **Attaque / Relâchement** : contrôlez la transparence du limiteur. Une attaque rapide protège les crêtes, un relâchement plus long garde la dynamique perceptible.
 - La courbe violette est l'**audio traité**, la blanche est la **réduction de gain appliquée en temps réel**.
 
-**Mode COMP — Pour la cohérence dynamique :**
+**Mode COMP, pour la cohérence dynamique :**
 - **Seuil** (−6.0 dBFS) : le compresseur intervient dès que le signal passe au-dessus.
 - **Ratio** (4.0) : pour 4 dB au-dessus du seuil, vous n'entendez qu'1 dB.
-- **Coude** (+6.0) : adoucit l'entrée en compression — la transition est progressive, pas brutale.
+- **Coude** (+6.0) : adoucit l'entrée en compression, la transition est progressive, pas brutale.
 - **Compensation** : remonte le volume global après compression pour comparer à niveau égal.
 
 **Dans quel cas l'utiliser ?**
-- **Sampling** : compressez un break de batterie pour en faire ressortir les transitoires — le kick claque plus fort, la caisse claire tient dans le mix.
-- **Mastering** : limitez le master final à 0 dBFS avec +6 dB de gain — vous gagnez en loudness sans distorsion.
+- **Sampling** : compressez un break de batterie pour en faire ressortir les transitoires, le kick claque plus fort, la caisse claire tient dans le mix.
+- **Mastering** : limitez le master final à 0 dBFS avec +6 dB de gain, vous gagnez en loudness sans distorsion.
 - **Boucles** : uniformisez le niveau d'une boucle vocale pour qu'elle reste audible du début à la fin.
 
 ---
 
-### Z-Delay — Des échos qui collent au groove
+### Z-Delay : Des échos qui collent au groove
 
 <p align="center">
   <img src="prez/02%20Z-Delay.png" alt="Z-Delay, échos calés sur le tempo" width="720" />
@@ -150,85 +150,85 @@ Deux outils en un : un **limiteur** et un **compresseur** dans la même fenêtre
 Le Z-Delay est un **delay rythmique** avec synchronisation BPM automatique. L'idée : des répétitions qui tombent pile sur le tempo, sans calcul.
 
 **Ce que vous voyez ici :**
-- **Temps : 1/4 droite** — un écho toutes les noires, ancré dans la pulsation de votre morceau à 137 BPM.
-- **Répétitions : 4** — quatre échos qui s'estompent progressivement.
-- **Volume de l'effet : 35 %** — l'effet est présent mais reste en retrait du son direct.
-- **Mode Ping-pong** (actif) — les échos rebondissent de gauche à droite dans le champ stéréo. Le son tourne, il vit.
-- **Panoramique de départ : Gauche 100 %** — le premier écho démarre tout à gauche, les suivants voyagent vers la droite.
+- **Temps : 1/4 droite**, un écho toutes les noires, ancré dans la pulsation de votre morceau à 137 BPM.
+- **Répétitions : 4**, quatre échos qui s'estompent progressivement.
+- **Volume de l'effet : 35 %**, l'effet est présent mais reste en retrait du son direct.
+- **Mode Ping-pong** (actif), les échos rebondissent de gauche à droite dans le champ stéréo. Le son tourne, il vit.
+- **Panoramique de départ : Gauche 100 %**, le premier écho démarre tout à gauche, les suivants voyagent vers la droite.
 
 **Dans quel cas l'utiliser ?**
 - **Sampling** : un delay 1/8 en Ping-pong sur un sample vocal, et vous avez un effet de largeur stéréo instantané.
-- **Boucles** : calé sur le BPM, le delay ne déphase jamais votre boucle — les répétitions s'intègrent naturellement.
-- **Remix** : glissez un delay 1/4 en mono sur une note synth isolée — ça crée de la profondeur sans charger le mix.
+- **Boucles** : calé sur le BPM, le delay ne déphase jamais votre boucle, les répétitions s'intègrent naturellement.
+- **Remix** : glissez un delay 1/4 en mono sur une note synth isolée, ça crée de la profondeur sans charger le mix.
 
 ---
 
-### Z-Pitcher — Vitesse et hauteur, indépendamment
+### Z-Pitcher : Vitesse et hauteur, indépendamment
 
 <p align="center">
   <img src="prez/07%20Z-Pitcher.png" alt="Z-Pitcher, faders vitesse et hauteur" width="720" />
 </p>
 
-Le Z-Pitcher est propulsé par le moteur **Signalsmith Stretch** — l'un des meilleurs algorithmes open-source de time-stretching et pitch-shifting disponibles. La vitesse et la hauteur sont **totalement indépendantes** l'une de l'autre.
+Le Z-Pitcher est propulsé par le moteur **Signalsmith Stretch**, l'un des meilleurs algorithmes open-source de time-stretching et pitch-shifting disponibles. La vitesse et la hauteur sont **totalement indépendantes** l'une de l'autre.
 
 **Ce que vous voyez ici :**
-- **Vitesse : 1.1×** — le passage joue 10 % plus vite, sans changer la tonalité.
-- **Hauteur : −2 demi-tons** — le sample descend de deux demi-tons, sans changer la durée.
+- **Vitesse : 1.1×**, le passage joue 10 % plus vite, sans changer la tonalité.
+- **Hauteur : −2 demi-tons**, le sample descend de deux demi-tons, sans changer la durée.
 - Les deux **grands faders horizontaux** donnent un contrôle précis et intuitif. Chaque cran est visible.
 
 **Dans quel cas l'utiliser ?**
-- **Sampling** : vous avez un sample à 90 BPM et votre beat tourne à 110 BPM ? Accélérez à 1.22× — le sample s'aligne sans changer de tonalité.
-- **Harmonisation** : dupliquez un passage, pitchez une copie à +3 ou +7 demi-tons, mélangez — vous créez des harmonies vocales ou instrumentales.
+- **Sampling** : vous avez un sample à 90 BPM et votre beat tourne à 110 BPM ? Accélérez à 1.22×, le sample s'aligne sans changer de tonalité.
+- **Harmonisation** : dupliquez un passage, pitchez une copie à +3 ou +7 demi-tons, mélangez, vous créez des harmonies vocales ou instrumentales.
 - **Transposition** : un sample en Sol mineur dans un projet en La mineur ? Montez de +2 demi-tons, c'est réglé.
 
 ---
 
-### Z-Fondus — Des transitions propres, à la forme que vous voulez
+### Z-Fondus : Des transitions propres, à la forme que vous voulez
 
 <p align="center">
   <img src="prez/04%20Z-Fondus.png" alt="Z-Fondus, fondu sortant en Courbe en S" width="640" />
 </p>
 
-Le Z-Fondus gère les **fondus d'entrée et de sortie** avec trois formes de courbe. Ici, un **fondu sortant en Courbe en S** : le son reste fort puis descend doucement avant de disparaître d'un coup — l'effet est naturel, l'oreille ne perçoit pas de coupure brutale.
+Le Z-Fondus gère les **fondus d'entrée et de sortie** avec trois formes de courbe. Ici, un **fondu sortant en Courbe en S** : le son reste fort puis descend doucement avant de disparaître d'un coup, l'effet est naturel, l'oreille ne perçoit pas de coupure brutale.
 
 **Les réglages disponibles :**
 - **Entrée / Sortie** : le fondu monte au début ou descend à la fin de la sélection.
-- **Linéaire** : la descente est constante — simple et efficace sur du parlé ou des effets.
-- **Exponentielle** : la descente est d'abord rapide puis ralentit — donne une impression de "respiration".
-- **Courbe en S** : la descente est douce au départ, s'accélère au milieu, puis se referme progressivement — idéale pour la musique, l'oreille ne détecte aucune rupture.
+- **Linéaire** : la descente est constante, simple et efficace sur du parlé ou des effets.
+- **Exponentielle** : la descente est d'abord rapide puis ralentit, donne une impression de "respiration".
+- **Courbe en S** : la descente est douce au départ, s'accélère au milieu, puis se referme progressivement, idéale pour la musique, l'oreille ne détecte aucune rupture.
 
 **Dans quel cas l'utiliser ?**
-- **Boucles** : un fondu d'entrée en Courbe en S sur votre sample, et le début ne claque plus — la boucle démarre en douceur.
-- **Sampling** : nettoyez la fin d'un sample avec un fondu sortant exponentiel — plus de souffle résiduel, plus de clic.
-- **Mastering** : terminez votre master par un fondu en S — la fin du morceau s'efface naturellement.
+- **Boucles** : un fondu d'entrée en Courbe en S sur votre sample, et le début ne claque plus, la boucle démarre en douceur.
+- **Sampling** : nettoyez la fin d'un sample avec un fondu sortant exponentiel, plus de souffle résiduel, plus de clic.
+- **Mastering** : terminez votre master par un fondu en S, la fin du morceau s'efface naturellement.
 
 ---
 
-### Z-Reverbe — De l'espace, de la profondeur, de la présence
+### Z-Reverbe : De l'espace, de la profondeur, de la présence
 
 <p align="center">
   <img src="prez/08%20Z-Reverbe.png" alt="Z-Reverbe, tous les réglages détaillés" width="720" />
 </p>
 
-Le Z-Reverbe est une **réverbération numérique** avec un contrôle chirurgical sur chaque couche du son. La visualisation carrée à gauche représente la **salle virtuelle** — sa taille change en temps réel selon le paramètre Taille.
+Le Z-Reverbe est une **réverbération numérique** avec un contrôle chirurgical sur chaque couche du son. La visualisation carrée à gauche représente la **salle virtuelle**, sa taille change en temps réel selon le paramètre Taille.
 
 **Ce que vous voyez ici :**
-- **Prédélai : 20 ms** — l'espace entre le son direct et les premières réflexions. Plus il est long, plus la salle semble grande.
-- **Taille : 50** — une salle moyenne, ni studio booth ni cathédrale.
-- **Modulation : 20** — légère variation de la traîne pour éviter l'effet "métallique" des reverbs numériques.
-- **Diffusion : 70** — les réflexions sont bien réparties dans la salle, le son est enveloppant.
-- **Vitesse : 0.60** — la traîne se propage lentement, effet de grande pièce.
-- **Décroissance : 2.00** — le son met 2 secondes à disparaître.
-- **Amort. aigu : 6000 Hz** — les aigus sont absorbés au-delà de 6 kHz, comme dans une vraie pièce avec des murs et des meubles.
-- **Coupe-bas : 100 Hz** — les graves de la réverbe sont filtrés pour éviter de boucher le bas du spectre.
-- **Mix Direct / Réflexions / Réverbération** (faders droits) : contrôlez séparément les trois couches. Ici Direct à 100 %, Réflexions à 25 %, Réverbération à 25 % — le son reste présent, l'espace est subtil.
-- **Stéréo : 24 %** — la traîne est légèrement élargie dans le champ stéréo.
+- **Prédélai : 20 ms**, l'espace entre le son direct et les premières réflexions. Plus il est long, plus la salle semble grande.
+- **Taille : 50**, une salle moyenne, ni studio booth ni cathédrale.
+- **Modulation : 20**, légère variation de la traîne pour éviter l'effet "métallique" des reverbs numériques.
+- **Diffusion : 70**, les réflexions sont bien réparties dans la salle, le son est enveloppant.
+- **Vitesse : 0.60**, la traîne se propage lentement, effet de grande pièce.
+- **Décroissance : 2.00**, le son met 2 secondes à disparaître.
+- **Amort. aigu : 6000 Hz**, les aigus sont absorbés au-delà de 6 kHz, comme dans une vraie pièce avec des murs et des meubles.
+- **Coupe-bas : 100 Hz**, les graves de la réverbe sont filtrés pour éviter de boucher le bas du spectre.
+- **Mix Direct / Réflexions / Réverbération** (faders droits) : contrôlez séparément les trois couches. Ici Direct à 100 %, Réflexions à 25 %, Réverbération à 25 %, le son reste présent, l'espace est subtil.
+- **Stéréo : 24 %**, la traîne est légèrement élargie dans le champ stéréo.
 
 **Dans quel cas l'utiliser ?**
 - **Sampling vocal** : un peu de Prédélai (20–30 ms) + Décroissance courte (0.8 s) + Réflexions légères = présence naturelle sans noyer le sample.
-- **Pad et nappes** : Taille 80, Décroissance 4 s, Diffusion haute — votre nappe flotte dans l'espace.
-- **Percussion** : Prédélai 0, Décroissance 0.3 s, Coupe-bas à 200 Hz — la reverbe colle au kick sans boucher les graves.
-- **Ambiance** : Tempo actif sur le Prédélai — les réflexions tombent en rythme avec votre groove.
+- **Pad et nappes** : Taille 80, Décroissance 4 s, Diffusion haute, votre nappe flotte dans l'espace.
+- **Percussion** : Prédélai 0, Décroissance 0.3 s, Coupe-bas à 200 Hz, la reverbe colle au kick sans boucher les graves.
+- **Ambiance** : Tempo actif sur le Prédélai, les réflexions tombent en rythme avec votre groove.
 
 ---
 
@@ -236,7 +236,7 @@ Le Z-Reverbe est une **réverbération numérique** avec un contrôle chirurgica
 
 Au-delà des effets, Audio ToolZ embarque une boîte à outils complète :
 
-<table>
+<table align="center">
 <tr>
 <td width="50%" valign="top">
 
@@ -247,7 +247,7 @@ Sélection, couper, copier, coller, rognage, silence, mixage au collage, annuler
 <td width="50%" valign="top">
 
 **Tempo et aimant à kicks**<br>
-Détection automatique du BPM. L'aimant snap vos sélections sur les transitoires de percussion — plus besoin de zoomer pour trouver le bon sample.
+Détection automatique du BPM. L'aimant snap vos sélections sur les transitoires de percussion, plus besoin de zoomer pour trouver le bon sample.
 
 </td>
 </tr>
@@ -287,7 +287,9 @@ Capturez depuis n'importe quelle entrée audio autorisée (micro, line-in) direc
 
 ## Formats
 
-### Lecture — 15 extensions supportées
+### Lecture : 15 extensions supportées
+
+<div align="center">
 
 | Famille | Extensions |
 | --- | --- |
@@ -300,9 +302,13 @@ Capturez depuis n'importe quelle entrée audio autorisée (micro, line-in) direc
 | CAF (Apple) | `.caf` |
 | Matroska et WebM | `.mka` `.mkv` `.webm` |
 
+</div>
+
 Un décodeur de secours intégré (Symphonia 0.6.1) prend le relais si le décodeur du navigateur échoue. L'ouverture dépend du fichier, de son conteneur et du codec : un fichier qui porte une extension reconnue peut être refusé si son codec spécifique n'est pas pris en charge.
 
 ### Export
+
+<div align="center">
 
 | Format | Options |
 | --- | --- |
@@ -310,6 +316,8 @@ Un décodeur de secours intégré (Symphonia 0.6.1) prend le relais si le décod
 | MP3 | 128 · 192 · 256 · 320 kbit/s |
 | FLAC | Compression 0 · 2 · 5 |
 | OGG Vorbis | Qualité 1 à 10 |
+
+</div>
 
 ---
 
@@ -328,7 +336,7 @@ Configuration requise : Windows 10 ou 11 en 64 bits (WebView2 inclus). Aucune in
 
 - L'application est prévue pour **Windows 64 bits** et nécessite **WebView2** (inclus avec Windows 10/11).
 - L'exécutable n'est **pas signé numériquement** : Windows Defender SmartScreen peut afficher un avertissement. Cliquez « Informations complémentaires » puis « Exécuter quand même ».
-- Le fichier `Audio.ToolZ.v1.7.zip.sha256.txt` joint à la release contient l'empreinte SHA-256 de l'archive — vérifiez-la si vous avez un doute sur l'intégrité du téléchargement.
+- Le fichier `Audio.ToolZ.v1.7.zip.sha256.txt` joint à la release contient l'empreinte SHA-256 de l'archive, vérifiez-la si vous avez un doute sur l'intégrité du téléchargement.
 - Les archives « Source code » proposées automatiquement par GitHub contiennent **le code source du projet**, pas l'application prête à lancer.
 
 </details>
@@ -337,9 +345,9 @@ Configuration requise : Windows 10 ou 11 en 64 bits (WebView2 inclus). Aucune in
 
 ## Bon à savoir
 
-- Le **vumètre** indique un niveau RMS en dBFS avec inertie visuelle — ce n'est pas un instrument VU analogique calibré à −18 dBFS.
-- Le **limiteur** agit sur les crêtes d'échantillons (sample peak) — ce n'est pas un limiteur true peak suréchantillonné.
-- La **détection du tempo** est une estimation algorithmique — elle dépend du contenu audio et peut se tromper sur des morceaux complexes.
+- Le **vumètre** indique un niveau RMS en dBFS avec inertie visuelle, ce n'est pas un instrument VU analogique calibré à −18 dBFS.
+- Le **limiteur** agit sur les crêtes d'échantillons (sample peak), ce n'est pas un limiteur true peak suréchantillonné.
+- La **détection du tempo** est une estimation algorithmique, elle dépend du contenu audio et peut se tromper sur des morceaux complexes.
 - **Vos fichiers ne quittent jamais votre machine** : tous les traitements, encodages et analyses sont réalisés en local.
 
 ---
@@ -350,4 +358,4 @@ Rejoignez la [communauté Telegram](https://t.me/Audio_ToolZ) pour partager vos 
 
 Soutenez le développement via [PayPal](https://www.paypal.com/ncp/payment/GAUJE54VM28T8) si le projet vous est utile.
 
-Projet open-source sous **licence GPL v3** — consultez les fichiers de licence du dépôt.
+Projet open-source sous **licence GPL v3**, consultez les fichiers de licence du dépôt.
