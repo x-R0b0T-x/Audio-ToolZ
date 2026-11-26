@@ -103,7 +103,7 @@ Chaque effet s'ouvre depuis le menu Effets. Vous réglez le son pendant la lectu
 Égaliseur paramétrique à sept bandes. Chaque bande règle la fréquence, le gain, la largeur Q et la forme du filtre. Le spectre d'entrée et la courbe de réponse globale s'affichent pour équilibrer le son.
 
 <p align="center">
-  <img src="prez/03%20Z-Égaliseur.png" alt="Z-Égaliseur, égaliseur paramétrique à sept bandes" />
+  <img src="prez/03%20Z-Égaliseur.png" alt="Z-Égaliseur, égaliseur paramétrique à sept bandes" width="720" />
 </p>
 
 ### Z-Limit/Comp
@@ -112,8 +112,8 @@ Compresseur et limiteur dans une même fenêtre, avec les modes COMP et LIMIT. I
 
 <table>
 <tr>
-<td width="50%"><img src="prez/05%20Z-Llimiteur.png" alt="Z-Limit/Comp en mode limiteur"></td>
-<td width="50%"><img src="prez/06%20Z-Compresseur.png" alt="Z-Limit/Comp en mode compresseur"></td>
+<td width="50%"><img src="prez/05%20Z-Limiteur.png" alt="Z-Limit/Comp en mode limiteur" width="360"></td>
+<td width="50%"><img src="prez/06%20Z-Compresseur.png" alt="Z-Limit/Comp en mode compresseur" width="360"></td>
 </tr>
 <tr>
 <td align="center"><b>Mode LIMIT.</b> Plafond et réduction de gain.</td>
@@ -126,7 +126,7 @@ Compresseur et limiteur dans une même fenêtre, avec les modes COMP et LIMIT. I
 Échos calés sur le tempo, en Mono, Stéréo ou Ping-pong. Vous réglez les temps musicaux, les répétitions, le volume d'effet et le panoramique. La détection du BPM est accessible directement dans le panneau.
 
 <p align="center">
-  <img src="prez/02%20Z-Ddelay.png" alt="Z-Delay, échos calés sur le tempo" />
+  <img src="prez/02%20Z-Delay.png" alt="Z-Delay, échos calés sur le tempo" width="720" />
 </p>
 
 ### Z-Pitcher
@@ -134,7 +134,7 @@ Compresseur et limiteur dans une même fenêtre, avec les modes COMP et LIMIT. I
 Modifie la vitesse et la hauteur d'un passage, indépendamment l'une de l'autre, avec le moteur Signalsmith Stretch. Deux grands faders horizontaux règlent la vitesse de 0,5× à 2× et la hauteur de −12 à +12 demi-tons. Le résultat se compare en préécoute avant validation.
 
 <p align="center">
-  <img src="prez/07%20Z-Pitcher.png" alt="Z-Pitcher, vitesse et hauteur indépendantes" />
+  <img src="prez/07%20Z-Pitcher.png" alt="Z-Pitcher, vitesse et hauteur indépendantes" width="720" />
 </p>
 
 ### Z-Fondus
@@ -142,7 +142,7 @@ Modifie la vitesse et la hauteur d'un passage, indépendamment l'une de l'autre,
 Adoucit le début ou la fin d'un passage avec un fondu linéaire, exponentiel ou en S.
 
 <p align="center">
-  <img src="prez/04%20Z-Fondus.png" alt="Z-Fondus, fondus linéaire, exponentiel ou en S" />
+  <img src="prez/04%20Z-Fondus.png" alt="Z-Fondus, fondus linéaire, exponentiel ou en S" width="720" />
 </p>
 
 ### Z-Reverbe
@@ -150,7 +150,7 @@ Adoucit le début ou la fin d'un passage avec un fondu linéaire, exponentiel ou
 Donne de l'espace au son. Trois niveaux se règlent séparément : le signal Direct, les premières réflexions et la traîne de réverbération. Le prédélai peut se caler sur le tempo.
 
 <p align="center">
-  <img src="prez/08%20Z-Reverbe.png" alt="Z-Reverbe, niveaux Direct, Réflexions et Réverbération" />
+  <img src="prez/08%20Z-Reverbe.png" alt="Z-Reverbe, niveaux Direct, Réflexions et Réverbération" width="720" />
 </p>
 
 ### Réduction de bruit spectrale
