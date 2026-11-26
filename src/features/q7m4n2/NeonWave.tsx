@@ -8,7 +8,7 @@ export function NeonWave({samples,pulse}:{samples:RefObject<Float32Array|null>;p
   const draw=(now:number)=>{
    const node=canvas.current,ctx=node?.getContext('2d');
    if(node&&ctx&&now-last>=1000/45){
-    last=now;const r=node.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(1,r.width),h=Math.max(1,r.height);
+    last=now;const r=node.getBoundingClientRect(),dpr=Math.min(1.5,window.devicePixelRatio||1),w=Math.max(1,r.width),h=Math.max(1,r.height);
     if(node.width!==Math.round(w*dpr)||node.height!==Math.round(h*dpr)){node.width=Math.round(w*dpr);node.height=Math.round(h*dpr);}
     ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
     const source=samples.current,beat=reduced.matches?0:Math.max(0,Math.min(1,pulse.current));
@@ -20,9 +20,10 @@ export function NeonWave({samples,pulse}:{samples:RefObject<Float32Array|null>;p
      if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);
     }
     ctx.lineJoin='round';ctx.lineCap='round';
-    ctx.strokeStyle='rgba(57,255,20,.2)';ctx.lineWidth=12;ctx.shadowColor='#39ff14';ctx.shadowBlur=24+12*beat;ctx.stroke();
-    ctx.strokeStyle='#39ff14';ctx.lineWidth=3;ctx.shadowBlur=10+8*beat;ctx.stroke();
-    ctx.strokeStyle='#eaffdf';ctx.lineWidth=1.2;ctx.shadowBlur=3;ctx.stroke();ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(57,255,20,.12)';ctx.lineWidth=18+6*beat;ctx.stroke();
+    ctx.strokeStyle='rgba(57,255,20,.28)';ctx.lineWidth=8+4*beat;ctx.stroke();
+    ctx.strokeStyle='#39ff14';ctx.lineWidth=3;ctx.stroke();
+    ctx.strokeStyle='#eaffdf';ctx.lineWidth=1.2;ctx.stroke();
    }
    frame=requestAnimationFrame(draw);
   };

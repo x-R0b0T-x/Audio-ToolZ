@@ -17,11 +17,11 @@ function EasterEgg(p:{onClose:()=>void}){
  const [error,setError]=useState('');
  const media=useEasterMedia();
  useEffect(()=>{
-  const previous=document.activeElement,root=document.getElementById('root'),wasInert=root?.inert??false;
-  if(root)root.inert=true;dialog.current?.focus({preventScroll:true});
+  const previous=document.activeElement,root=document.getElementById('root'),wasInert=root?.inert??false,wasVisibility=root?.style.visibility??'';
+  if(root){root.inert=true;root.style.visibility='hidden';}dialog.current?.focus({preventScroll:true});
   const key=(e:KeyboardEvent)=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();callback.current();}else if(e.key==='Tab'){e.preventDefault();const items=Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href]')??[]);if(items.length){const index=items.indexOf(document.activeElement as HTMLElement);items[index<0?(e.shiftKey?items.length-1:0):(index+(e.shiftKey?-1:1)+items.length)%items.length].focus();}}};
   window.addEventListener('keydown',key,true);
-  return()=>{window.removeEventListener('keydown',key,true);if(root)root.inert=wasInert;if(previous instanceof HTMLElement&&previous.isConnected)previous.focus();};
+  return()=>{window.removeEventListener('keydown',key,true);if(root){root.inert=wasInert;root.style.visibility=wasVisibility;}if(previous instanceof HTMLElement&&previous.isConnected)previous.focus();};
  },[]);
 
 
