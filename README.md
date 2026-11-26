@@ -1,220 +1,329 @@
 <div align="center">
   <h1>Audio ToolZ</h1>
-  <p><strong>Éditeur audio en français pour découper, transformer et assembler vos sons.</strong></p>
-  <p>Windows portable · Traitements locaux · Sans installation</p>
-  <img src="src/medias/ZØNYXRobot..png" alt="ZØNYX, la mascotte d'Audio ToolZ" width="260" />
+  <p><strong>L'éditeur audio tout-en-un pour les amoureux du son.</strong></p>
+  <p>Sampling · Mastering · Boucles · Remix · 100 % local · Windows portable</p>
+  <img src="src/medias/ZØNYXRobot..png" alt="ZØNYX, la mascotte d'Audio ToolZ" width="200" />
   <p>
-    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger la dernière version" src="https://img.shields.io/badge/Télécharger-dernière%20version-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger la dernière version" src="https://img.shields.io/badge/Télécharger-v1.7-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
     &nbsp;
-    <a href="https://t.me/Audio_ToolZ"><img alt="Rejoindre la communauté Telegram" src="https://img.shields.io/badge/Telegram-rejoindre%20la%20communauté-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
+    <a href="https://t.me/Audio_ToolZ"><img alt="Rejoindre la communauté Telegram" src="https://img.shields.io/badge/Telegram-communauté-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
+    &nbsp;
+    <a href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8"><img alt="Soutenir le projet" src="https://img.shields.io/badge/PayPal-soutenir-00457C?style=for-the-badge&logo=paypal&logoColor=white"></a>
   </p>
   <p>
     <img alt="Version 1.7" src="https://img.shields.io/badge/version-1.7-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Licence GPL v3" src="https://img.shields.io/badge/licence-GPL%20v3-0B0B0B?style=flat-square&labelColor=1F1F1F">
-    <img alt="Windows 64 bits" src="https://img.shields.io/badge/plateforme-Windows%2064%20bits-0B0B0B?style=flat-square&labelColor=1F1F1F">
+    <img alt="Windows 64 bits" src="https://img.shields.io/badge/Windows-64%20bits-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="React 19" src="https://img.shields.io/badge/React-19-0B0B0B?style=flat-square&labelColor=1F1F1F">
   </p>
   <p>
-    <a href="#points-forts">Points forts</a> ·
-    <a href="#les-effets">Les effets</a> ·
-    <a href="#visualisations">Visualisations</a> ·
-    <a href="#formats-et-export">Formats et export</a> ·
-    <a href="CHANGELOG.md">Journal des modifications</a> ·
+    <a href="#pourquoi-audio-toolz">Pourquoi Audio ToolZ ?</a> ·
+    <a href="#linterface">L'interface</a> ·
+    <a href="#les-6-effets-studio">Les effets</a> ·
+    <a href="#outils-dédiés-au-rythme-et-à-lassemblage">Outils</a> ·
+    <a href="#formats">Formats</a> ·
+    <a href="#télécharger">Télécharger</a> ·
     <a href="#communauté-et-licence">Communauté</a>
   </p>
 </div>
 
-<br>
+---
 
-<p align="center">
-  <img src="prez/01%20Interface.png" alt="L'interface d'Audio ToolZ : forme d'onde, menus, fenêtre de contrôle" width="900" />
-</p>
+## Pourquoi Audio ToolZ ?
+
+Vous faites du **sampling** ? Vous avez besoin de couper net un kick, de pitcher un sample sans le dénaturer, d'ajouter un delay Ping-pong qui colle au BPM. Tout ça, sur un seul fichier, sans ouvrir une DAW.
+
+Vous faites du **mastering** ? Vous voulez sculpter les fréquences sur une courbe visuelle, compresser intelligemment en voyant la réduction de gain en temps réel, puis limiter proprement avant d'exporter en WAV 32 bits float.
+
+Vous préparez des **boucles** ? Audio ToolZ détecte le tempo, aimante vos sélections sur les kicks, et vous laisse découper, rogner, fondre et exporter en quelques clics.
+
+> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel. Et tout ça tourne **sur votre machine** — aucun fichier ne quitte votre ordinateur.
 
 ---
 
-## Points forts
-
-Audio ToolZ réunit dans une seule fenêtre l'édition sur forme d'onde, six effets studio avec préécoute en direct, le traitement par lots et l'export dans les formats courants. Les traitements et l'encodage sont réalisés sur votre machine : vos fichiers ne quittent jamais votre ordinateur.
-
-<table>
-<tr>
-<td width="33%" valign="top">
-
-**Six effets studio**<br>
-Égaliseur, limiteur et compresseur, delay, pitcher, fondus et réverbe, réglés pendant la lecture.
-
-</td>
-<td width="33%" valign="top">
-
-**Édition précise**<br>
-Sélection, couper, coller, rognage, mixage au collage et zoom très fort pour caler chaque coupe.
-
-</td>
-<td width="33%" valign="top">
-
-**Tempo et repères**<br>
-Détection du BPM, repères rythmiques et aimantation des sélections sur les kicks.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-**Traitement par lots**<br>
-Appliquez le même traitement à plusieurs fichiers, assemblez-les ou découpez-les avec une feuille `.cue`.
-
-</td>
-<td valign="top">
-
-**Six visualisations**<br>
-Oscilloscope, spectre, waveforme colorée, vectorscope, spectrogramme et vumètre.
-
-</td>
-<td valign="top">
-
-**100 % local**<br>
-Aucun envoi de fichiers : tout est traité sur votre machine, sans installation.
-
-</td>
-</tr>
-</table>
-
-<p align="center"><b>Ouvre 15 types de fichiers audio</b> : WAV, MP3, FLAC, OGG, OGA, OPUS, M4A, MP4, AAC, AIF, AIFF, CAF, MKA, MKV et WebM. <a href="#formats-et-export">Voir le détail</a>.</p>
-
-<details>
-<summary><b>Notes d'installation : prérequis, avertissement Windows et vérification de l'archive</b></summary>
-
-<br>
-
-- L'application est prévue pour Windows 64 bits et s'appuie sur WebView2.
-- L'exécutable n'est pas signé numériquement : Windows peut donc afficher un avertissement au premier lancement.
-- Le fichier `Audio.ToolZ.v1.7.zip.sha256.txt` de la release contient l'empreinte SHA-256 de l'archive ; il permet de vérifier que le téléchargement est intact.
-- Les archives « Source code » proposées par GitHub contiennent le code du projet, pas l'application prête à lancer.
-
-</details>
-
-## Les effets
-
-Chaque effet s'ouvre depuis le menu Effets. Vous réglez le son pendant la lecture, sur la sélection ou sur le morceau entier, puis vous appliquez le traitement une fois satisfait. Le bouton « ? » de chaque fenêtre explique le rôle des commandes.
-
-### Z-Égaliseur
-
-Égaliseur paramétrique à sept bandes. Chaque bande règle la fréquence, le gain, la largeur Q et la forme du filtre. Le spectre d'entrée et la courbe de réponse globale s'affichent pour équilibrer le son.
+## L'interface
 
 <p align="center">
-  <img src="prez/03%20Z-Égaliseur.png" alt="Z-Égaliseur, égaliseur paramétrique à sept bandes" width="720" />
+  <img src="prez/01%20Interface.png" alt="L'interface principale d'Audio ToolZ" width="900" />
 </p>
 
-### Z-Limit/Comp
+L'interface est pensée pour aller droit au but. Ce que vous voyez ici :
 
-Compresseur et limiteur dans une même fenêtre, avec les modes COMP et LIMIT. Il contrôle la dynamique grâce à l'enveloppe, au plafond et à l'affichage de la réduction de gain. Le limiteur agit sur les crêtes d'échantillons : ce n'est pas un limiteur true peak suréchantillonné.
+- **Forme d'onde stéréo** — Les deux canaux (G et D) s'affichent séparément, en violet et vert. La sélection active (en surbrillance) correspond exactement à la zone qui sera traitée par l'effet ou exportée. Zoomez au maximum pour caler chaque coupe au sample près.
+- **Repères BPM** — La barre de statut indique **137.0 BPM** détecté automatiquement. L'aimant à kicks est activé : vos sélections s'accrochent aux transitoires du groove.
+- **Fenêtre de contrôle** — Volume (+0.0 dB), Balance (0 %), Vitesse (1.00×), et en bas un mini-aperçu **Waveforme colorée** pour naviguer sur tout le morceau d'un coup d'œil.
+- **Lecture précise** — Curseur à **01:40.049**, sélection de 14 secondes. Lecture normale, en boucle, inversée, ou canal par canal.
+- **Onglets** — Ouvrez plusieurs fichiers en même temps et passez de l'un à l'autre sans perdre vos sélections.
+
+---
+
+## Les 6 effets studio
+
+Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer** — et seulement à ce moment-là, la modification est écrite dans la forme d'onde.
+
+---
+
+### Z-Égaliseur — Sculpter le son fréquence par fréquence
+
+<p align="center">
+  <img src="prez/03%20Z-Égaliseur.png" alt="Z-Égaliseur paramétrique 7 bandes" width="860" />
+</p>
+
+Le Z-Égaliseur est un **égaliseur paramétrique 7 bandes** avec visualisation du spectre en direct. C'est l'outil de base du mastering et du sound design.
+
+**Ce que vous voyez ici :**
+- La courbe blanche est la **réponse globale** de votre égalisation — vous la sculptez en déplaçant les points directement sur le graphe.
+- Le spectre violet en arrière-plan est le **contenu fréquentiel réel** de votre audio — vous savez exactement où booter ou couper.
+- À droite, **7 faders verticaux colorés** (un par bande) pour des réglages précis au demi-dB.
+- Chaque bande a sa **fréquence centrale**, son **gain** (ici de −18 à +18 dB) et sa **pente** (12 dB/oct.).
+
+**Dans quel cas l'utiliser ?**
+- 🎧 **Sampling** : vous avez un sample qui manque de punch ? Boostez les bas-médiums (200–400 Hz), coupez les médiums parasites (1–3 kHz), montez les aigus pour l'air.
+- 🔊 **Mastering** : corrigez la balance tonale de votre mix avant d'exporter — trop de graves, médiums voilés, aigus trop agressifs.
+- 🎵 **Boucles** : un sample vocal qui empiète sur votre groove ? Un high-pass à 100 Hz et il disparaît du bas du spectre.
+
+---
+
+### Z-Limit/Comp — Contrôler la dynamique
 
 <table>
 <tr>
-<td width="50%"><img src="prez/05%20Z-Limiteur.png" alt="Z-Limit/Comp en mode limiteur" width="360"></td>
-<td width="50%"><img src="prez/06%20Z-Compresseur.png" alt="Z-Limit/Comp en mode compresseur" width="360"></td>
+<td width="50%"><img src="prez/05%20Z-Limiteur.png" alt="Z-Limit/Comp en mode LIMIT" width="440"></td>
+<td width="50%"><img src="prez/06%20Z-Compresseur.png" alt="Z-Limit/Comp en mode COMP" width="440"></td>
 </tr>
 <tr>
-<td align="center"><b>Mode LIMIT.</b> Plafond et réduction de gain.</td>
-<td align="center"><b>Mode COMP.</b> Seuil, enveloppe et réduction de gain.</td>
+<td align="center"><b>Mode LIMIT</b> — Gain +6.9 dB · Plafond 0.0 dBFS · Attaque 1.0 ms · Relâchement 120 ms</td>
+<td align="center"><b>Mode COMP</b> — Ratio 4.0 · Seuil −6.0 dBFS · Coude +6.0 · Attaque 7.3 ms · Relâchement 269 ms</td>
 </tr>
 </table>
 
-### Z-Delay
+Deux outils en un : un **limiteur** et un **compresseur** dans la même fenêtre, avec un affichage graphique de la réduction de gain en temps réel.
 
-Échos calés sur le tempo, en Mono, Stéréo ou Ping-pong. Vous réglez les temps musicaux, les répétitions, le volume d'effet et le panoramique. La détection du BPM est accessible directement dans le panneau.
+**Mode LIMIT — Pour la finition :**
+- **Gain** (+6.9 dB) : vous montez le niveau global.
+- **Plafond** (0.0 dBFS) : le limiteur coupe tout ce qui dépasse — aucun écrêtage, même après un boost de gain massif.
+- **Attaque / Relâchement** : contrôlez la transparence du limiteur. Une attaque rapide protège les crêtes, un relâchement plus long garde la dynamique perceptible.
+- La courbe violette est l'**audio traité**, la blanche est la **réduction de gain appliquée en temps réel**.
+
+**Mode COMP — Pour la cohérence dynamique :**
+- **Seuil** (−6.0 dBFS) : le compresseur intervient dès que le signal passe au-dessus.
+- **Ratio** (4.0) : pour 4 dB au-dessus du seuil, vous n'entendez qu'1 dB.
+- **Coude** (+6.0) : adoucit l'entrée en compression — la transition est progressive, pas brutale.
+- **Compensation** : remonte le volume global après compression pour comparer à niveau égal.
+
+**Dans quel cas l'utiliser ?**
+- 🥁 **Sampling** : compressez un break de batterie pour en faire ressortir les transitoires — le kick claque plus fort, la caisse claire tient dans le mix.
+- 🎚️ **Mastering** : limitez le master final à 0 dBFS avec +6 dB de gain — vous gagnez en loudness sans distorsion.
+- 🎵 **Boucles** : uniformisez le niveau d'une boucle vocale pour qu'elle reste audible du début à la fin.
+
+---
+
+### Z-Delay — Des échos qui collent au groove
 
 <p align="center">
   <img src="prez/02%20Z-Delay.png" alt="Z-Delay, échos calés sur le tempo" width="720" />
 </p>
 
-### Z-Pitcher
+Le Z-Delay est un **delay rythmique** avec synchronisation BPM automatique. L'idée : des répétitions qui tombent pile sur le tempo, sans calcul.
 
-Modifie la vitesse et la hauteur d'un passage, indépendamment l'une de l'autre, avec le moteur Signalsmith Stretch. Deux grands faders horizontaux règlent la vitesse de 0,5× à 2× et la hauteur de −12 à +12 demi-tons. Le résultat se compare en préécoute avant validation.
+**Ce que vous voyez ici :**
+- **Temps : 1/4 droite** — un écho toutes les noires, ancré dans la pulsation de votre morceau à 137 BPM.
+- **Répétitions : 4** — quatre échos qui s'estompent progressivement.
+- **Volume de l'effet : 35 %** — l'effet est présent mais reste en retrait du son direct.
+- **Mode Ping-pong** (actif) — les échos rebondissent de gauche à droite dans le champ stéréo. Le son tourne, il vit.
+- **Panoramique de départ : Gauche 100 %** — le premier écho démarre tout à gauche, les suivants voyagent vers la droite.
 
-<p align="center">
-  <img src="prez/07%20Z-Pitcher.png" alt="Z-Pitcher, vitesse et hauteur indépendantes" width="720" />
-</p>
+**Dans quel cas l'utiliser ?**
+- 🎧 **Sampling** : un delay 1/8 en Ping-pong sur un sample vocal, et vous avez un effet de largeur stéréo instantané.
+- 🎵 **Boucles** : calé sur le BPM, le delay ne déphase jamais votre boucle — les répétitions s'intègrent naturellement.
+- 🎹 **Remix** : glissez un delay 1/4 en mono sur une note synth isolée — ça crée de la profondeur sans charger le mix.
 
-### Z-Fondus
+---
 
-Adoucit le début ou la fin d'un passage avec un fondu linéaire, exponentiel ou en S.
-
-<p align="center">
-  <img src="prez/04%20Z-Fondus.png" alt="Z-Fondus, fondus linéaire, exponentiel ou en S" width="720" />
-</p>
-
-### Z-Reverbe
-
-Donne de l'espace au son. Trois niveaux se règlent séparément : le signal Direct, les premières réflexions et la traîne de réverbération. Le prédélai peut se caler sur le tempo.
+### Z-Pitcher — Vitesse et hauteur, indépendamment
 
 <p align="center">
-  <img src="prez/08%20Z-Reverbe.png" alt="Z-Reverbe, niveaux Direct, Réflexions et Réverbération" width="720" />
+  <img src="prez/07%20Z-Pitcher.png" alt="Z-Pitcher, faders vitesse et hauteur" width="720" />
 </p>
 
-### Réduction de bruit spectrale
+Le Z-Pitcher est propulsé par le moteur **Signalsmith Stretch** — l'un des meilleurs algorithmes open-source de time-stretching et pitch-shifting disponibles. La vitesse et la hauteur sont **totalement indépendantes** l'une de l'autre.
 
-Nettoie une prise en s'appuyant sur un profil de bruit capturé dans l'enregistrement.
+**Ce que vous voyez ici :**
+- **Vitesse : 1.1×** — le passage joue 10 % plus vite, sans changer la tonalité.
+- **Hauteur : −2 demi-tons** — le sample descend de deux demi-tons, sans changer la durée.
+- Les deux **grands faders horizontaux** donnent un contrôle précis et intuitif. Chaque cran est visible.
 
-## Édition et lecture
+**Dans quel cas l'utiliser ?**
+- 🎧 **Sampling** : vous avez un sample à 90 BPM et votre beat tourne à 110 BPM ? Accélérez à 1.22× — le sample s'aligne sans changer de tonalité.
+- 🎵 **Harmonisation** : dupliquez un passage, pittchez une copie à +3 ou +7 demi-tons, mélangez — vous créez des harmonies vocales ou instrumentales.
+- 🎸 **Transposition** : un sample en Sol mineur dans un projet en La mineur ? Montez de +2 demi-tons, c'est réglé.
 
-- Documents en onglets et édition sur forme d'onde : sélection, couper, copier, coller, rognage, silence, mixage au collage, annuler et rétablir.
-- Zoom très fort pour caler chaque coupe avec précision.
-- Lecture normale, en boucle ou inversée, avec volume, balance, vitesse et canaux actifs ; la barre d'espace démarre et arrête la lecture.
-- Détection du tempo, repères rythmiques et aimantation des sélections.
-- Traitement par lots, assemblage de fichiers, import et export de feuilles `.cue`, Auto-Cue et découpe WAV.
-- Enregistrement depuis une entrée audio autorisée.
+---
 
-L'assemblage juxtapose les pistes : ce n'est pas un séquenceur multipiste à superposition.
+### Z-Fondus — Des transitions propres, à la forme que vous voulez
 
-## Visualisations
+<p align="center">
+  <img src="prez/04%20Z-Fondus.png" alt="Z-Fondus, fondu sortant en Courbe en S" width="640" />
+</p>
 
-Six modes accompagnent l'écoute : oscilloscope, spectre, waveforme colorée, vectorscope stéréo, spectrogramme et vumètre à aiguille stéréo. Le dernier choix est mémorisé. Le vumètre indique un niveau RMS en dBFS avec inertie visuelle ; ce n'est pas un instrument VU analogique calibré.
+Le Z-Fondus gère les **fondus d'entrée et de sortie** avec trois formes de courbe. Ici, un **fondu sortant en Courbe en S** : le son reste fort puis descend doucement avant de disparaître d'un coup — l'effet est naturel, l'oreille ne perçoit pas de coupure brutale.
 
-## Formats et export
+**Les réglages disponibles :**
+- **Entrée / Sortie** : le fondu monte au début ou descend à la fin de la sélection.
+- **Linéaire** : la descente est constante — simple et efficace sur du parlé ou des effets.
+- **Exponentielle** : la descente est d'abord rapide puis ralentit — donne une impression de "respiration".
+- **Courbe en S** : la descente est douce au départ, s'accélère au milieu, puis se referme progressivement — idéale pour la musique, l'oreille ne détecte aucune rupture.
 
-### Fichiers audio pris en charge
+**Dans quel cas l'utiliser ?**
+- 🎵 **Boucles** : un fondu d'entrée en Courbe en S sur votre sample, et le début ne claque plus — la boucle démarre en douceur.
+- 🎧 **Sampling** : nettoyez la fin d'un sample avec un fondu sortant exponentiel — plus de souffle résiduel, plus de clic.
+- 🔊 **Mastering** : terminez votre master par un fondu en S — la fin du morceau s'efface naturellement.
 
-La fenêtre d'ouverture propose 15 extensions de fichiers, regroupées en 8 familles :
+---
+
+### Z-Reverbe — De l'espace, de la profondeur, de la présence
+
+<p align="center">
+  <img src="prez/08%20Z-Reverbe.png" alt="Z-Reverbe, tous les réglages détaillés" width="720" />
+</p>
+
+Le Z-Reverbe est une **réverbération à convolution** avec un contrôle chirurgical sur chaque couche du son. La visualisation carrée à gauche représente la **salle virtuelle** — sa taille change en temps réel selon le paramètre Taille.
+
+**Ce que vous voyez ici :**
+- **Prédélai : 20 ms** — l'espace entre le son direct et les premières réflexions. Plus il est long, plus la salle semble grande.
+- **Taille : 50** — une salle moyenne, ni studio booth ni cathédrale.
+- **Modulation : 20** — légère variation de la traîne pour éviter l'effet "métallique" des reverbs numériques.
+- **Diffusion : 70** — les réflexions sont bien réparties dans la salle, le son est enveloppant.
+- **Vitesse : 0.60** — la traîne se propage lentement, effet de grande pièce.
+- **Décroissance : 2.00** — le son met 2 secondes à disparaître.
+- **Amort. aigu : 6000 Hz** — les aigus sont absorbés au-delà de 6 kHz, comme dans une vraie pièce avec des murs et des meubles.
+- **Coupe-bas : 100 Hz** — les graves de la réverbe sont filtrés pour éviter de boucher le bas du spectre.
+- **Mix Direct / Réflexions / Réverbération** (faders droits) : contrôlez séparément les trois couches. Ici Direct à 100 %, Réflexions à 25 %, Réverbération à 25 % — le son reste présent, l'espace est subtil.
+- **Stéréo : 24 %** — la traîne est légèrement élargie dans le champ stéréo.
+
+**Dans quel cas l'utiliser ?**
+- 🎤 **Sampling vocal** : un peu de Prédélai (20–30 ms) + Décroissance courte (0.8 s) + Réflexions légères = présence naturelle sans noyer le sample.
+- 🎹 **Pad et nappes** : Taille 80, Décroissance 4 s, Diffusion haute — votre nappe flotte dans l'espace.
+- 🥁 **Percussion** : Prédélai 0, Décroissance 0.3 s, Coupe-bas à 200 Hz — la reverbe colle au kick sans boucher les graves.
+- 🎸 **Ambiance** : Tempo actif sur le Prédélai — les réflexions tombent en rythme avec votre groove.
+
+---
+
+## Outils dédiés au rythme et à l'assemblage
+
+Au-delà des effets, Audio ToolZ embarque une boîte à outils complète :
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**✂️ Édition précise**<br>
+Sélection, couper, copier, coller, rognage, silence, mixage au collage, annuler/rétablir. Zoomez jusqu'au niveau du sample individuel pour caler chaque coupe.
+
+</td>
+<td width="50%" valign="top">
+
+**🥁 Tempo et aimant à kicks**<br>
+Détection automatique du BPM. L'aimant snap vos sélections sur les transitoires de percussion — plus besoin de zoomer pour trouver le bon sample.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**📦 Traitement par lots**<br>
+Appliquez le même effet à des dizaines de fichiers en une fois. Assemblez plusieurs fichiers bout-à-bout, ou découpez un long fichier avec une feuille `.cue`.
+
+</td>
+<td valign="top">
+
+**👁 Six visualisations**<br>
+Oscilloscope · Spectre · Waveforme colorée · Vectorscope stéréo · Spectrogramme · Vumètre à aiguille stéréo. Changez de vue pendant la lecture.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**🔇 Réduction de bruit spectrale**<br>
+Capturez un profil de bruit sur une zone silencieuse, puis nettoyez toute la prise. Idéal pour les samples enregistrés dans un environnement imparfait.
+
+</td>
+<td valign="top">
+
+**🎙️ Enregistrement direct**<br>
+Capturez depuis n'importe quelle entrée audio autorisée (micro, line-in) directement dans l'éditeur, sans sortir de l'application.
+
+</td>
+</tr>
+</table>
+
+> **Note :** l'assemblage juxtapose les pistes les unes après les autres. Audio ToolZ n'est pas un séquenceur multipiste à superposition de pistes.
+
+---
+
+## Formats
+
+### Lecture — 15 extensions supportées
 
 | Famille | Extensions |
 | --- | --- |
 | WAV | `.wav` |
 | MP3 | `.mp3` |
 | FLAC | `.flac` |
-| Ogg (Vorbis, Opus) | `.ogg`, `.oga`, `.opus` |
-| AAC et MPEG-4 | `.aac`, `.m4a`, `.mp4` |
-| AIFF | `.aif`, `.aiff` |
+| Ogg (Vorbis, Opus) | `.ogg` `.oga` `.opus` |
+| AAC et MPEG-4 | `.aac` `.m4a` `.mp4` |
+| AIFF | `.aif` `.aiff` |
 | CAF (Apple) | `.caf` |
-| Matroska et WebM | `.mka`, `.mkv`, `.webm` |
+| Matroska et WebM | `.mka` `.mkv` `.webm` |
 
-Pour les fichiers `.mp4`, `.mkv` et `.webm`, c'est la piste audio qui est ouverte. Un décodeur de secours intégré (Symphonia 0.6.1) prend le relais quand le décodage du navigateur échoue : il reconnaît les conteneurs WAV, AIFF, CAF, Ogg, MPEG-4 et Matroska, et les codecs AAC, ALAC, FLAC, MP3, Vorbis et PCM.
-
-L'ouverture dépend du fichier, de son conteneur et du décodeur disponible : un fichier qui porte l'une de ces extensions peut être refusé si son codec n'est pas reconnu.
+Un décodeur de secours intégré (Symphonia 0.6.1) prend le relais si le décodeur du navigateur échoue. L'ouverture dépend du fichier, de son conteneur et du codec : un fichier qui porte une extension reconnue peut être refusé si son codec spécifique n'est pas pris en charge.
 
 ### Export
 
-| Export | Réglages proposés |
+| Format | Options |
 | --- | --- |
-| WAV | PCM 16 bits, PCM 24 bits ou flottant 32 bits |
-| MP3 | 128, 192, 256 ou 320 kbit/s |
-| FLAC | Niveaux de compression 0, 2 ou 5 |
-| OGG Vorbis | Qualité de 1 à 10 |
+| WAV | PCM 16 bits · PCM 24 bits · Flottant 32 bits |
+| MP3 | 128 · 192 · 256 · 320 kbit/s |
+| FLAC | Compression 0 · 2 · 5 |
+| OGG Vorbis | Qualité 1 à 10 |
 
-## Didacticiel et vérification de configuration
+---
 
-Au premier lancement, ZØNYX, la mascotte, vous guide à travers les outils. Une page vérifie localement votre configuration : carte mère, processeur, mémoire, carte graphique et périphériques audio. Un contrôle audio sans lecture sonore et une mesure indicative du temps de traitement terminent cette vérification. Le résultat est indicatif : il ne garantit pas les performances pour tous les effets et tous les fichiers. Aucun fichier personnel n'est analysé et rien n'est envoyé. Le didacticiel se rouvre depuis Outils, Paramètres, « Afficher le didacticiel ».
+## Télécharger
+
+1. Ouvrez la **[dernière release](https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest)** et téléchargez l'archive ZIP.
+2. Extrayez l'archive entièrement (ne lancez pas l'exe depuis l'archive).
+3. Ouvrez le dossier extrait et lancez **`Audio ToolZ.exe`**.
+
+<details>
+<summary><b>Notes importantes avant le premier lancement</b></summary>
+
+<br>
+
+- L'application est prévue pour **Windows 64 bits** et nécessite **WebView2** (inclus avec Windows 10/11).
+- L'exécutable n'est **pas signé numériquement** : Windows Defender SmartScreen peut afficher un avertissement. Cliquez « Informations complémentaires » puis « Exécuter quand même ».
+- Le fichier `Audio.ToolZ.v1.7.zip.sha256.txt` joint à la release contient l'empreinte SHA-256 de l'archive — vérifiez-la si vous avez un doute sur l'intégrité du téléchargement.
+- Les archives « Source code » proposées automatiquement par GitHub contiennent **le code source du projet**, pas l'application prête à lancer.
+
+</details>
+
+---
 
 ## Bon à savoir
 
-- La détection du tempo reste une estimation qui dépend du contenu audio.
-- L'enregistrement nécessite l'autorisation d'accéder à une entrée audio.
-- Les longs fichiers et l'historique d'édition peuvent consommer beaucoup de mémoire.
-- Les préférences mémorisées ne sauvegardent pas vos documents : exportez votre travail avant de fermer l'application.
+- Le **vumètre** indique un niveau RMS en dBFS avec inertie visuelle — ce n'est pas un instrument VU analogique calibré à −18 dBFS.
+- Le **limiteur** agit sur les crêtes d'échantillons (sample peak) — ce n'est pas un limiteur true peak suréchantillonné.
+- La **détection du tempo** est une estimation algorithmique — elle dépend du contenu audio et peut se tromper sur des morceaux complexes.
+- **Vos fichiers ne quittent jamais votre machine** : tous les traitements, encodages et analyses sont réalisés en local.
+
+---
 
 ## Communauté et licence
 
-Retrouvez le projet sur [GitHub](https://github.com/x-R0b0T-x/Audio-ToolZ), rejoignez la [communauté Telegram](https://t.me/Audio_ToolZ) ou [soutenez son développement](https://www.paypal.com/ncp/payment/GAUJE54VM28T8).
+Rejoignez la [communauté Telegram](https://t.me/Audio_ToolZ) pour partager vos retours, signaler un bug ou suivre les prochaines versions.
 
-Projet sous licence GPL v3 ; consultez les fichiers de licence du dépôt.
+Soutenez le développement via [PayPal](https://www.paypal.com/ncp/payment/GAUJE54VM28T8) si le projet vous est utile.
+
+Projet open-source sous **licence GPL v3** — consultez les fichiers de licence du dépôt.
