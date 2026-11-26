@@ -17,7 +17,6 @@
   </p>
   <p>
     <a href="#points-forts">Points forts</a> ·
-    <a href="#installation">Installation</a> ·
     <a href="#les-effets">Les effets</a> ·
     <a href="#visualisations">Visualisations</a> ·
     <a href="#formats-et-export">Formats et export</a> ·
@@ -81,20 +80,7 @@ Aucun envoi de fichiers : tout est traité sur votre machine, sans installation.
 </tr>
 </table>
 
-## Installation
-
-1. Ouvrez la [dernière release](https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest) et téléchargez l'archive ZIP.
-2. Extrayez l'archive entièrement.
-3. Ouvrez le dossier `Audio ToolZ` et lancez `Audio ToolZ.exe`.
-
-Le dossier extrait contient exactement trois fichiers, à conserver ensemble :
-
-```text
-Audio ToolZ/
-├── Audio ToolZ.exe
-├── Audio ToolZ.ico
-└── Desktop.ini
-```
+<p align="center"><b>Ouvre 15 types de fichiers audio</b> : WAV, MP3, FLAC, OGG, OGA, OPUS, M4A, MP4, AAC, AIF, AIFF, CAF, MKA, MKV et WebM. <a href="#formats-et-export">Voir le détail</a>.</p>
 
 <details>
 <summary><b>Notes d'installation : prérequis, avertissement Windows et vérification de l'archive</b></summary>
@@ -188,7 +174,26 @@ Six modes accompagnent l'écoute : oscilloscope, spectre, waveforme colorée, ve
 
 ## Formats et export
 
-L'ouverture dépend du fichier, de son conteneur et du décodeur disponible. L'application lit notamment WAV, MP3, FLAC, OGG, AAC, ALAC et AIFF.
+### Fichiers audio pris en charge
+
+La fenêtre d'ouverture propose 15 extensions de fichiers, regroupées en 8 familles :
+
+| Famille | Extensions |
+| --- | --- |
+| WAV | `.wav` |
+| MP3 | `.mp3` |
+| FLAC | `.flac` |
+| Ogg (Vorbis, Opus) | `.ogg`, `.oga`, `.opus` |
+| AAC et MPEG-4 | `.aac`, `.m4a`, `.mp4` |
+| AIFF | `.aif`, `.aiff` |
+| CAF (Apple) | `.caf` |
+| Matroska et WebM | `.mka`, `.mkv`, `.webm` |
+
+Pour les fichiers `.mp4`, `.mkv` et `.webm`, c'est la piste audio qui est ouverte. Un décodeur de secours intégré (Symphonia 0.6.1) prend le relais quand le décodage du navigateur échoue : il reconnaît les conteneurs WAV, AIFF, CAF, Ogg, MPEG-4 et Matroska, et les codecs AAC, ALAC, FLAC, MP3, Vorbis et PCM.
+
+L'ouverture dépend du fichier, de son conteneur et du décodeur disponible : un fichier qui porte l'une de ces extensions peut être refusé si son codec n'est pas reconnu.
+
+### Export
 
 | Export | Réglages proposés |
 | --- | --- |
