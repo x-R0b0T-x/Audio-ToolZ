@@ -1,18 +1,23 @@
 export const RELEASE_ADDITIONS = [
- "Z-Pitcher : nouveau moteur Signalsmith Stretch, avec vitesse (0,5× à 2×) et hauteur (−12 à +12 demi-tons) indépendantes, préécoute et application cohérentes, sur deux faders horizontaux gradués.",
- "Décodeur audio de secours mis à jour vers Symphonia 0.6.1.",
- "Z-Reverbe : niveaux Direct, Réflexions et Réverbération, réglage Stéréo de 0 à 100 % et prédélai calé sur le tempo.",
- "Z-Delay : fenêtre rectangulaire et sélecteur cranté Mono / Stéréo / Ping-pong / Off.",
- "Barre d’espace : Play/Stop.",
- "Interface : crans des potards lumineux au repos, libellés de position qui s’illuminent progressivement, bandeau des effets en fondu de 1,5 seconde et triangle de redimensionnement vert.",
- "Didacticiel : nouvelle page de vérification de la configuration (matériel, audio et temps de traitement indicatif) et page « Je suis là pour vous guider ».",
- "Écran « Ouverture en cours » lors de l’ouverture d’un fichier.",
- "Numéro de version : v1.7.0."
+ "Nouveau bouton Pop/Clic dans la barre d’outils : sélectionnez une portion, choisissez un niveau de nettoyage (de Prudent à Très fort) et réparez les clics et les pops de vinyle, repérés en rouge sur la forme d’onde.",
+ "Z-Chorus et Z-Flanger : deux nouveaux effets de modulation, avec onde animée et synchronisation possible sur le BPM détecté.",
+ "Z-Denoiser refondu : profil de bruit capturé et mémorisé, atténuation de 0 à 36 dB et oscilloscope en lecture.",
+ "Z-Fondus : courbe à points modifiables. Z-Limit/Comp : compresseur neutre à l’ouverture.",
+ "Préécoute en temps réel pour Z-Reverbe, Z-Égaliseur, Z-Limit/Comp, Z-Pitcher, Z-Chorus et Z-Flanger.",
+ "Effets neutres à l’ouverture : Appliquer reste inactif tant qu’aucun réglage n’a bougé.",
+ "Réglage fin avec Maj, aimantation avec Ctrl et verrouillage d’axe avec Alt sur les points de l’égaliseur et les lignes de Z-Limit/Comp.",
+ "Menu Effets classé par ordre alphabétique, avec une aide « ? » pour chaque effet.",
+ "Fenêtre de confirmation à la fermeture : quitter sans sauvegarder, sauvegarder et fermer, ou annuler.",
+ "Interface : logo qui tourne à 33 tours par minute, ondes autour du titre réactives à chaque canal, barres de défilement et halos lumineux, faders et potards éclairés.",
+ "Numéro de version : v1.8.0."
 ];
 export const RELEASE_FIXES = [
- "Z-Pitcher : résultats périmés rejetés, annulation qui préserve l’original et plus de repli silencieux vers l’ancien moteur.",
- "Barre d’espace : fin du comportement Pause/Reprise ; la lecture redémarre au début de la boucle.",
- "Z-Reverbe : la fermeture restaure le signal original ; niveaux limités à 100 %, bouton Tempo et molette Stéréo corrigés.",
- "Aides des effets : rubriques inutiles retirées et couleurs harmonisées.",
- "Libellés Curseur et Sélection de l’écran de chargement en vert."
+ "Z-Reverbe : l’alerte 0 dBFS est retirée.",
+ "Faders : le halo ne s’allume plus qu’au survol du bouton ou pendant le glissement.",
+ "Z-Pitcher : calcul par fenêtre, sans boucle ni BPM.",
+ "Z-Flanger : ondes fantômes supprimées.",
+ "Z-Delay : détection du BPM allégée sur les longs fichiers.",
+ "Lecture : Play fonctionne de nouveau après une lecture arrière.",
+ "Vérification de la configuration plus rapide et musique du didacticiel discrète pendant la lecture.",
+ "Spectrogramme coloré à deux canaux."
 ];

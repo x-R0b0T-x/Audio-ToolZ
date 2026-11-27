@@ -8,7 +8,7 @@ import './aboutLayout.css';
 import './aboutFx.css';
 
 interface InfoModalProps { open: boolean; onClose: () => void; }
-export const APP_VERSION = 'v1.7';
+export const APP_VERSION = 'v1.8';
 const DEFAULT_WIDTH = 500;
 const WAVE_PATH = Array.from({ length: 4 }, (_, i) => { const o = i * 200; return `M${o} 50 H${o + 55} L${o + 65} 46 L${o + 75} 50 L${o + 85} 50 L${o + 93} 14 L${o + 105} 88 L${o + 115} 36 L${o + 123} 50 H${o + 200}`; }).join(' ');
 
@@ -78,7 +78,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ open, onClose }) => {
         {communityError && <p className="zonyx-about-community-error" role="alert">{communityError}</p>}
       </div>
       <section aria-labelledby="about-changelog-title" className="zonyx-about-changes">
-        <h3 id="about-changelog-title" className="text-sm font-bold">Changements depuis la version 1.6</h3>
+        <h3 id="about-changelog-title" className="text-sm font-bold">Changements depuis la version 1.7</h3>
         <div className="zonyx-about-scroll" role="region" aria-labelledby="about-changelog-title" tabIndex={0}>
           {[['Nouveautés et améliorations', RELEASE_ADDITIONS], ['Corrections et confort', RELEASE_FIXES]].map(([heading, items]) => <section key={heading as string}><h4 className="font-semibold mb-2 text-[var(--accent-secondary)]">{heading as string}</h4><ul className="list-disc pl-4 space-y-2">{(items as string[]).map((item) => <li key={item}>{item}</li>)}</ul></section>)}
         </div>
