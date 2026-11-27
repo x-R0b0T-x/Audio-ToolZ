@@ -1,0 +1,12 @@
+export type ImagerMode = 'I' | 'II';
+export type ImagerSettings = { widths: number[]; crossovers: number[]; stereoize: number; mode: ImagerMode; delayMs: number };
+export const IMAGER_BAND_COUNT: number;
+export const IMAGER_MAX_STEREOIZE_GAIN: number;
+export const DEFAULT_IMAGER: ImagerSettings;
+export function normalizeImager(settings?: Partial<ImagerSettings>): ImagerSettings;
+export function isImagerNeutral(settings?: Partial<ImagerSettings>): boolean;
+export function imagerOutputChannels(inputChannels: number, settings?: Partial<ImagerSettings>): number;
+export function splitBands(input: Float32Array | Float64Array, sampleRate: number, crossovers: number[]): Float64Array[];
+export function applyImager(source: Float32Array[], sampleRate: number, settings?: Partial<ImagerSettings>): Float32Array[];
+export function renderImagerWindow(source: Float32Array[], sampleRate: number, settings: Partial<ImagerSettings>, from: number, to: number): Float32Array[];
+export function stereoCorrelation(left: Float32Array, right: Float32Array, from?: number, to?: number): number;
