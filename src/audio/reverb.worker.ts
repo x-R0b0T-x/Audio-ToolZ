@@ -6,8 +6,8 @@ self.onmessage=(event:MessageEvent<Request>)=>{
  try{
   if(!channels)throw new Error('Reverb source not initialized');
   const total=channels[0]?.length??0,from=Math.max(0,Math.min(total,Math.floor(request.from))),to=Math.max(from,Math.min(total,Math.ceil(request.to))),whole=from<=0&&to>=total;
-  const lead=whole?0:Math.max(0,from-Math.round(sampleRate*4));
-  const rendered=renderReverb(channels.map(c=>c.subarray(lead,to)),sampleRate,settings),tail=rendered.tailSamples,length=whole?total+tail:total;
+  const lead=whole?0:Math.max(0,from-Math.round(sampleRate*2.5));
+  const rendered=renderReverb(channels.map(c=>c.subarray(lead,to)),sampleRate,settings,whole?{}:{maxTailSamples:Math.round(sampleRate*2.5)}),tail=rendered.tailSamples,length=whole?total+tail:total;
   const out=channels.map(c=>{const o=new Float32Array(length);o.set(c);return o;});
   const fade=Math.max(1,Math.min(Math.round(sampleRate*.02),(to-from)>>1));
   for(let c=0;c<out.length;c++){

@@ -1,6 +1,6 @@
 import {DynamicsPeakGraph} from './DynamicsPeakGraph';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { PreviewBand } from '../audio/engine';
+import { audioEngine, type PreviewBand } from '../audio/engine';
 import type { AudioDocument } from '../audio/types';
 import {targetRange,hasGain} from '../audio/effectsModel.mjs';
 import {formatEqFrequency} from '../utils/effectReview.mjs';
@@ -11,12 +11,13 @@ import { DetailedEffectGraph } from './DetailedEffectGraph';
 import {FilterShape} from './FilterShape';
 import './advancedEffects.css';
 const neutralDynamics=(mode:Dynamics['mode']):Dynamics=>({...dynamicsDefault(mode),ratio:1});
+const WINDOW_SECONDS=10;
 type Props = {
   document: AudioDocument; effect: 'eq' | 'filter' | 'compressor'; onClose: () => void;
   onStartPreview: (channels: Float32Array[], rate: number, gain?: number, bands?: PreviewBand[]) => void;
   onApply: (channels: Float32Array[], label: string) => void;
 };
-type RenderRequest = { id: number; kind: 'eq'; bands: Band[] } | { id: number; kind: 'dynamics'; params: Dynamics };
+type RenderRequest = { id: number; kind: 'eq'; bands: Band[]; from: number; to: number } | { id: number; kind: 'dynamics'; params: Dynamics; from: number; to: number };
 export function AdvancedEffects(props: Props) {
   const doc = props.document, eq = props.effect === 'eq';
   const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {startSample:r.start,endSample:r.end};},[doc]);
@@ -28,7 +29,8 @@ export function AdvancedEffects(props: Props) {
   const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
   const [output, setOutput] = useState<Float32Array[] | null>(null), [trace, setTrace] = useState<Trace | null>(null);
   const worker = useRef<Worker | null>(null), serial = useRef(0), busy = useRef(false), desired = useRef<RenderRequest | null>(null);
-  const applyId = useRef(-1), rendered = useRef<{ id: number; channels: Float32Array[] } | null>(null);
+  const applyId = useRef(-1), win = useRef({ from: 0, to: 0 }), live = useRef({ eq, bands, params });
+  live.current = { eq, bands, params };
   const callbacks = useRef(props); callbacks.current = props;
   const label = eq ? 'Z-Égaliseur' : params.mode === 'limiter' ? 'Limiteur' : 'Compresseur';
   const commit = useRef((channels: Float32Array[]) => {});
@@ -39,6 +41,14 @@ export function AdvancedEffects(props: Props) {
     desired.current = request;
     if (worker.current && !busy.current) { busy.current = true; worker.current.postMessage(request); }
   };
+  const makeRequest = (id: number, from: number, to: number): RenderRequest => {
+    const l = live.current;
+    return l.eq ? { kind: 'eq', id, bands: l.bands, from, to } : { kind: 'dynamics', id, params: l.params, from, to };
+  };
+  const windowAround = () => {
+    const rate = doc.sampleRate, total = source[0]?.length ?? 0, at = Math.max(0, Math.min(total, Math.floor(audioEngine.getCurrentSample() - range.startSample)));
+    return { from: Math.max(0, at - Math.round(rate * .5)), to: Math.min(total, at + rate * WINDOW_SECONDS) };
+  };
   useEffect(() => {
     if (!source[0]?.length) return;
     let w: Worker;
@@ -48,30 +58,41 @@ export function AdvancedEffects(props: Props) {
     const copy = source.map(ch => new Float32Array(ch));
     w.postMessage({ kind: 'init', channels: copy, rate: doc.sampleRate }, copy.map(ch => ch.buffer));
     w.onerror = () => { busy.current = false; setError('Échec du traitement audio. Fermez puis rouvrez cet effet.'); setPending(false); setApplying(false); };
-    w.onmessage = (e: MessageEvent<{ id: number; channels: Float32Array[]; trace: Trace | null; error?: string }>) => {
+    w.onmessage = (e: MessageEvent<{ id: number; channels: Float32Array[]; trace: Trace | null; from?: number; to?: number; error?: string }>) => {
       busy.current = false; const result = e.data;
       if (result.id !== serial.current) { if (desired.current) { busy.current = true; w.postMessage(desired.current); } return; }
       if (result.error) { setError(result.error); setPending(false); setApplying(false); return; }
-      rendered.current = { id: result.id, channels: result.channels };
+      win.current = { from: result.from ?? 0, to: result.to ?? (source[0]?.length ?? 0) };
       setOutput(result.channels); setTrace(result.trace); setPending(false); setError('');
       if (result.id === applyId.current) commit.current(result.channels);
       else callbacks.current.onStartPreview(result.channels, doc.sampleRate);
     };
-    return () => { w.terminate(); worker.current = null; busy.current = false; rendered.current = null; };
+    return () => { w.terminate(); worker.current = null; busy.current = false; };
   }, [source, doc.sampleRate]);
   useEffect(() => {
-    if (!source[0]?.length) return;
-    const id = ++serial.current; rendered.current = null; setPending(true);
-    desired.current=eq?{kind:'eq',id,bands}:{kind:'dynamics',id,params};
-    const timer = window.setTimeout(() => { if (desired.current) dispatch(desired.current); }, 75);
+    if (!source[0]?.length || applyId.current >= 0) return;
+    const id = ++serial.current; setPending(true);
+    desired.current = makeRequest(id, windowAround().from, windowAround().to);
+    const timer = window.setTimeout(() => { if (desired.current) dispatch(desired.current); }, 40);
     return () => window.clearTimeout(timer);
   }, [eq, source, doc.sampleRate, bands, params]);
+  useEffect(() => {
+    const total = source[0]?.length ?? 0;
+    if (!total) return;
+    const timer = window.setInterval(() => {
+      const w = win.current;
+      if (!audioEngine.isPlaying || busy.current || applyId.current >= 0 || (w.from <= 0 && w.to >= total)) return;
+      const at = audioEngine.getCurrentSample() - range.startSample, span = w.to - w.from;
+      if (span > 0 && (at >= w.from + span * .5 || at < w.from - 1)) { const win2 = windowAround(); dispatch(makeRequest(++serial.current, win2.from, win2.to)); }
+    }, 400);
+    return () => window.clearInterval(timer);
+  }, [source, range.startSample, doc.sampleRate]);
   const update = (i: number, patch: Partial<Band>) => {if(patch.frequency!==undefined)setFrequencyBand(i);setBands(old => old.map((b, j) => j === i ? { ...b, ...patch } : b));};
   const apply = () => {
-    if (pending || applying || !source[0]?.length) return;
+    const total = source[0]?.length ?? 0;
+    if (pending || applying || !total) return;
     setApplying(true);
-    if (rendered.current?.id === serial.current) { commit.current(rendered.current.channels); return; }
-    const id = ++serial.current; applyId.current = id; dispatch({ kind: 'eq', id, bands });
+    const id = ++serial.current; applyId.current = id; dispatch(makeRequest(id, 0, total));
   };
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
     <EffectParameter label={caption} value={params[key]} initial={neutralDynamics(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
