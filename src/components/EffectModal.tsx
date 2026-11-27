@@ -16,6 +16,7 @@ import {FadeEditor} from './FadeEditor';
 import {FADE_PRESETS,defaultFade,applyFadeShape} from '../audio/fadeCurve.mjs';
 import {targetRange} from '../audio/effectsModel.mjs';
 import './delayPanel.css';
+import './faderThumbHover';
 let lastNoiseProfile:NoiseProfile|null=null;
 interface Props{effect:EffectModalId;document:AudioDocument|null;noiseProfile?:NoiseProfile|null;onCaptureNoiseProfile?:(p:NoiseProfile)=>void;isPreviewPlaying:boolean;onStartPreview:(c:Float32Array[],r:number,g?:number,b?:PreviewBand[])=>void;onStopPreview:()=>void;onApply:(c:Float32Array[],label:string,s?:{startSample:number;endSample:number})=>void;onClose:()=>void;}
 export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:p.effect==='reverb'?<ReverbModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='speed-pitch'?<PitcherModal key={p.document.id} document={p.document} onStopPreview={p.onStopPreview} onClose={p.onClose} onApply={p.onApply}/>:<LiveEffectSession key={`${p.document.id}:${p.effect}`} {...p} effect={p.effect} document={p.document}/>;
