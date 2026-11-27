@@ -5,10 +5,10 @@
 #root#root .zonyx-status-badge{display:block;flex:0 0 76px;height:36px;margin:0;filter:none}
 #root#root .zonyx-status-badge svg{display:block;width:76px;height:36px;overflow:visible}
 #root#root .zonyx-status-shape{fill:#39ff14;stroke:#39ff14;stroke-width:1.5}
-#root#root .zonyx-status-chevron{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse 1.5s linear infinite;opacity:1;filter:none}
+#root#root .zonyx-status-chevron{fill:none;stroke:#bd93f9;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse 1.5s linear infinite;opacity:1;filter:none}
 #root#root .zonyx-status-chevron-1{animation-delay:-1s}
 #root#root .zonyx-status-chevron-2{animation-delay:-.5s}
-@keyframes zonyx-chevron-pulse{0%,32%{stroke:#39ff14}33%,100%{stroke:#fff}}
+@keyframes zonyx-chevron-pulse{0%,32%{stroke:#39ff14}33%,100%{stroke:#bd93f9}}
 #root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:zonyx-control-halo .7s ease-in-out infinite alternate}
 @keyframes zonyx-control-halo{from{filter:drop-shadow(0 0 5px #39ff14)}to{filter:drop-shadow(0 0 12px #39ff14)}}
 #root#root .zonyx-rv-info{height:auto;display:block}
@@ -17,7 +17,7 @@
 #root#root .zonyx-rv-info>span{display:block;text-align:left}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link::before{content:'';width:12px;height:16px;margin-right:10px;background:currentColor;clip-path:polygon(0 0,40% 0,100% 50%,40% 100%,0 100%,60% 50%);vertical-align:middle;transform:rotate(0deg)}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link[aria-expanded=true]::before{transform:rotate(-90deg)}
-@media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;stroke:#fff;opacity:1}#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:none;filter:drop-shadow(0 0 8px #39ff14)}}
+@media(prefers-reduced-motion:reduce){#root#root .zonyx-status-chevron{animation:none;stroke:#bd93f9;opacity:1}#root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:none;filter:drop-shadow(0 0 8px #39ff14)}}
 
 /* Temporary status fade */
 #root#root .zonyx-effect-status>output{opacity:0;visibility:hidden;transition:opacity 1500ms linear,visibility 0s 1500ms}
@@ -28,3 +28,12 @@
 #root#root#root .zonyx-advanced>footer>button{color:#fff!important;text-shadow:none!important}
 #root#root#root .zonyx-advanced>footer>button:not(:disabled):is(:hover,:focus-visible){color:#fff!important;text-shadow:none!important;border-color:#39ff14!important;box-shadow:0 0 8px #39ff1480!important;filter:none!important}
 #root#root#root .zonyx-advanced>footer>button:is(:hover,:focus-visible)>*{color:#fff!important;text-shadow:none!important}
+
+/* Faders: glow only on hover, press or drag; no green frame or glow left by keyboard focus */
+#root#root#root .zonyx-gain:not(.is-adjusting) input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:none!important}
+#root#root#root .zonyx-gain:not(.is-adjusting) input[type=range]:focus-visible::-moz-range-thumb{box-shadow:none!important}
+#root#root#root .zonyx-rv-faders input:not(:hover):not(:active):focus-visible::-webkit-slider-thumb{border-color:#10240d!important;box-shadow:none!important}
+#root#root#root .zonyx-rv-faders input:not(:hover):not(:active):focus-visible::-moz-range-thumb{border-color:#10240d!important;box-shadow:none!important}
+#root#root#root .zonyx-advanced :is(input[type=range],.zonyx-gain,.zonyx-fader-track,.zonyx-rv-fader-track,.zonyx-rv-faders label,.zonyx-parameter,.zonyx-knob):is(:focus,:focus-visible,:focus-within){outline:none!important;box-shadow:none!important}
+#root#root#root .zonyx-advanced [role=slider]:focus-visible>svg>line:last-child{stroke:#fff!important}
+#root#root#root .zonyx-advanced [role=slider]:active>svg>line:last-child{stroke:#39ff14!important}

@@ -11,6 +11,7 @@ import {EffectPanel} from './EffectPanel';
 import {ReverbModal} from './ReverbModal';
 import {PitcherModal} from './PitcherModal';
 import {ModulationModal} from './ModulationModal';
+import {DenoiserModal} from './DenoiserModal';
 import {FadeEditor} from './FadeEditor';
 import {FADE_PRESETS,defaultFade,applyFadeShape} from '../audio/fadeCurve.mjs';
 import {targetRange} from '../audio/effectsModel.mjs';
@@ -23,7 +24,7 @@ function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:
  const relay=useMemo(()=>createPreviewRelay(()=>audioEngine.isPlaying,(...args:Parameters<Props['onStartPreview']>)=>latest.current.onStartPreview(...args)),[]);
  useEffect(()=>{const timer=window.setInterval(relay.poll,80);return()=>{window.clearInterval(timer);relay.clear();};},[relay]);
  const props={...p,onStartPreview:relay.submit};
- return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:<Legacy {...props}/>;
+ return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
 }
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const {document:doc,effect}=p,[c,set]=useState({direction:null as FadeDirection|null,fade:defaultFade(),speed:1,pitch:0,reduction:0,division:DEFAULT_DIVISION,mode:'off' as DelayMode,repetitions:0,wet:0,pan:0}),[touched,setTouched]=useState(false);
@@ -34,17 +35,20 @@ function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocume
  const detectBpm=()=>{
   if(detector.current||!doc.channels[0]?.length)return;
   setDetecting(true);setBpmError('');
-  const fail=(message:string)=>{detector.current?.terminate();detector.current=null;setDetecting(false);setBpmError(message);};
+  let guard=0;
+  const fail=(message:string)=>{window.clearTimeout(guard);detector.current?.terminate();detector.current=null;setDetecting(false);setBpmError(message);};
   try{
    const worker=new Worker(new URL('../audio/delayBpm.worker.ts',import.meta.url),{type:'module'});detector.current=worker;
    worker.onmessage=(event:MessageEvent<{bpm?:number;error?:string}>)=>{
     if(detector.current!==worker)return;
     const value=event.data.bpm;
     if(typeof value!=='number'||!Number.isFinite(value)||value<=0){fail(event.data.error??'Impossible de détecter un tempo régulier sur cette piste.');return;}
-    worker.terminate();detector.current=null;setDetectedBpm(value);setDetecting(false);setBpmError('');
+    window.clearTimeout(guard);worker.terminate();detector.current=null;setDetectedBpm(value);setDetecting(false);setBpmError('');
    };
    worker.onerror=()=>fail('Échec de la détection BPM. Vous pouvez réessayer.');
-   worker.postMessage({channels:doc.channels,sampleRate:doc.sampleRate});
+   const rate=doc.sampleRate,total=doc.channels[0].length,span=Math.round(rate*45),centre=audioEngine.isPlaying?Math.floor(audioEngine.getCurrentSample()):Math.floor((start+end)/2),from=total<=span?0:Math.max(0,Math.min(total-span,centre-(span>>1))),to=Math.min(total,from+span);
+   guard=window.setTimeout(()=>fail('La détection BPM a pris trop de temps. Vous pouvez réessayer.'),30000);
+   worker.postMessage({channels:doc.channels.map(ch=>ch.slice(from,to)),sampleRate:rate});
   }catch{fail('Impossible de démarrer la détection BPM.');}
  };
  const change=(v:Partial<typeof c>)=>{setTouched(true);set(old=>({...old,...v}));},callback=useRef(p);callback.current=p;
