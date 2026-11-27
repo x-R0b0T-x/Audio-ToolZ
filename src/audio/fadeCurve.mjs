@@ -1,5 +1,6 @@
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 export const FADE_GAP=.02;
+export const FADE_MAX_POINTS=12;
 export const FADE_PRESETS=Object.freeze({
  linear:()=>({points:[],tensions:[0]}),
  exponential:()=>({points:[],tensions:[.6]}),
@@ -7,7 +8,6 @@ export const FADE_PRESETS=Object.freeze({
 });
 export const defaultFade=()=>FADE_PRESETS.scurve();
 export function tensionShape(u,t){const k=2**(3*Math.abs(t));return t>=0?u**k:1-(1-u)**k;}
-export function tensionFromMid(v){const m=clamp(v,.02,.98),k=m<=.5?Math.log(m)/Math.log(.5):Math.log(1-m)/Math.log(.5),t=Math.log2(Math.max(1,k))/3;return clamp(m<=.5?t:-t,-1,1);}
 export const fadeNodes=shape=>[{x:0,y:0},...shape.points,{x:1,y:1}];
 export function normalizeFade(shape){
  const src=[...(shape?.points??[])].filter(p=>Number.isFinite(p?.x)&&Number.isFinite(p?.y)).sort((a,b)=>a.x-b.x),points=[];
@@ -24,6 +24,7 @@ export function fadeGainIn(shape,x){
 }
 export const fadeGain=(shape,direction,x)=>fadeGainIn(shape,direction==='out'?1-x:x);
 export function addFadePoint(shape,x,y){
+ if(shape.points.length>=FADE_MAX_POINTS)return shape;
  const nodes=fadeNodes(shape),px=clamp(x,FADE_GAP,1-FADE_GAP);
  if(nodes.some(n=>Math.abs(n.x-px)<FADE_GAP))return shape;
  let i=0;while(i<nodes.length-2&&px>nodes[i+1].x)i++;
@@ -44,9 +45,12 @@ export function removeFadePoint(shape,index){
  tensions.splice(index,2,((tensions[index]??0)+(tensions[index+1]??0))/2);
  return normalizeFade({points,tensions});
 }
-export function setFadeTension(shape,index,t){
- if(index<0||index>=shape.tensions.length)return shape;
- return {points:shape.points,tensions:shape.tensions.map((v,i)=>i===index?clamp(t,-1,1):v)};
+export function bendFadePoint(shape,index,amount){
+ if(index<0||index>=shape.points.length)return shape;
+ const nodes=fadeNodes(shape),prev=nodes[index],next=nodes[index+2],point=shape.points[index];
+ const points=shape.points.map((p,i)=>i===index?{x:point.x,y:clamp(point.y+amount*.5*(next.y-prev.y),prev.y,next.y)}:p);
+ const tensions=shape.tensions.map((v,i)=>i===index||i===index+1?clamp(v-amount,-1,1):v);
+ return {points,tensions};
 }
 export function fadeGains(shape,direction,length){
  const gains=new Float32Array(length);if(!length)return gains;

@@ -39,3 +39,21 @@ export function applyModulation(source: Float32Array[], sampleRate: number, s: M
     return out;
   });
 }
+export function renderModulationWindow(source: Float32Array[], sampleRate: number, s: ModulationSettings, from: number, to: number): Float32Array[] {
+  const total = source[0]?.length ?? 0;
+  const a = clamp(Math.floor(from), 0, total), b = clamp(Math.ceil(to), a, total);
+  const out = source.map(c => new Float32Array(c));
+  if (b <= a || clamp(s.mix, 0, 1) <= 0) return out;
+  const lead = Math.max(0, a - Math.round(sampleRate * 2));
+  const wet = applyModulation(source.map(c => c.subarray(lead, b)), sampleRate, s);
+  const fade = Math.max(1, Math.min(Math.round(sampleRate * .02), (b - a) >> 1));
+  for (let c = 0; c < out.length; c++) {
+    for (let i = a; i < b; i++) {
+      let w = 1;
+      if (a > 0 && i < a + fade) w = Math.min(w, (i - a) / fade);
+      if (b < total && i > b - fade) w = Math.min(w, (b - i) / fade);
+      out[c][i] = source[c][i] * (1 - w) + wet[c][i - lead] * w;
+    }
+  }
+  return out;
+}

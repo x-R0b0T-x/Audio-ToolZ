@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { PreviewBand } from '../audio/engine';
+import { audioEngine, type PreviewBand } from '../audio/engine';
 import type { AudioDocument } from '../audio/types';
 import { targetRange } from '../audio/effectsModel.mjs';
 import { DELAY_DIVISIONS } from '../audio/musicalDelay';
-import { applyModulation, delayRangeMs, type ModulationSettings } from '../audio/modulationDsp';
+import { delayRangeMs, type ModulationSettings } from '../audio/modulationDsp';
 import { EffectPanel } from './EffectPanel';
 import { EffectParameter } from './EffectParameter';
 import { Knob } from './EffectControls';
@@ -16,6 +16,8 @@ const START = {
   flanger: { rate: .3, depth: 70, delay: 2, feedback: 50, voices: 1, spread: 50, mix: 0, throughZero: false, sync: false, division: BAR },
 };
 type State = typeof START.chorus;
+type Request = { id: number; settings: ModulationSettings; from: number; to: number };
+const WINDOW_SECONDS = 12;
 const SW = 520, SH = 170, SL = 10, ST = 10, SPW = 500, SPH = 150, WINDOW = 4;
 function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationSettings }) {
   const live = useRef(settings); live.current = settings;
@@ -54,6 +56,7 @@ function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationS
 export function ModulationModal(p: Props) {
   const kind = p.effect, doc = p.document, initial = START[kind], label = kind === 'chorus' ? 'Z-Chorus' : 'Z-Flanger';
   const [s, setS] = useState<State>({ ...initial }), [touched, setTouched] = useState(false);
+  const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
   const change = (patch: Partial<State>) => { setTouched(true); setS(old => ({ ...old, ...patch })); };
   const callbacks = useRef(p); callbacks.current = p;
   const range = useMemo(() => { const r = targetRange(doc.selection, doc.channels[0]?.length ?? 0); return { start: r.start, end: r.end }; }, [doc]);
@@ -61,22 +64,67 @@ export function ModulationModal(p: Props) {
   const n = source[0]?.length ?? 0, bpm = doc.bpmInfo?.bpm ?? 0, canSync = Number.isFinite(bpm) && bpm > 0, synced = s.sync && canSync;
   const rateHz = synced ? 1 / (60 / bpm * DELAY_DIVISIONS[s.division].beats) : s.rate;
   const settings = useMemo<ModulationSettings>(() => ({ kind, rateHz, depth: s.depth / 100, delayMs: s.delay, feedback: s.feedback / 100, voices: s.voices, spread: s.spread / 100, mix: s.mix / 100, throughZero: s.throughZero }), [kind, rateHz, s]);
+  const latestSettings = useRef(settings); latestSettings.current = settings;
+  const worker = useRef<Worker | null>(null), busy = useRef(false), wanted = useRef<Request | null>(null), serial = useRef(0), applyId = useRef(-1), win = useRef({ from: 0, to: 0 });
+  const commit = useRef((channels: Float32Array[]) => { void channels; });
+  commit.current = channels => callbacks.current.onApply(channels.map((segment, i) => { const full = new Float32Array(doc.channels[i]); full.set(segment, range.start); return full; }), label);
+  const windowAround = () => {
+    const rate = doc.sampleRate, at = Math.max(0, Math.min(n, Math.floor(audioEngine.getCurrentSample() - range.start)));
+    return { from: Math.max(0, at - rate), to: Math.min(n, at + rate * WINDOW_SECONDS) };
+  };
+  const dispatch = () => {
+    const request = wanted.current;
+    if (!worker.current || busy.current || !request) return;
+    busy.current = true; worker.current.postMessage({ kind: 'render', ...request });
+  };
   useEffect(() => {
     if (!n) return;
-    const timer = window.setTimeout(() => { callbacks.current.onStartPreview(applyModulation(source, doc.sampleRate, settings), doc.sampleRate); }, 60);
+    let w: Worker;
+    try { w = new Worker(new URL('../audio/modulation.worker.ts', import.meta.url), { type: 'module' }); }
+    catch (e) { setError(String(e)); setPending(false); return; }
+    worker.current = w; busy.current = false;
+    const copy = source.map(c => new Float32Array(c));
+    w.postMessage({ kind: 'init', channels: copy, sampleRate: doc.sampleRate }, copy.map(c => c.buffer as ArrayBuffer));
+    w.onmessage = (e: MessageEvent<{ id: number; channels?: Float32Array[]; from?: number; to?: number; error?: string }>) => {
+      busy.current = false; const r = e.data;
+      if (r.error || !r.channels) { setError(r.error ?? 'Échec du traitement audio.'); setPending(false); setApplying(false); return; }
+      if (r.id === applyId.current) { applyId.current = -1; commit.current(r.channels); return; }
+      if (r.id !== serial.current) { dispatch(); return; }
+      win.current = { from: r.from ?? 0, to: r.to ?? n }; setError(''); setPending(false);
+      callbacks.current.onStartPreview(r.channels, doc.sampleRate);
+    };
+    w.onerror = () => { busy.current = false; setError('Échec du traitement audio. Fermez puis rouvrez cet effet.'); setPending(false); setApplying(false); };
+    return () => { w.terminate(); if (worker.current === w) worker.current = null; busy.current = false; };
+  }, [source, doc.sampleRate, n]);
+  useEffect(() => {
+    if (!n || applyId.current >= 0) return;
+    const id = ++serial.current; setPending(true);
+    wanted.current = { id, settings, ...windowAround() };
+    const timer = window.setTimeout(dispatch, 60);
     return () => window.clearTimeout(timer);
   }, [source, doc.sampleRate, settings, n]);
+  useEffect(() => {
+    if (!n) return;
+    const timer = window.setInterval(() => {
+      const w = win.current;
+      if (!audioEngine.isPlaying || busy.current || applyId.current >= 0 || (w.from <= 0 && w.to >= n)) return;
+      const at = audioEngine.getCurrentSample() - range.start, span = w.to - w.from;
+      if (at >= w.from + span * .5 || at < w.from - 1) { const id = ++serial.current; wanted.current = { id, settings: latestSettings.current, ...windowAround() }; dispatch(); }
+    }, 400);
+    return () => window.clearInterval(timer);
+  }, [n, range.start, doc.sampleRate]);
   const apply = () => {
-    if (!n || !touched) return;
-    const out = applyModulation(source, doc.sampleRate, settings);
-    callbacks.current.onApply(out.map((segment, i) => { const full = new Float32Array(doc.channels[i]); full.set(segment, range.start); return full; }), label);
+    if (!n || !touched || pending || applying || error) return;
+    setApplying(true);
+    const id = ++serial.current; applyId.current = id;
+    wanted.current = { id, settings: latestSettings.current, from: 0, to: n }; dispatch();
   };
   const [lo, hi] = delayRangeMs(settings);
   const par = (key: 'rate' | 'depth' | 'delay' | 'feedback' | 'spread' | 'mix', name: string, min: number, max: number, step: number, fine: number, digits: number, unit: string, logarithmic = false) =>
     <EffectParameter label={name} value={s[key]} initial={initial[key]} spec={{ min, max, step, fine, digits, logarithmic }} unit={unit} onChange={v => change({ [key]: v })} />;
   return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-modulation" minWidth={640} minHeight={400} role="dialog" aria-modal="true" aria-labelledby="modulation-title">
     <header><h2 id="modulation-title">{label}</h2><button type="button" aria-label="Fermer" onClick={p.onClose}>×</button></header>
-    <main><div className="zonyx-mod">
+    <main><fieldset className="zonyx-effect-body" disabled={applying}><div className="zonyx-mod">
       <ModulationScope kind={kind} settings={settings} />
       <output className="zonyx-hint" aria-live="off">{`Retard ${lo.toFixed(2)} à ${hi.toFixed(2)} ms · Oscillateur ${rateHz.toFixed(2)} Hz`}</output>
       <div className="zonyx-mod-row">
@@ -90,7 +138,8 @@ export function ModulationModal(p: Props) {
         {par('mix', 'Mix', 0, 100, 1, .1, 0, '%')}
         {kind === 'flanger' && <button type="button" className="zonyx-mod-toggle" aria-pressed={s.throughZero} onClick={() => change({ throughZero: !s.throughZero })}>Through-zero</button>}
       </div>
-    </div></main>
-    <footer><button type="button" onClick={p.onClose}>Annuler</button><button type="button" onClick={apply} disabled={!n || !touched}>Appliquer</button></footer>
+      {error && <p role="alert">{error}</p>}
+    </div></fieldset></main>
+    <footer><span role="status">{applying ? 'Application…' : pending && touched ? 'Calcul…' : ''}</span><button type="button" onClick={p.onClose}>Annuler</button><button type="button" onClick={apply} disabled={!n || !touched || pending || applying || !!error}>Appliquer</button></footer>
   </EffectPanel></div>;
 }
