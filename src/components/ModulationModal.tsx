@@ -22,17 +22,18 @@ const SW = 520, SH = 170, SL = 10, ST = 10, SPW = 500, SPH = 150, WINDOW = 4;
 function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationSettings }) {
   const live = useRef(settings); live.current = settings;
   const lines = useRef<(SVGPathElement | null)[]>([]);
+  const half = kind === 'chorus' ? 15 : 10;
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches, axis = kind === 'chorus' ? 45 : 12, begin = performance.now();
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches, begin = performance.now(), center = ST + SPH / 2, reach = SPH / 2 - 8;
     let frame = 0;
     const draw = (now: number) => {
-      const s = live.current, [lo, hi] = delayRangeMs(s), mid = (lo + hi) / 2, amp = (hi - lo) / 2, count = kind === 'chorus' ? Math.max(1, Math.min(4, Math.round(s.voices))) : 1, time = reduced ? 0 : (now - begin) / 1000;
+      const s = live.current, [lo, hi] = delayRangeMs(s), amp = (hi - lo) / 2, count = kind === 'chorus' ? Math.max(1, Math.min(4, Math.round(s.voices))) : 1, time = reduced ? 0 : (now - begin) / 1000;
       for (let v = 0; v < 4; v++) {
         const el = lines.current[v]; if (!el) continue;
         if (v >= count) { el.setAttribute('d', ''); continue; }
         let d = '';
         for (let i = 0; i <= 200; i++) {
-          const u = i / 200, t = time - (1 - u) * WINDOW, delay = mid + amp * Math.sin(2 * Math.PI * s.rateHz * t + 2 * Math.PI * v / count), y = ST + SPH * (1 - Math.min(1, Math.max(0, delay / axis)));
+          const u = i / 200, t = time - (1 - u) * WINDOW, delta = amp * Math.sin(2 * Math.PI * s.rateHz * t + 2 * Math.PI * v / count), y = center - Math.max(-1, Math.min(1, delta / half)) * reach;
           d += `${i ? 'L' : 'M'}${(SL + u * SPW).toFixed(1)} ${y.toFixed(1)}`;
         }
         el.setAttribute('d', d); el.style.opacity = String(.4 + .6 * s.mix);
@@ -41,15 +42,14 @@ function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationS
     };
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [kind]);
-  const axis = kind === 'chorus' ? 45 : 12;
+  }, [kind, half]);
   const grid = Array.from({ length: 9 }, (_, i) => `M${SL + (i + 1) * 50} ${ST}V${ST + SPH}`).concat(Array.from({ length: 2 }, (_, j) => `M${SL} ${ST + (j + 1) * 50}H${SL + SPW}`)).join(' ');
-  return <svg className="zonyx-mod-scope" viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="Oscillateur qui fait varier le retard">
+  return <svg className="zonyx-mod-scope" viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="Oscillateur qui fait varier le retard autour de sa valeur de base">
     <rect x={SL} y={ST} width={SPW} height={SPH} fill="var(--wave-bg)" stroke="#bd93f9" />
     <path d={grid} fill="none" stroke="#fff" strokeOpacity=".2" strokeWidth="1" />
     {[0, 1, 2, 3].map(v => <path key={v} ref={el => { lines.current[v] = el; }} fill="none" stroke="#39ff14" strokeWidth={v ? 1.6 : 2.6} strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 3px #39ff14)' }} />)}
-    <text x={SL + 6} y={ST + 14} fill="#fff" fillOpacity=".7" fontSize="11">{axis} ms</text>
-    <text x={SL + 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11">0 ms</text>
+    <text x={SL + 6} y={ST + 14} fill="#fff" fillOpacity=".7" fontSize="11">{`+${half} ms`}</text>
+    <text x={SL + 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11">{`−${half} ms`}</text>
     <text x={SL + SPW - 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11" textAnchor="end">maintenant</text>
   </svg>;
 }

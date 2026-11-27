@@ -1,10 +1,9 @@
 export type FadePoint={x:number;y:number};
-export type FadeShape={points:FadePoint[];tensions:number[]};
+export type FadeShape={points:FadePoint[]};
 export const FADE_GAP:number;
 export const FADE_MAX_POINTS:number;
 export const FADE_PRESETS:Readonly<{linear:()=>FadeShape;exponential:()=>FadeShape;scurve:()=>FadeShape}>;
 export function defaultFade():FadeShape;
-export function tensionShape(u:number,t:number):number;
 export function fadeNodes(shape:FadeShape):FadePoint[];
 export function normalizeFade(shape:FadeShape):FadeShape;
 export function fadeGainIn(shape:FadeShape,x:number):number;
