@@ -19,7 +19,7 @@ import './windowClose.css';
 import './textReadability.css';
 import './components/interfaceConsistency.css';
 import './scrollbars.css';
-function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ v1.7';},[]);return null;}
+function BuildTitle(){useEffect(()=>{document.title='Audio ToolZ 1.8-dev';},[]);return null;}
 const root = document.getElementById('root')!;
 createRoot(root).render(<><App /><BuildTitle /><FileOpeningOverlay /><CloseGuard /></>);
 installPreviewLoopGuard();
