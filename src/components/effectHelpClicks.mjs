@@ -1,16 +1,17 @@
 import {getEffectHelp as baseHelp} from './effectHelpContent.mjs';
 const normalize=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const clicks=[
- ['À quoi sert cet effet ?','Réparez les clics et les pops causés par la poussière et les rayures d’un disque vinyle. Z-Clics repère chaque défaut, puis reconstruit le son manquant à partir de ce qui l’entoure.'],
- ['Tolérance','Choisissez la sensibilité de la détection, de 100 % à 5000 %. Plus la valeur est basse, plus Z-Clics repère de défauts, au risque de toucher aussi des sons secs comme une caisse claire. Commencez à 1000 %, puis abaissez-la seulement si des clics restent audibles.'],
+const popClick=[
+ ['À quoi sert cet outil ?','Réparez les clics et les pops causés par la poussière et les rayures d’un disque vinyle. Pop/Clic repère chaque défaut, puis reconstruit le son manquant à partir de ce qui l’entoure.'],
+ ['Sélection requise','Sélectionnez sur la forme d’onde la portion qui contient des pics, de 0,1 s à 60 s. Le bouton Pop/Clic reste grisé sans sélection.'],
+ ['Niveaux de nettoyage','Choisissez un niveau : Prudent (2000 %), Standard (1000 %), Sensible (700 %), Fort (500 %) ou Très fort (300 %). Commencez par Standard, puis passez à un niveau plus sensible seulement si des clics restent audibles. Sous 500 %, gardez des sélections courtes : des sons secs, comme une baguette de batterie, peuvent être touchés.'],
+ ['Tolérance','Réglez finement le seuil, de 100 % à 5000 %. Une valeur haute ne retient que les changements très brusques ; une valeur basse repère davantage de défauts.'],
  ['Taille maximale','Choisissez la durée maximale d’un défaut réparé, de 1 à 20 ms. Un défaut plus long est considéré comme de la musique et reste intact.'],
- ['Repères rouges','Pendant la lecture, un trait rouge s’affiche à chaque clic détecté. Le tracé vert montre le son réparé et le tracé violet le son d’origine.'],
+ ['Repères rouges','Le dessin montre votre sélection en violet et chaque clic repéré par un trait rouge. Le trait vert suit la lecture.'],
  ['Avant Z-Denoiser','Réparez d’abord les clics, puis capturez le profil de bruit : des clics dans le profil dégraderaient la réduction de bruit.'],
- ['Limites','Z-Clics repère les défauts brusques. Un souffle continu se traite avec Z-Denoiser. Écoutez toujours le résultat : les valeurs par défaut préfèrent manquer un clic plutôt que d’abîmer la musique.']
+ ['Limites','Pop/Clic repère les défauts brusques. Un souffle continu se traite avec Z-Denoiser. Écoutez toujours le résultat avant de valider.']
 ];
 export function getEffectHelp(title){
  const help=baseHelp(title);
- const catalog=text=>text.replace('Z-Delay :','Z-Clics : répare les clics et pops d’un disque vinyle. Z-Delay :');
- const topics=normalize(title).includes('clic')?[...clicks,...help.topics.slice(1)]:help.topics;
- return {...help,topics:topics.map(([label,text])=>label==='Tous les effets'?[label,catalog(text)]:[label,text])};
+ if(!normalize(title).includes('clic'))return help;
+ return {...help,topics:[...popClick,...help.topics.slice(1).filter(([label])=>label!=='Zone traitée')]};
 }
