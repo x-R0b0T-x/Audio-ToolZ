@@ -26,17 +26,26 @@ function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationS
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches, begin = performance.now(), center = ST + SPH / 2, reach = SPH / 2 - 8;
     let frame = 0;
+    const wave = (s: ModulationSettings, amp: number, time: number, phase: number, shift: number) => {
+      let d = '';
+      for (let i = 0; i <= 200; i++) {
+        const u = i / 200, t = time - (1 - u) * WINDOW, delta = amp * Math.sin(2 * Math.PI * s.rateHz * t + phase), y = Math.max(ST + 3, Math.min(ST + SPH - 3, center - Math.max(-1, Math.min(1, delta / half)) * reach + shift));
+        d += `${i ? 'L' : 'M'}${(SL + u * SPW).toFixed(1)} ${y.toFixed(1)}`;
+      }
+      return d;
+    };
     const draw = (now: number) => {
       const s = live.current, [lo, hi] = delayRangeMs(s), amp = (hi - lo) / 2, count = kind === 'chorus' ? Math.max(1, Math.min(4, Math.round(s.voices))) : 1, time = reduced ? 0 : (now - begin) / 1000;
       for (let v = 0; v < 4; v++) {
         const el = lines.current[v]; if (!el) continue;
         if (v >= count) { el.setAttribute('d', ''); continue; }
-        let d = '';
-        for (let i = 0; i <= 200; i++) {
-          const u = i / 200, t = time - (1 - u) * WINDOW, delta = amp * Math.sin(2 * Math.PI * s.rateHz * t + 2 * Math.PI * v / count), y = center - Math.max(-1, Math.min(1, delta / half)) * reach;
-          d += `${i ? 'L' : 'M'}${(SL + u * SPW).toFixed(1)} ${y.toFixed(1)}`;
-        }
-        el.setAttribute('d', d); el.style.opacity = String(.4 + .6 * s.mix);
+        el.setAttribute('d', wave(s, amp, time, 2 * Math.PI * v / count, 0)); el.style.opacity = String(.4 + .6 * s.mix);
+      }
+      const ghosts = kind === 'flanger' && s.spread > .01, gap = reach * .34 * s.spread, lead = 2 * Math.PI * s.spread * .25;
+      for (const [slot, sign] of [[4, -1], [5, 1]] as const) {
+        const el = lines.current[slot]; if (!el) continue;
+        if (!ghosts) { el.setAttribute('d', ''); continue; }
+        el.setAttribute('d', wave(s, amp, time, sign * lead, sign * gap)); el.style.opacity = String((.4 + .6 * s.mix) * .5);
       }
       frame = requestAnimationFrame(draw);
     };
@@ -47,7 +56,7 @@ function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationS
   return <svg className="zonyx-mod-scope" viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="Oscillateur qui fait varier le retard autour de sa valeur de base">
     <rect x={SL} y={ST} width={SPW} height={SPH} fill="var(--wave-bg)" stroke="#bd93f9" />
     <path d={grid} fill="none" stroke="#fff" strokeOpacity=".2" strokeWidth="1" />
-    {[0, 1, 2, 3].map(v => <path key={v} ref={el => { lines.current[v] = el; }} fill="none" stroke="#39ff14" strokeWidth={v ? 1.6 : 2.6} strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 3px #39ff14)' }} />)}
+    {[0, 1, 2, 3, 4, 5].map(v => <path key={v} ref={el => { lines.current[v] = el; }} fill="none" stroke="#39ff14" strokeWidth={v > 3 ? 1.4 : v ? 1.6 : 2.6} strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 3px #39ff14)' }} />)}
     <text x={SL + 6} y={ST + 14} fill="#fff" fillOpacity=".7" fontSize="11">{`+${half} ms`}</text>
     <text x={SL + 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11">{`−${half} ms`}</text>
     <text x={SL + SPW - 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11" textAnchor="end">maintenant</text>

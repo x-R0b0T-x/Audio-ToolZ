@@ -27,3 +27,7 @@
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link{border:0!important;box-shadow:none!important}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link:is(:hover,:focus-visible){outline:none!important}
 .zonyx-help-dialog .zonyx-help-topic .zonyx-help-link:focus-visible{text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+
+/* Close cross: white, glowing green on hover, never a green square */
+.zonyx-help-dialog .zonyx-help-bar>button.zonyx-help-bar>button,.zonyx-help-dialog .zonyx-help-bar>button{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;color:#fff!important;text-shadow:none;outline:none}
+.zonyx-help-dialog .zonyx-help-bar>button:is(:hover,:focus-visible,:active){background:transparent!important;border:0!important;box-shadow:none!important;color:var(--zonyx-help-green)!important;text-shadow:0 0 6px var(--zonyx-help-green),0 0 14px var(--zonyx-help-green);outline:none}
