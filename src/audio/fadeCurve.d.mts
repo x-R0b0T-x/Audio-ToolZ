@@ -1,0 +1,17 @@
+export type FadePoint={x:number;y:number};
+export type FadeShape={points:FadePoint[];tensions:number[]};
+export const FADE_GAP:number;
+export const FADE_PRESETS:Readonly<{linear:()=>FadeShape;exponential:()=>FadeShape;scurve:()=>FadeShape}>;
+export function defaultFade():FadeShape;
+export function tensionShape(u:number,t:number):number;
+export function tensionFromMid(v:number):number;
+export function fadeNodes(shape:FadeShape):FadePoint[];
+export function normalizeFade(shape:FadeShape):FadeShape;
+export function fadeGainIn(shape:FadeShape,x:number):number;
+export function fadeGain(shape:FadeShape,direction:'in'|'out',x:number):number;
+export function addFadePoint(shape:FadeShape,x:number,y:number):FadeShape;
+export function moveFadePoint(shape:FadeShape,index:number,x:number,y:number):FadeShape;
+export function removeFadePoint(shape:FadeShape,index:number):FadeShape;
+export function setFadeTension(shape:FadeShape,index:number,t:number):FadeShape;
+export function fadeGains(shape:FadeShape,direction:'in'|'out',length:number):Float32Array;
+export function applyFadeShape(channels:Float32Array[],direction:'in'|'out',shape:FadeShape):Float32Array[];

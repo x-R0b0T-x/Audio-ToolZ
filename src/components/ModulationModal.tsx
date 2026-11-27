@@ -16,6 +16,41 @@ const START = {
   flanger: { rate: .3, depth: 70, delay: 2, feedback: 50, voices: 1, spread: 50, mix: 0, throughZero: false, sync: false, division: BAR },
 };
 type State = typeof START.chorus;
+const SW = 520, SH = 170, SL = 10, ST = 10, SPW = 500, SPH = 150, WINDOW = 4;
+function ModulationScope({ kind, settings }: { kind: Kind; settings: ModulationSettings }) {
+  const live = useRef(settings); live.current = settings;
+  const lines = useRef<(SVGPathElement | null)[]>([]);
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches, axis = kind === 'chorus' ? 45 : 12, begin = performance.now();
+    let frame = 0;
+    const draw = (now: number) => {
+      const s = live.current, [lo, hi] = delayRangeMs(s), mid = (lo + hi) / 2, amp = (hi - lo) / 2, count = kind === 'chorus' ? Math.max(1, Math.min(4, Math.round(s.voices))) : 1, time = reduced ? 0 : (now - begin) / 1000;
+      for (let v = 0; v < 4; v++) {
+        const el = lines.current[v]; if (!el) continue;
+        if (v >= count) { el.setAttribute('d', ''); continue; }
+        let d = '';
+        for (let i = 0; i <= 200; i++) {
+          const u = i / 200, t = time - (1 - u) * WINDOW, delay = mid + amp * Math.sin(2 * Math.PI * s.rateHz * t + 2 * Math.PI * v / count), y = ST + SPH * (1 - Math.min(1, Math.max(0, delay / axis)));
+          d += `${i ? 'L' : 'M'}${(SL + u * SPW).toFixed(1)} ${y.toFixed(1)}`;
+        }
+        el.setAttribute('d', d); el.style.opacity = String(.4 + .6 * s.mix);
+      }
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frame);
+  }, [kind]);
+  const axis = kind === 'chorus' ? 45 : 12;
+  const grid = Array.from({ length: 9 }, (_, i) => `M${SL + (i + 1) * 50} ${ST}V${ST + SPH}`).concat(Array.from({ length: 2 }, (_, j) => `M${SL} ${ST + (j + 1) * 50}H${SL + SPW}`)).join(' ');
+  return <svg className="zonyx-mod-scope" viewBox={`0 0 ${SW} ${SH}`} role="img" aria-label="Oscillateur qui fait varier le retard">
+    <rect x={SL} y={ST} width={SPW} height={SPH} fill="var(--wave-bg)" stroke="#bd93f9" />
+    <path d={grid} fill="none" stroke="#fff" strokeOpacity=".2" strokeWidth="1" />
+    {[0, 1, 2, 3].map(v => <path key={v} ref={el => { lines.current[v] = el; }} fill="none" stroke="#39ff14" strokeWidth={v ? 1.6 : 2.6} strokeLinejoin="round" style={{ filter: 'drop-shadow(0 0 3px #39ff14)' }} />)}
+    <text x={SL + 6} y={ST + 14} fill="#fff" fillOpacity=".7" fontSize="11">{axis} ms</text>
+    <text x={SL + 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11">0 ms</text>
+    <text x={SL + SPW - 6} y={ST + SPH - 6} fill="#fff" fillOpacity=".7" fontSize="11" textAnchor="end">maintenant</text>
+  </svg>;
+}
 export function ModulationModal(p: Props) {
   const kind = p.effect, doc = p.document, initial = START[kind], label = kind === 'chorus' ? 'Z-Chorus' : 'Z-Flanger';
   const [s, setS] = useState<State>({ ...initial }), [touched, setTouched] = useState(false);
@@ -37,13 +72,12 @@ export function ModulationModal(p: Props) {
     callbacks.current.onApply(out.map((segment, i) => { const full = new Float32Array(doc.channels[i]); full.set(segment, range.start); return full; }), label);
   };
   const [lo, hi] = delayRangeMs(settings);
-  const path = Array.from({ length: 101 }, (_, i) => `${i ? 'L' : 'M'}${(10 + i * 2.6).toFixed(1)} ${(45 - Math.sin(i / 100 * 2 * 2 * Math.PI) * 30).toFixed(1)}`).join(' ');
   const par = (key: 'rate' | 'depth' | 'delay' | 'feedback' | 'spread' | 'mix', name: string, min: number, max: number, step: number, fine: number, digits: number, unit: string, logarithmic = false) =>
     <EffectParameter label={name} value={s[key]} initial={initial[key]} spec={{ min, max, step, fine, digits, logarithmic }} unit={unit} onChange={v => change({ [key]: v })} />;
-  return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-modulation" minWidth={640} minHeight={360} role="dialog" aria-modal="true" aria-labelledby="modulation-title">
+  return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-modulation" minWidth={640} minHeight={400} role="dialog" aria-modal="true" aria-labelledby="modulation-title">
     <header><h2 id="modulation-title">{label}</h2><button type="button" aria-label="Fermer" onClick={p.onClose}>×</button></header>
     <main><div className="zonyx-mod">
-      <svg className="zonyx-mod-scope" viewBox="0 0 280 90" role="img" aria-label="Oscillateur qui fait varier le retard"><rect x="10" y="10" width="260" height="70" fill="var(--wave-bg)" stroke="var(--border-subtle)" /><line x1="10" x2="270" y1="45" y2="45" stroke="var(--border-subtle)" /><path d={path} fill="none" stroke="currentColor" strokeWidth="2" /></svg>
+      <ModulationScope kind={kind} settings={settings} />
       <output className="zonyx-hint" aria-live="off">{`Retard ${lo.toFixed(2)} à ${hi.toFixed(2)} ms · Oscillateur ${rateHz.toFixed(2)} Hz`}</output>
       <div className="zonyx-mod-row">
         {synced ? <Knob label="Temps" value={s.division} max={DELAY_DIVISIONS.length - 1} defaultValue={BAR} display={DELAY_DIVISIONS[s.division].label} onChange={division => change({ division })} /> : par('rate', 'Vitesse', .05, 10, .1, .01, 2, 'Hz', true)}

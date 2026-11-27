@@ -1,0 +1,9 @@
+.zonyx-fade-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.zonyx-fade-editor{width:100%;max-width:560px;height:auto;user-select:none;touch-action:none;cursor:crosshair}
+.zonyx-fade-editor text{fill:#fff;fill-opacity:.72;font:11px system-ui,sans-serif}
+.zonyx-fade-point{fill:var(--accent-secondary,#39ff14);stroke:#fff;stroke-width:1.5}
+.zonyx-fade-handle path{fill:#bd93f9;stroke:#fff;stroke-width:1.2}
+.zonyx-fade-point-hit,.zonyx-fade-handle{cursor:grab}
+.zonyx-fade-point-hit:hover .zonyx-fade-point{filter:drop-shadow(0 0 4px #39ff14)}
+.zonyx-fade-handle:hover path{fill:#d6b8ff}
+.zonyx-fade-presets{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
