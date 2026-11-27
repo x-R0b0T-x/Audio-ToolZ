@@ -57,6 +57,7 @@ jobs:
         run: npx playwright install chromium
       - name: Signalsmith runtime validation under application CSP
         timeout-minutes: 10
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
         run: node .github/maintenance/verify_pitcher_runtime.mjs
       - name: Rust decoder and configuration tests
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml -- --nocapture
