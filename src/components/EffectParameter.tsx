@@ -1,5 +1,5 @@
 import {signedDb} from '../utils/presentationFormat';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {useControlActivity as useActivity} from '../utils/useControlActivity';
 import './knobStates.css';
 import {KnobTicks} from './KnobTicks';
@@ -43,11 +43,12 @@ export function EffectParameter(p: Props) {
   </div>;
 }
 export function EffectGain({ label, value, onChange, disabled=false }: { label: string; value: number; onChange: (v: number) => void; disabled?:boolean }) {
-  const ref = useRef<HTMLDivElement>(null), activity = useActivity();
+  const ref = useRef<HTMLDivElement>(null), activity = useActivity(), [over, setOver] = useState(false), [grabbed, setGrabbed] = useState(false);
   useWheel(ref, (direction, fine) => { if(disabled)return; activity.pulse(); onChange(stepParameter(value, direction, fine, { min: -18, max: 18, step: .5, fine: .1, digits: 1 })); });
-  const slider = useFineSlider({ min: -18, max: 18, value, step: .1, fineStep: .01, disabled, onChange, onStart: activity.begin, onEnd: activity.end });
-  return <div ref={ref} className={`zonyx-gain${activity.active ? ' is-adjusting' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
-    <div className="zonyx-fader-track" {...slider} style={{ touchAction: 'none' }}><div className="zonyx-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
+  const slider = useFineSlider({ min: -18, max: 18, value, step: .1, fineStep: .01, disabled, onChange, onStart: () => { setGrabbed(true); activity.begin(); }, onEnd: () => { setGrabbed(false); activity.end(); } });
+  const onThumb = (e: React.PointerEvent<HTMLElement>) => { if (disabled) return false; const r = e.currentTarget.getBoundingClientRect(), y = r.top + 10 + (r.height - 20) * (1 - (value + 18) / 36); return e.clientX >= r.right - 28 && Math.abs(e.clientY - y) <= 12; };
+  return <div ref={ref} className={`zonyx-gain${activity.active ? ' is-adjusting' : ''}${over && !disabled ? ' is-thumb-hover' : ''}${grabbed ? ' is-grabbed' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
+    <div className="zonyx-fader-track" {...slider} onPointerMove={e => { slider.onPointerMove(e); setOver(onThumb(e)); }} onPointerLeave={() => setOver(false)} style={{ touchAction: 'none' }}><div className="zonyx-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
     <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.01} value={value} style={{ '--zonyx-f': (value + 18) / 36, pointerEvents: 'none' } as React.CSSProperties} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{signedDb(value,1)}</output>
   </div>;
 }

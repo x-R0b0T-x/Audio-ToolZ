@@ -29,16 +29,16 @@
 #root#root#root .zonyx-advanced>footer>button:not(:disabled):is(:hover,:focus-visible){color:#fff!important;text-shadow:none!important;border-color:#39ff14!important;box-shadow:0 0 8px #39ff1480!important;filter:none!important}
 #root#root#root .zonyx-advanced>footer>button:is(:hover,:focus-visible)>*{color:#fff!important;text-shadow:none!important}
 
-/* Faders: glow only on hover, press or drag; no green frame or glow left by keyboard focus */
-#root#root#root .zonyx-gain:not(.is-adjusting) input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:none!important}
-#root#root#root .zonyx-gain:not(.is-adjusting) input[type=range]:focus-visible::-moz-range-thumb{box-shadow:none!important}
-#root#root#root .zonyx-rv-faders input:not(:hover):not(:active):focus-visible::-webkit-slider-thumb{border-color:#10240d!important;box-shadow:none!important}
-#root#root#root .zonyx-rv-faders input:not(:hover):not(:active):focus-visible::-moz-range-thumb{border-color:#10240d!important;box-shadow:none!important}
+/* No outline or frame left by keyboard focus */
 #root#root#root .zonyx-advanced :is(input[type=range],.zonyx-gain,.zonyx-fader-track,.zonyx-rv-fader-track,.zonyx-rv-faders label,.zonyx-parameter,.zonyx-knob):is(:focus,:focus-visible,:focus-within){outline:none!important;box-shadow:none!important}
 #root#root#root .zonyx-advanced [role=slider]:focus-visible>svg>line:last-child{stroke:#fff!important}
 #root#root#root .zonyx-advanced [role=slider]:active>svg>line:last-child{stroke:#39ff14!important}
 
-/* Fader buttons: dark at rest, lit only while the pointer is on the button itself or while dragging */
+/* Fader buttons: dark at rest, lit only while the pointer is on the button itself or while it is dragged. Keyboard never lights them. */
+#root#root#root .zonyx-gain input[type=range]::-webkit-slider-thumb{box-shadow:none!important;border-color:#13151c!important}
+#root#root#root .zonyx-gain input[type=range]::-moz-range-thumb{box-shadow:none!important;border-color:#13151c!important}
+#root#root#root .zonyx-advanced .zonyx-gain:is(.is-thumb-hover,.is-grabbed) input[type=range]:not(:disabled)::-webkit-slider-thumb{border-color:#baff9c!important;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14,0 0 24px #39ff14b3!important}
+#root#root#root .zonyx-advanced .zonyx-gain:is(.is-thumb-hover,.is-grabbed) input[type=range]:not(:disabled)::-moz-range-thumb{border-color:#baff9c!important;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14,0 0 24px #39ff14b3!important}
 #root#root#root input.zonyx-pitcher-horizontal::-webkit-slider-thumb{box-shadow:none!important}
 #root#root#root input.zonyx-pitcher-horizontal::-moz-range-thumb{box-shadow:none!important}
 #root#root#root input.zonyx-pitcher-horizontal::-webkit-slider-thumb:hover,#root#root#root input.zonyx-pitcher-horizontal:active::-webkit-slider-thumb{box-shadow:0 0 7px #39ff14,0 0 13px #39ff1466!important}
@@ -49,5 +49,5 @@
 #root#root#root .zonyx-rv-faders input::-webkit-slider-thumb:hover,#root#root#root .zonyx-rv-faders input:active::-webkit-slider-thumb{border-color:#baff9c!important;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14!important}
 #root#root#root .zonyx-rv-faders input::-moz-range-thumb:hover{border-color:#baff9c!important;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14!important}
 #root#root#root .zonyx-rv-faders input:active::-moz-range-thumb{border-color:#baff9c!important;box-shadow:0 0 5px #39ff14,0 0 14px #39ff14!important}
-#root#root#root .zonyx-rv-fader-track:not(:hover):not(:has(input:active)) .zonyx-rv-exact{display:none}
-#root#root#root .zonyx-rv-fader-track:is(:hover,:has(input:active)) .zonyx-rv-exact{display:block}
+#root#root#root .zonyx-rv-fader-track:not(:has(input:active)) .zonyx-rv-exact{display:none}
+#root#root#root .zonyx-rv-fader-track:has(input:active) .zonyx-rv-exact{display:block}
