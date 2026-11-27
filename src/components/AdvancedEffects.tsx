@@ -10,6 +10,7 @@ import { EffectGain, EffectParameter } from './EffectParameter';
 import { DetailedEffectGraph } from './DetailedEffectGraph';
 import {FilterShape} from './FilterShape';
 import './advancedEffects.css';
+const neutralDynamics=(mode:Dynamics['mode']):Dynamics=>({...dynamicsDefault(mode),ratio:1});
 type Props = {
   document: AudioDocument; effect: 'eq' | 'filter' | 'compressor'; onClose: () => void;
   onStartPreview: (channels: Float32Array[], rate: number, gain?: number, bands?: PreviewBand[]) => void;
@@ -22,7 +23,7 @@ export function AdvancedEffects(props: Props) {
   const source = useMemo(() => doc.channels.map(ch => ch.subarray(range.startSample, range.endSample)), [doc, range]);
   const [bands, setBands] = useState(() => bandsDefault(doc.sampleRate));
   const [frequencyBand,setFrequencyBand]=useState<number|null>(null);
-  const [params, setParams] = useState(() => dynamicsDefault(props.effect === 'compressor' ? 'compressor' : 'limiter'));
+  const [params, setParams] = useState(() => neutralDynamics(props.effect === 'compressor' ? 'compressor' : 'limiter'));
   const [scroll,setScroll]=useState(0);
   const [pending, setPending] = useState(true), [applying, setApplying] = useState(false), [error, setError] = useState('');
   const [output, setOutput] = useState<Float32Array[] | null>(null), [trace, setTrace] = useState<Trace | null>(null);
@@ -73,7 +74,7 @@ export function AdvancedEffects(props: Props) {
     const id = ++serial.current; applyId.current = id; dispatch({ kind: 'eq', id, bands });
   };
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
-    <EffectParameter label={caption} value={params[key]} initial={dynamicsDefault(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
+    <EffectParameter label={caption} value={params[key]} initial={neutralDynamics(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
   const graph = eq ? <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/> : <DynamicsPeakGraph original={doc.channels} output={output} offset={range.startSample} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll}/>;
   return <div className="zonyx-advanced-backdrop"><EffectPanel className={`zonyx-advanced ${eq ? 'zonyx-equalizer' : 'zonyx-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
     <header><h2 id="advanced-title">{eq ? label : 'Z-Limit/Comp'}</h2><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
