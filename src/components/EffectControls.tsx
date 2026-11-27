@@ -4,6 +4,7 @@ import {useControlActivity} from '../utils/useControlActivity';
 import './knobStates.css';
 import {KnobTicks} from './KnobTicks';
 import {PositionLabel} from './PositionLabel';
+import {useFineSlider,roundTo} from './useFineSlider';
 import { audioEngine } from '../audio/engine';
 import type { DelayMode } from '../audio/musicalDelay';
 
@@ -56,19 +57,33 @@ interface FaderProps {
   label: string; detail?: string; value: number; defaultValue: number;
   min: number; max: number; step: number; display: string; onChange: (value: number) => void;
 }
-export const Fader: React.FC<FaderProps> = (p) => <div className="flex flex-col items-center gap-2 min-w-0"
-  onDoubleClick={(e) => { e.preventDefault(); p.onChange(p.defaultValue); }}>
-  <span className="text-xs font-semibold">{p.label}</span><span className="text-[10px] text-[var(--text-muted)]">{p.detail || ' '}</span>
-  <div className="flex items-center gap-2">
-    <input type="range" aria-label={p.label} min={p.min} max={p.max} step={p.step} value={p.value}
-      onChange={(e) => p.onChange(Number(e.target.value))} className="studio-fader-vertical cursor-pointer"
-      style={{ writingMode: 'vertical-lr', direction: 'rtl', height: 144, width: 28, accentColor: '#45f882' }} />
-    <EffectMeter />
-  </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
-</div>;
+export const Fader: React.FC<FaderProps> = (p) => {
+  const fine = p.step / 10, clampValue = (v: number) => Math.max(p.min, Math.min(p.max, v));
+  const slider = useFineSlider({ min: p.min, max: p.max, value: p.value, step: p.step, fineStep: fine, onChange: p.onChange });
+  return <div className="flex flex-col items-center gap-2 min-w-0"
+    onDoubleClick={(e) => { e.preventDefault(); p.onChange(p.defaultValue); }}>
+    <span className="text-xs font-semibold">{p.label}</span><span className="text-[10px] text-[var(--text-muted)]">{p.detail || ' '}</span>
+    <div className="flex items-center gap-2">
+      <div {...slider} style={{ width: 28, height: 144, touchAction: 'none', cursor: 'ns-resize' }}
+        onWheel={(e) => { const d = e.deltaY || e.deltaX; if (!d) return; const s = e.shiftKey ? fine : p.step; p.onChange(clampValue(roundTo(p.value + (d < 0 ? s : -s), fine))); }}>
+        <input type="range" aria-label={p.label} min={p.min} max={p.max} step={fine} value={p.value}
+          onChange={(e) => p.onChange(Number(e.target.value))}
+          onKeyDown={(e) => {
+            if (!['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].includes(e.key)) return;
+            e.preventDefault();
+            const s = e.shiftKey ? fine : p.step;
+            p.onChange(clampValue(roundTo(p.value + (e.key === 'ArrowUp' || e.key === 'ArrowRight' ? s : -s), fine)));
+          }}
+          className="studio-fader-vertical cursor-pointer"
+          style={{ writingMode: 'vertical-lr', direction: 'rtl', height: 144, width: 28, accentColor: '#45f882', pointerEvents: 'none' }} />
+      </div>
+      <EffectMeter />
+    </div><output className="text-xs font-mono-tabular text-[var(--accent-secondary)]">{signedDbLabel(p.display)}</output>
+  </div>;
+};
 interface KnobProps { label: string; value: number; min?: number; max: number; step?: number; ticks?: number; defaultValue: number; display: string; onChange: (value: number) => void; small?: boolean; disabled?: boolean; }
 export const Knob: React.FC<KnobProps> = (p) => {
-  const drag = useRef<{ x: number; y: number; value: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; acc: number } | null>(null);
   const activity=useControlActivity();
   const min = p.min ?? 0;
   const range = Math.max(1, p.max - min);
@@ -84,8 +99,8 @@ export const Knob: React.FC<KnobProps> = (p) => {
     <span className="text-xs font-semibold">{p.label}</span>
     <div role="slider" tabIndex={p.disabled ? -1 : 0} aria-disabled={p.disabled} aria-label={p.label} aria-valuemin={min} aria-valuemax={p.max} aria-valuenow={p.value} aria-valuetext={p.display}
       style={{ touchAction: 'none', cursor: p.disabled ? 'default' : 'ns-resize' }}
-      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, value: p.value }; activity.begin(); }}
-      onPointerMove={(e) => { const d = drag.current; if (d) set(d.value + ((d.y - e.clientY) + (e.clientX - d.x)) / pixelsPerUnit); }}
+      onPointerDown={(e) => { if (p.disabled || e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, acc: p.value }; activity.begin(); }}
+      onPointerMove={(e) => { const d = drag.current; if (d) { const delta = (d.y - e.clientY) + (e.clientX - d.x); d.x = e.clientX; d.y = e.clientY; d.acc = Math.max(min, Math.min(p.max, d.acc + delta / (pixelsPerUnit * (e.shiftKey ? 10 : 1)))); set(d.acc); } }}
       onPointerUp={() => { drag.current = null; activity.end(); }} onPointerCancel={() => { drag.current = null; activity.end(); }} onLostPointerCapture={() => { drag.current = null; activity.end(); }}
       onKeyDown={(e) => {
         if (['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Home', 'End'].includes(e.key)) {
