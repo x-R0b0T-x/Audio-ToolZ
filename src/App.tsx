@@ -130,7 +130,7 @@ export default function App() {
 
     const root = document.getElementById('root');
 
-    document.title = 'Audio ToolZ v1.7';
+    document.title = 'Audio ToolZ v1.8';
 
     return root ? installMenuHover(root) : undefined;
 

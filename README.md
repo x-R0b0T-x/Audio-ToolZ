@@ -4,14 +4,14 @@
   <p>Sampling · Mastering · Boucles · Remix · 100 % local · Windows portable</p>
   <img src="src/medias/ZØNYXRobot..png" alt="ZØNYX, la mascotte d'Audio ToolZ" width="200" />
   <p>
-    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger la dernière version" src="https://img.shields.io/badge/Télécharger-v1.7-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger la dernière version" src="https://img.shields.io/badge/Télécharger-v1.8-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
     &nbsp;
     <a href="https://t.me/Audio_ToolZ"><img alt="Rejoindre la communauté Telegram" src="https://img.shields.io/badge/Telegram-communauté-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
     &nbsp;
     <a href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8"><img alt="Soutenir le projet" src="https://img.shields.io/badge/PayPal-soutenir-00457C?style=for-the-badge&logo=paypal&logoColor=white"></a>
   </p>
   <p>
-    <img alt="Version 1.7" src="https://img.shields.io/badge/version-1.7-0B0B0B?style=flat-square&labelColor=1F1F1F">
+    <img alt="Version 1.8" src="https://img.shields.io/badge/version-1.8-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Licence GPL v3" src="https://img.shields.io/badge/licence-GPL%20v3-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Windows 64 bits" src="https://img.shields.io/badge/Windows-64%20bits-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-0B0B0B?style=flat-square&labelColor=1F1F1F">
@@ -331,7 +331,7 @@ Configuration requise : Windows 10 ou 11 en 64 bits (WebView2 inclus). Aucune in
 
 - L'application est prévue pour **Windows 64 bits** et nécessite **WebView2** (inclus avec Windows 10/11).
 - L'exécutable n'est **pas signé numériquement** : Windows Defender SmartScreen peut afficher un avertissement. Cliquez « Informations complémentaires » puis « Exécuter quand même ».
-- Le fichier `Audio.ToolZ.v1.7.zip.sha256.txt` joint à la release contient l'empreinte SHA-256 de l'archive, vérifiez-la si vous avez un doute sur l'intégrité du téléchargement.
+- Le fichier `Audio.ToolZ.v1.8.zip.sha256.txt` joint à la release contient l'empreinte SHA-256 de l'archive, vérifiez-la si vous avez un doute sur l'intégrité du téléchargement.
 - Les archives « Source code » proposées automatiquement par GitHub contiennent **le code source du projet**, pas l'application prête à lancer.
 
 </details>
