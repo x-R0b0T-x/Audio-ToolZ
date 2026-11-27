@@ -70,7 +70,7 @@ export function FadeEditor(p:Props){
    <text x={L} y={T+PH+20}>Début</text><text x={L+PW} y={T+PH+20} textAnchor="end">Fin</text>
    <path d={`${path} L${L+PW} ${T+PH} L${L} ${T+PH} Z`} fill="#39ff1422"/>
    <path d={path} fill="none" stroke="#39ff14" strokeWidth="2.8" strokeLinejoin="round"/>
-   <line ref={head} x1={L} x2={L} y1={T} y2={T+PH} stroke="#fff" strokeWidth="1.5" style={{visibility:'hidden',filter:'drop-shadow(0 0 3px #39ff14)'}}/>
+   <line ref={head} x1={L} x2={L} y1={T} y2={T+PH} stroke="#39ff14" strokeWidth="2" style={{visibility:'hidden',filter:'drop-shadow(0 0 3px #39ff14)'}}/>
    {nodes.slice(0,-1).map((a,i)=>{
     const b=nodes[i+1],span=b.y-a.y;if(span<.02)return null;
     const x=(a.x+b.x)/2,y=a.y+span*tensionShape(.5,p.shape.tensions[i]??0),cx=px(x),cy=py(y);
