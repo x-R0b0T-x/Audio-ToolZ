@@ -4,6 +4,8 @@ const shared=[
  ['Fermer','Fermez la fenêtre d’effet sans valider les réglages en cours.'],
  ['Redimensionner la fenêtre d’effet','Faites glisser le triangle en bas à droite ; utilisez les flèches lorsqu’il est sélectionné pour ajuster la taille.']
 ];
+const gestures=['Gestes de réglage','Double-clic sur un potard, un fader, un point ou un sélecteur : retour à sa valeur d’origine. Maj pendant un glissé, avec la molette ou avec les flèches : réglage fin, environ dix fois plus précis. Molette sur la plupart des potards et des faders : réglage pas à pas. Ctrl pendant le glissé d’un point de l’égaliseur ou d’une ligne de Z-Limit/Comp : aimantation. Alt pendant le glissé d’un point de l’égaliseur : verrouillage de l’axe.'];
+const catalog=['Tous les effets','Z-Chorus : épaissit le son avec des copies légèrement décalées et modulées. Z-Delay : échos calés sur le tempo. Z-Denoiser : atténue un bruit constant à partir d’un profil capturé. Z-Égaliseur : sept bandes de correction des fréquences. Z-Flanger : effet de peigne balayé, avec réinjection et mode Through-zero. Z-Fondus : fondu d’entrée ou de sortie. Z-Limit/Comp : limiteur et compresseur. Z-Pitcher : vitesse et hauteur indépendantes. Z-Reverbe : espace et réverbération. Tous s’ouvrent par le menu Effets, classés par ordre alphabétique.'];
 const reverb=[
  ['Taille','Modifiez les dimensions acoustiques de la pièce et sa représentation. Une petite taille donne un espace resserré ; une grande taille espace les réflexions. Réglez séparément la Décroissance pour choisir leur durée.'],
  ['Décroissance','Choisissez en secondes la durée de décroissance de la réverbération. Augmentez-la pour une traîne plus longue ; diminuez-la pour préserver la netteté des passages rapides.'],
@@ -24,8 +26,8 @@ const reverb=[
 ];
 const delay=[
  ['Détection BPM','Analysez la piste pour obtenir un tempo utilisable par les temps musicaux du delay. Cette analyse ne change pas votre audio.'],
- ['Temps','Choisissez une division musicale par rapport au BPM détecté. Un intervalle court rapproche les répétitions ; un intervalle long les espace.'],
- ['Répétitions','Choisissez le nombre d’échos. À zéro, vous n’ajoutez aucune répétition.'],
+ ['Temps','Choisissez une division musicale par rapport au BPM détecté, parmi 18 graduations : triolet, droite ou pointée, de 1/32 à 1/1. Un intervalle court rapproche les répétitions ; un intervalle long les espace.'],
+ ['Répétitions','Choisissez le nombre d’échos, de 0 à 16. À zéro, vous n’ajoutez aucune répétition.'],
  ['Volume de l’effet','Dosez le niveau des échos ajoutés au signal original. À zéro, vous n’ajoutez aucun écho.'],
  ['Mono','Choisissez des répétitions en mode mono. Comparez leur placement avec les modes Stéréo et Ping-pong.'],
  ['Stéréo','Choisissez le mode de répétition stéréo. Écoutez les canaux gauche et droit pour régler l’espace.'],
@@ -34,16 +36,17 @@ const delay=[
  ['Panoramique de départ','Choisissez le placement de départ des échos : valeurs négatives à gauche, positives à droite, zéro au centre. Le signal original ne change pas de position.']
 ];
 const eq=[
- ['Fréquence','Déplacez horizontalement un point de bande dans le graphique pour choisir la zone du spectre à traiter, des graves à gauche vers les aigus à droite.'],
- ['Gain','Réglez le fader de la bande, ou déplacez son point verticalement : une valeur positive renforce la zone, une valeur négative l’atténue. Certains types de filtre n’utilisent pas le gain.'],
+ ['Fréquence','Déplacez horizontalement un point de bande dans le graphique pour choisir la zone du spectre à traiter, des graves à gauche vers les aigus à droite. Les flèches gauche et droite d’un point sélectionné déplacent la fréquence, avec Maj pour un pas fin.'],
+ ['Gain','Réglez le fader de la bande, ou déplacez son point verticalement : une valeur positive renforce la zone, une valeur négative l’atténue. Certains types de filtre n’utilisent pas le gain. Maj règle le fader au centième de dB.'],
  ['Largeur Q','Utilisez la molette sur un point du graphique pour modifier sa largeur Q. Un Q élevé cible une zone étroite ; un Q faible couvre une zone plus large. Maintenez Maj pour un réglage fin.'],
  ['Forme du filtre','Choisissez la forme de chaque bande : cloche pour une zone ciblée, plateau pour une extrémité du spectre, coupe-bas ou coupe-haut pour atténuer un côté du spectre.'],
  ['Pente','Choisissez la pente en dB/octave pour les formes compatibles. Une pente plus élevée rend la transition plus abrupte. La commande est désactivée pour les formes non compatibles.'],
- ['Bandes 1 à 7','Chaque bande possède ses propres réglages. Commencez par une correction modérée, puis comparez le résultat. Le spectre montre le contenu du signal et la courbe représente les corrections.']
+ ['Aimantation et axe','Pendant le glissé d’un point : Maj règle finement, Ctrl aimante la fréquence sur la grille (20, 50, 100 Hz…) et le gain par pas de 3 dB, Alt verrouille le déplacement sur l’axe dominant, fréquence seule ou gain seul.'],
+ ['Bandes 1 à 7','Chaque bande possède ses propres réglages. Commencez par une correction modérée, puis comparez le résultat. Le spectre montre le contenu du signal et la courbe représente les corrections. Toutes les bandes s’ouvrent à 0 dB : le son n’est pas modifié avant votre premier réglage.']
 ];
 const dynamics=[
  ['LIMIT','Choisissez le limiteur pour contrôler les crêtes par rapport au Plafond. Il travaille sur les crêtes d’échantillons et ne garantit pas un plafond true peak.'],
- ['COMP','Choisissez le compresseur pour réduire l’écart de niveau au-dessus du Seuil selon le Ratio, avec les temps d’Attaque et de Relâch.'],
+ ['COMP','Choisissez le compresseur pour réduire l’écart de niveau au-dessus du Seuil selon le Ratio, avec les temps d’Attaque et de Relâch. Il s’ouvre à 1:1 : aucune compression tant que vous n’augmentez pas le Ratio.'],
  ['Gain','Réglez le gain d’entrée en dB. Augmentez-le pour envoyer davantage de signal dans le traitement ; surveillez la réduction de gain et la sortie.'],
  ['Plafond','Réglez le niveau maximal visé en dBFS. Abaissez-le pour garder davantage de marge sous 0 dBFS.'],
  ['Seuil','En mode COMP, choisissez à partir de quel niveau le signal doit être comprimé. Un seuil plus bas fait travailler le compresseur sur une plus grande partie du signal.'],
@@ -53,10 +56,11 @@ const dynamics=[
  ['Attaque','Réglez le temps de réaction en millisecondes. Une attaque courte contrôle plus vite les transitoires ; une attaque longue en laisse davantage passer.'],
  ['Relâch.','Réglez le temps de relâchement après la réduction de gain. Un temps court réagit vite ; un temps long rend le retour au niveau normal plus lent.'],
  ['Défilement','Réglez le défilement de l’affichage du graphique. Cette commande concerne la visualisation, pas le niveau sonore.'],
+ ['Lignes du graphique','Faites glisser avec la souris la ligne orange (Gain), la ligne verte (Plafond) ou la ligne bleue en pointillés (Seuil, mode COMP). Maj règle finement, Ctrl aimante par pas de 3 dB. Quand deux lignes se superposent, la priorité va au Seuil, puis au Plafond, puis au Gain.'],
  ['Graphique et réduction de gain','Comparez l’entrée et la sortie. Le violet montre la réduction de gain et la ligne verte le seuil ou le plafond. Les couleurs de niveau vous aident à repérer les passages forts.']
 ];
 const fade=[
- ['Entrée','Augmentez progressivement le niveau du début vers la fin de la zone pour créer un fondu d’entrée.'],
+ ['Entrée','Augmentez progressivement le niveau du début vers la fin de la zone pour créer un fondu d’entrée. Choisissez Entrée ou Sortie pour activer le fondu : Appliquer reste grisé tant que rien n’est choisi.'],
  ['Sortie','Diminuez progressivement le niveau dans la zone pour créer un fondu de sortie.'],
  ['Linéaire','Choisissez une progression linéaire du gain. Observez la courbe puis écoutez le résultat.'],
  ['Exponentielle','Choisissez une progression exponentielle pour répartir différemment la variation de niveau dans le temps.'],
@@ -67,13 +71,50 @@ const pitch=[
  ['Hauteur','Réglez la transposition en demi-tons. Une valeur positive monte la tonalité ; une valeur négative la descend. Zéro conserve la hauteur demandée sans transposition.']
 ];
 const noise=[
- ['Capturer le profil','Mémorisez un profil sur une zone contenant idéalement le bruit seul. Vous pourrez ensuite traiter une zone plus large en vous appuyant sur ce profil.'],
- ['Atténuation','Choisissez la réduction de bruit en dB. Augmentez-la progressivement ; une réduction trop forte peut altérer le signal utile.'],
- ['Profil automatique','Sans profil mémorisé, le traitement estime un profil à partir de la zone traitée. Comparez attentivement le résultat sur une prise contenant de la voix ou de la musique.']
+ ['Capturer le profil','Sélectionnez dans la forme d’onde un passage qui contient seulement le bruit (souffle, bourdonnement), ouvrez Z-Denoiser et cliquez sur Capturer le profil. Le profil reste mémorisé quand vous fermez la fenêtre : sélectionnez ensuite la zone à nettoyer et rouvrez l’effet.'],
+ ['Recapturer le profil','Remplacez le profil mémorisé par celui de la zone actuellement sélectionnée.'],
+ ['Atténuation','Choisissez la réduction de bruit en dB, de 0 à 36. Augmentez-la progressivement ; une réduction trop forte peut altérer le signal utile. Ce fader apparaît quand un profil est mémorisé et démarre à 0 dB.'],
+ ['Sans profil','Tant qu’aucun profil n’est mémorisé, l’atténuation est masquée et Appliquer reste grisé : Z-Denoiser n’estime plus le bruit à partir de la zone traitée.'],
+ ['Bruit constant','Z-Denoiser traite un bruit régulier. Il convient moins aux bruits qui changent au cours du temps.']
+];
+const chorus=[
+ ['Vitesse','Réglez en hertz la vitesse de l’oscillateur qui fait varier le retard des copies. Une valeur basse donne un mouvement lent ; une valeur élevée un effet proche du vibrato. Avec Tempo actif, ce réglage est remplacé par Temps.'],
+ ['Temps','Avec Tempo actif, choisissez la durée d’un cycle de l’oscillateur parmi les 18 divisions musicales, les mêmes que Z-Delay (triolet, droite, pointée, de 1/32 à 1/1).'],
+ ['Tempo','Synchronisez l’oscillateur sur le BPM déjà détecté. Détectez d’abord le tempo dans Audio ToolZ (Outils ou Ctrl+B) : le bouton reste grisé sans BPM. Cette commande ne lance aucune analyse.'],
+ ['Profondeur','Réglez l’amplitude de la variation du retard, de 0 à 100 %. À 0 %, le retard ne bouge pas ; une valeur élevée donne un effet plus marqué.'],
+ ['Retard','Réglez en millisecondes le retard moyen des copies, de 5 à 30 ms. Un retard court donne un épaississement discret ; un retard long, un effet plus audible.'],
+ ['Voix','Choisissez le nombre de copies, de 1 à 4. Chaque copie est décalée dans le cycle de l’oscillateur pour un rendu plus large.'],
+ ['Largeur stéréo','Décalez l’oscillateur entre les canaux gauche et droit. À 0 %, ils sont identiques ; à 100 %, ils sont en opposition. Sans effet sur une piste mono.'],
+ ['Mix','Dosez les copies par rapport au son original. À 0 %, vous entendez l’original ; à 100 %, uniquement les copies. L’effet s’ouvre à 0 % : Appliquer s’active après votre premier réglage.'],
+ ['Schéma de l’oscillateur','Le dessin montre deux cycles de l’oscillateur. Le texte dessous indique la plage de retard parcourue et la vitesse en hertz.']
+];
+const flanger=[
+ ['Vitesse','Réglez en hertz la vitesse de balayage de l’effet. Une valeur basse donne un balayage lent et ample ; une valeur élevée, un effet plus vibrant. Avec Tempo actif, ce réglage est remplacé par Temps.'],
+ ['Temps','Avec Tempo actif, choisissez la durée d’un cycle de balayage parmi les 18 divisions musicales, les mêmes que Z-Delay (triolet, droite, pointée, de 1/32 à 1/1).'],
+ ['Tempo','Synchronisez le balayage sur le BPM déjà détecté. Détectez d’abord le tempo dans Audio ToolZ (Outils ou Ctrl+B) : le bouton reste grisé sans BPM. Cette commande ne lance aucune analyse.'],
+ ['Profondeur','Réglez l’étendue du balayage du retard, de 0 à 100 %. À 100 %, le retard varie de zéro jusqu’au double du Retard central.'],
+ ['Retard','Réglez en millisecondes le retard central, de 0,1 à 10 ms. Un retard court donne un son métallique ; un retard plus long, un effet plus creux.'],
+ ['Réinjection','Renvoyez une partie du signal retardé vers l’entrée, de −95 % à +95 %. Une valeur positive accentue les résonances ; une valeur négative donne un timbre différent, plus creux. À 0 %, l’effet est doux.'],
+ ['Through-zero','Désactivé par défaut. Activé, le son original est lui-même retardé du Retard central : le balayage passe de part et d’autre du son original, ce qui donne l’effet de jet caractéristique des flangers à bande. La zone traitée est alors décalée de ce retard.'],
+ ['Largeur stéréo','Décalez le balayage entre les canaux gauche et droit. À 0 %, ils sont identiques ; à 100 %, ils sont en opposition. Sans effet sur une piste mono.'],
+ ['Mix','Dosez le signal balayé par rapport au son original. À 0 %, vous entendez l’original ; à 50 %, les deux à égalité pour un effet de peigne marqué. L’effet s’ouvre à 0 % : Appliquer s’active après votre premier réglage.'],
+ ['Schéma de l’oscillateur','Le dessin montre deux cycles du balayage. Le texte dessous indique la plage de retard parcourue et la vitesse en hertz.']
 ];
 const normalize=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const kindOf=name=>name.includes('reverb')?'reverb':name.includes('chorus')?'chorus':name.includes('flanger')?'flanger':name.includes('delay')?'delay':name.includes('egaliseur')?'eq':/limit|compress/.test(name)?'dynamics':name.includes('fondu')?'fade':/pitch|vitesse|hauteur/.test(name)?'pitch':/bruit|denoiser/.test(name)?'noise':'';
+const entries={reverb,delay,eq,dynamics,fade,pitch,noise,chorus,flanger};
+const intro={
+ reverb:'Ajoutez une impression d’espace avec des premières réflexions et une traîne. Réglez le mélange Direct / Réflexions / Réverbération en préécoute.',
+ delay:'Ajoutez des échos rythmiques et choisissez leur placement. Détectez le BPM avant d’activer les répétitions musicales.',
+ eq:'Équilibrez le son avec sept bandes pour renforcer ou atténuer les zones utiles.',
+ dynamics:'Contrôlez la dynamique et les crêtes. Choisissez LIMIT pour le plafond ou COMP pour une compression réglable.',
+ fade:'Adoucissez le début ou la fin de la zone avec un fondu.',
+ pitch:'Modifiez la vitesse ou la hauteur du passage, puis vérifiez le résultat avant de valider.',
+ noise:'Atténuez un bruit constant à partir d’un profil capturé et écoutez les éventuels artefacts.',
+ chorus:'Épaississez un son avec des copies légèrement décalées dont le retard varie. Idéal sur une voix, une guitare ou une nappe.',
+ flanger:'Balayez un retard très court pour créer un effet de peigne mobile. Réglez la réinjection pour accentuer les résonances.'
+};
 export function getEffectHelp(title){
- const name=normalize(title);
- const entries=name.includes('reverb')?reverb:name.includes('delay')?delay:name.includes('egaliseur')?eq:/limit|compress/.test(name)?dynamics:name.includes('fondu')?fade:/pitch|vitesse|hauteur/.test(name)?pitch:name.includes('bruit')?noise:[];
- return {title:String(title),topics:[['À quoi sert cet effet ?',name.includes('reverb')?'Ajoutez une impression d’espace avec des premières réflexions et une traîne. Réglez le mélange Direct / Réflexions / Réverbération en préécoute.':name.includes('delay')?'Ajoutez des échos rythmiques et choisissez leur placement. Détectez le BPM avant d’activer les répétitions musicales.':name.includes('egaliseur')?'Équilibrez le son avec sept bandes pour renforcer ou atténuer les zones utiles.':/limit|compress/.test(name)?'Contrôlez la dynamique et les crêtes. Choisissez LIMIT pour le plafond ou COMP pour une compression réglable.':name.includes('fondu')?'Adoucissez le début ou la fin de la zone avec un fondu.':/pitch|vitesse|hauteur/.test(name)?'Modifiez la vitesse ou la hauteur du passage, puis vérifiez le résultat avant de valider.':name.includes('bruit')?'Atténuez le bruit à partir d’un profil et écoutez les éventuels artefacts.':'Consultez les commandes de cette fenêtre avant de valider le traitement.'],...entries,['Zone traitée','Avec une sélection non vide, vous traitez cette zone. Sans sélection, ces effets ciblent le document entier. Vérifiez la zone avant de cliquer sur Appliquer.'],...shared]};
+ const kind=kindOf(normalize(title));
+ return {title:String(title),topics:[['À quoi sert cet effet ?',intro[kind]??'Consultez les commandes de cette fenêtre avant de valider le traitement.'],...(entries[kind]??[]),['Zone traitée','Avec une sélection non vide, vous traitez cette zone. Sans sélection, ces effets ciblent le document entier. Vérifiez la zone avant de cliquer sur Appliquer.'],gestures,catalog,...shared]};
 }

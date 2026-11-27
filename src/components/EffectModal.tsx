@@ -10,6 +10,7 @@ import {AdvancedEffects} from './AdvancedEffects';
 import {EffectPanel} from './EffectPanel';
 import {ReverbModal} from './ReverbModal';
 import {PitcherModal} from './PitcherModal';
+import {ModulationModal} from './ModulationModal';
 import {targetRange} from '../audio/effectsModel.mjs';
 import './delayPanel.css';
 let lastNoiseProfile:NoiseProfile|null=null;
@@ -20,7 +21,7 @@ function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:
  const relay=useMemo(()=>createPreviewRelay(()=>audioEngine.isPlaying,(...args:Parameters<Props['onStartPreview']>)=>latest.current.onStartPreview(...args)),[]);
  useEffect(()=>{const timer=window.setInterval(relay.poll,80);return()=>{window.clearInterval(timer);relay.clear();};},[relay]);
  const props={...p,onStartPreview:relay.submit};
- return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:<Legacy {...props}/>;
+ return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:<Legacy {...props}/>;
 }
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const {document:doc,effect}=p,[c,set]=useState({direction:null as FadeDirection|null,curve:'scurve' as FadeCurve,speed:1,pitch:0,reduction:0,division:DEFAULT_DIVISION,mode:'off' as DelayMode,repetitions:0,wet:0,pan:0}),[touched,setTouched]=useState(false);
