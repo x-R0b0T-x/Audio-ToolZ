@@ -1,0 +1,32 @@
+:root {
+  /* Palette de base Audio ToolZ : source unique des couleurs. */
+  --green: #39ff14;
+  --green-rgb: 57,255,20;
+  --violet: #b34dff;
+  --violet-rgb: 179,77,255;
+  --violet-hover: #c276ff;
+  --violet-icon: #bc6aff;
+  --violet-strong: #982cff;
+  --violet-knob-dark: #40136a;
+  --violet-knob: #922bec;
+  --white: #ffffff;
+  --red: #ff5555;
+  --yellow: #f1fa8c;
+  --cyan: #8be9fd;
+  --ink: #f8f8f2;
+  --canvas: #161820;
+  --canvas-wave: #13151c;
+  --border-line: #35394b;
+
+  /* Halo vert commun : survol, focus et fenetres. */
+  --halo-green-line: rgba(var(--green-rgb), .95);
+  --halo-green-inner: rgba(var(--green-rgb), .22);
+  --halo-green-outer: rgba(var(--green-rgb), .38);
+  --halo-green-icon: rgba(var(--green-rgb), .65);
+  --halo-green-window: rgba(var(--green-rgb), .85);
+  --halo-green-window-inner: rgba(var(--green-rgb), .28);
+  --halo-green-window-outer: rgba(var(--green-rgb), .48);
+  --halo-green-window-far: rgba(var(--green-rgb), .26);
+  --halo-green-knob: rgba(var(--green-rgb), .35);
+  --halo-green-thumb: rgba(var(--green-rgb), .6);
+}

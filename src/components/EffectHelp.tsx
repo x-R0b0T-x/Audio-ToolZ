@@ -2,7 +2,7 @@ import React,{useEffect,useId,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import helpImage from '../medias/help.png?url';
 import proImage from '../medias/pro.png?url';
-import {getEffectHelp} from './effectHelpContent.mjs';
+import {getEffectHelp} from './effectHelpClicks.mjs';
 import {presentEffectHelp} from './effectHelpPresentation.mjs';
 import {EffectName} from './EffectName';
 import './effectHelp.css';

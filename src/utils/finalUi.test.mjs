@@ -9,7 +9,7 @@ test('stopped preview guard precedes audio replacement and fallback playback',()
 test('About links are precisely allowed by the native opener',()=>{const info=readFileSync('src/components/InfoModal.tsx','utf8'),rust=readFileSync('src-tauri/src/main.rs','utf8');for(const url of ['https://github.com/x-R0b0T-x/Audio-ToolZ','https://www.paypal.com/ncp/payment/GAUJE54VM28T8']){assert.ok(info.includes(url));assert.ok(rust.includes('target != \"'+url+'\"'));}});
 test('changelog main heading has the exact requested caption and an explicit green override',()=>{
  const info=readFileSync('src/components/InfoModal.tsx','utf8'),css=readFileSync('src/components/headerParticles.css','utf8'),base=readFileSync('src/textReadability.css','utf8');
- assert.ok(info.includes('id="about-changelog-title" className="text-sm font-bold">Changements depuis la version 1.6</h3>'));
+ assert.ok(info.includes('id="about-changelog-title" className="text-sm font-bold">Changements depuis la version 1.7</h3>'));
  assert.ok(css.includes('#root .zonyx-about-dialog #about-changelog-title{color:#39ff14!important}'));
  assert.ok(base.includes('font-weight:700!important'));
 });

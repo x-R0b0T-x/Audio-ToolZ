@@ -1,0 +1,7 @@
+.zonyx-mod{display:flex;flex-direction:column;align-items:center;gap:14px}
+.zonyx-mod-scope{width:100%;max-width:520px;color:var(--accent-secondary)}
+.zonyx-mod-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:18px}
+.zonyx-mod-toggle{padding:6px 12px;border-radius:6px;border:1px solid var(--border-subtle);background:var(--bg-elevated);color:var(--text-primary);cursor:pointer;align-self:center}
+.zonyx-mod-toggle:hover:not(:disabled){background:var(--bg-hover)}
+.zonyx-mod-toggle[aria-pressed="true"]{border-color:var(--accent-primary);color:var(--accent-secondary)}
+.zonyx-mod-toggle:disabled{opacity:.4;cursor:not-allowed}

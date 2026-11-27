@@ -26,7 +26,7 @@ export interface ExportSettings {
 }
 export type FadeDirection = 'in' | 'out';
 export type FadeCurve = 'linear' | 'exponential' | 'scurve';
-export type EffectModalId = 'fade' | 'speed-pitch' | 'eq' | 'filter' | 'compressor' | 'noise-reduction' | 'echo' | 'reverb' | null;
+export type EffectModalId = 'fade' | 'speed-pitch' | 'eq' | 'filter' | 'compressor' | 'noise-reduction' | 'declick' | 'echo' | 'reverb' | 'chorus' | 'flanger' | null;
 export interface AudioStats {
   durationSeconds: number; totalSamples: number; sampleRate: number; channelCount: number;
   peakLinear: number; peakDb: number; rmsDb: number; dcOffset: number; clippedSamples: number;

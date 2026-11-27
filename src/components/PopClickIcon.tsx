@@ -1,0 +1,2 @@
+import React from 'react';
+export const IconPopClick:React.FC<{className?:string}>=({className})=><svg width={20} height={20} viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}><path d="M2.5 15H7.5L9.3 12L11 15H21.5" stroke="var(--icon-stroke)" strokeWidth={1.7}/><path d="M13 15L14.3 3.8L15.6 15" stroke="var(--icon-accent)" strokeWidth={1.8}/><path d="M17.2 6.2L21 10M21 6.2L17.2 10" stroke="var(--icon-highlight)" strokeWidth={1.9}/></svg>;

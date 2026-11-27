@@ -1,10 +1,11 @@
 import {signedDb} from '../utils/presentationFormat';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {useControlActivity as useActivity} from '../utils/useControlActivity';
 import './knobStates.css';
 import {KnobTicks} from './KnobTicks';
 import { parameterValue, stepParameter, type ParameterSpec } from './effectUiMath';
 import {NumericValue} from './NumericValue';
+import {useFineSlider} from './useFineSlider';
 type Props = { label: string; value: number; initial: number; spec: ParameterSpec; unit?: string; onChange: (v: number) => void; compact?: boolean; displayValue?:number; onDisplayCommit?:(v:number)=>void };
 function useWheel(ref: React.RefObject<HTMLDivElement | null>, action: (direction: number, fine: boolean) => void) {
   const callback = useRef(action); callback.current = action;
@@ -12,8 +13,9 @@ function useWheel(ref: React.RefObject<HTMLDivElement | null>, action: (directio
     const node = ref.current; if (!node) return;
     const wheel = (e: WheelEvent) => {
       if(e.target instanceof Element&&e.target.closest('.zonyx-value-entry input'))return;
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !e.deltaY || node.closest('fieldset:disabled,[inert]')) return;
-      e.preventDefault(); callback.current(e.deltaY < 0 ? 1 : -1, e.shiftKey);
+      const delta = e.deltaY || e.deltaX;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !delta || node.closest('fieldset:disabled,[inert]')) return;
+      e.preventDefault(); callback.current(delta < 0 ? 1 : -1, e.shiftKey);
     };
     node.addEventListener('wheel', wheel, { passive: false }); return () => node.removeEventListener('wheel', wheel);
   }, [ref]);
@@ -26,8 +28,8 @@ export function EffectParameter(p: Props) {
   useWheel(ref, (direction, fine) => { activity.pulse(); p.onChange(stepParameter(p.value, direction, fine, s)); });
   return <div ref={ref} className={`zonyx-parameter${p.compact ? ' compact' : ''}${activity.active ? ' is-adjusting' : ''}`}>
     <span>{p.label}</span><button type="button" onDoubleClick={()=>p.onChange(p.initial)} role="slider" aria-label={p.label} aria-valuemin={s.min} aria-valuemax={s.max} aria-valuenow={p.value} aria-valuetext={`${p.displayValue??p.value} ${p.unit ?? ''}`}
-      onPointerDown={e => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, fraction: fraction(p.value) }; activity.begin(); }}
-      onPointerMove={e => { const d = drag.current; if (d) setFraction(d.fraction + (d.y - e.clientY + e.clientX - d.x) / (e.shiftKey ? 1600 : 160)); }}
+      onPointerDown={e => { if (e.button !== 0) return; e.preventDefault(); e.currentTarget.focus(); e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, fraction: Math.max(0, Math.min(1, fraction(p.value))) }; activity.begin(); }}
+      onPointerMove={e => { const d = drag.current; if (d) { const delta = (d.y - e.clientY) + (e.clientX - d.x); d.x = e.clientX; d.y = e.clientY; d.fraction = Math.max(0, Math.min(1, d.fraction + delta / (e.shiftKey ? 1600 : 160))); setFraction(d.fraction); } }}
       onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end}
       onKeyDown={e => {
         if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
@@ -41,10 +43,12 @@ export function EffectParameter(p: Props) {
   </div>;
 }
 export function EffectGain({ label, value, onChange, disabled=false }: { label: string; value: number; onChange: (v: number) => void; disabled?:boolean }) {
-  const ref = useRef<HTMLDivElement>(null), activity = useActivity();
+  const ref = useRef<HTMLDivElement>(null), activity = useActivity(), [over, setOver] = useState(false), [grabbed, setGrabbed] = useState(false);
   useWheel(ref, (direction, fine) => { if(disabled)return; activity.pulse(); onChange(stepParameter(value, direction, fine, { min: -18, max: 18, step: .5, fine: .1, digits: 1 })); });
-  return <div ref={ref} className={`zonyx-gain${activity.active ? ' is-adjusting' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
-    <div className="zonyx-fader-track"><div className="zonyx-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
-    <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.1} value={value} style={{ '--zonyx-f': (value + 18) / 36 } as React.CSSProperties} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); activity.begin(); }} onPointerUp={activity.end} onPointerCancel={activity.end} onLostPointerCapture={activity.end} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{signedDb(value,1)}</output>
+  const slider = useFineSlider({ min: -18, max: 18, value, step: .1, fineStep: .01, disabled, onChange, onStart: () => { setGrabbed(true); activity.begin(); }, onEnd: () => { setGrabbed(false); activity.end(); } });
+  const onThumb = (e: React.PointerEvent<HTMLElement>) => { if (disabled) return false; const r = e.currentTarget.getBoundingClientRect(), y = r.top + 10 + (r.height - 20) * (1 - (value + 18) / 36); return e.clientX >= r.right - 28 && Math.abs(e.clientY - y) <= 12; };
+  return <div ref={ref} className={`zonyx-gain${activity.active ? ' is-adjusting' : ''}${over && !disabled ? ' is-thumb-hover' : ''}${grabbed ? ' is-grabbed' : ''}${disabled?' is-disabled':''}`} onDoubleClick={() => {if(!disabled)onChange(0);}}>
+    <div className="zonyx-fader-track" {...slider} onPointerMove={e => { slider.onPointerMove(e); setOver(onThumb(e)); }} onPointerLeave={() => setOver(false)} style={{ touchAction: 'none' }}><div className="zonyx-fader-ticks" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => <i key={i} className={i === 6 ? 'zero' : ''} style={{ top: `${i * 100 / 12}%` }}>{i === 6 ? <span>0</span> : null}</i>)}</div>
+    <input type="range" disabled={disabled} aria-label={label} aria-orientation="vertical" min={-18} max={18} step={.01} value={value} style={{ '--zonyx-f': (value + 18) / 36, pointerEvents: 'none' } as React.CSSProperties} onKeyDown={activity.pulse} onChange={e => onChange(Number(e.target.value))}/></div><output>{signedDb(value,1)}</output>
   </div>;
 }

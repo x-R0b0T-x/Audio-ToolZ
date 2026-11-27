@@ -1,5 +1,60 @@
 # Journal des modifications
 
+## 1.8
+
+La version 1.8 ajoute trois nouveaux effets (Z-Chorus, Z-Flanger, Z-Denoiser refondu) et l'outil Pop/Clic pour nettoyer les disques vinyles. Tous les effets se règlent désormais en temps réel pendant la lecture, et l'interface gagne en lumière et en précision de réglage.
+
+### Nouveautés
+
+#### Effets et outils
+
+- Z-Chorus : épaissit le son avec de une à quatre copies légèrement décalées et modulées. Vitesse en hertz ou Temps calé sur le BPM détecté, profondeur, retard de 5 à 30 ms, largeur stéréo et mix. Une onde animée montre l'oscillateur.
+- Z-Flanger : balayage d'un retard très court (0,1 à 10 ms), avec vitesse ou Temps calé sur le BPM, profondeur, réinjection de −95 % à +95 %, mode Through-zero, largeur stéréo et mix. Même onde animée que le Chorus.
+- Pop/Clic : nouveau bouton dans la barre d'outils, après Z-Pitcher, pour réparer les clics et les pops d'un disque vinyle. Sélectionnez une portion de 0,1 à 60 s, puis choisissez un niveau : Prudent (2000 %), Standard (1000 %), Sensible (700 %), Fort (500 %) ou Très fort (300 %). Un réglage fin de la tolérance (100 à 5000 %) et de la taille maximale du défaut (1 à 20 ms) complète la fenêtre. Chaque clic repéré est marqué en rouge sur la forme d'onde de la sélection, la préécoute joue le résultat réparé et Appliquer reprend ce même résultat. Le bouton reste grisé sans sélection.
+- Z-Denoiser : refonte complète. Le profil de bruit se capture obligatoirement (plus de profil automatique), reste mémorisé à la fermeture de la fenêtre, et le bouton de capture est toujours visible. Atténuation de 0 à 36 dB, oscilloscope en lecture, entrée dans le menu Effets.
+- Z-Fondus : courbe à points modifiables, avec une boule lumineuse qui suit le sommet de l'arrondi et une tête de lecture verte sur une grille blanche.
+- Z-Limit/Comp : le compresseur s'ouvre en position neutre (ratio 1:1), sans compression tant que vous n'augmentez pas le ratio.
+- Z-Delay : la détection du BPM travaille sur 45 s autour de la lecture (ou du milieu de la sélection), avec une limite de 30 s, pour rester légère sur les longs fichiers.
+
+#### Préécoute et réglages
+
+- Préécoute en temps réel, fenêtre par fenêtre, pour Z-Reverbe, Z-Égaliseur, Z-Limit/Comp, Z-Pitcher, Z-Chorus et Z-Flanger. Z-Reverbe est plus rapide et s'entend dès le premier potard.
+- Effets neutres à l'ouverture : Z-Reverbe, Z-Fondus, Z-Denoiser, Z-Chorus et Z-Flanger s'ouvrent sans rien modifier, et Appliquer reste inactif tant qu'un réglage n'a pas bougé.
+- Réglage fin avec Maj sur les faders, les potards et les gains de l'égaliseur. Sur les points de l'égaliseur et les lignes de Z-Limit/Comp : Ctrl aimante, Alt verrouille l'axe.
+- Menu Effets classé par ordre alphabétique, avec une aide « ? » complète pour chaque effet, y compris Pop/Clic.
+
+#### Interface
+
+- Fenêtre de confirmation à la fermeture : « Vous me quittez déjà ? », avec Quitter sans sauvegarder, Sauvegarder et fermer, ou Annuler. Elle s'affiche dans le même violet que les autres fenêtres.
+- Logo du haut qui tourne à 33 tours par minute.
+- Ondes et arcs électriques autour du titre, réactifs au niveau de chaque canal (volume, balance) et au spectre. Pulsation sur la grille BPM.
+- Barres de défilement lumineuses, halos tournants vert et violet sur les boutons et les titres d'effets, icônes de la barre d'outils lumineuses et menus qui passent au vert au survol.
+- Faders et points de l'égaliseur : cercle blanc et halo de la couleur de la bande au survol du bouton et pendant le glissement. Potards : cran sélectionné et crans voisins qui s'allument comme des diodes.
+- Onde audio lissée, taille minimale des fenêtres d'effets et fenêtre de contrôle lumineuse.
+- Palette de couleurs centralisée dans un seul fichier.
+
+### Corrections
+
+- Z-Reverbe : l'alerte 0 dBFS est retirée.
+- Faders : le halo ne s'allume plus qu'au survol du bouton ou pendant le glissement, plus au survol du fader entier ni au clavier. Halos parasites supprimés.
+- Z-Pitcher : calcul par fenêtre, sans boucle ni BPM.
+- Z-Flanger : ondes fantômes supprimées. Aide des effets : croix de fermeture en blanc.
+- Z-Chorus et Z-Flanger : onde centrée.
+- Barres de défilement vertes partout et halo corrigé.
+- Spectrogramme coloré à deux canaux.
+- Vérification de la configuration plus rapide et musique du didacticiel discrète pendant la lecture.
+- Lecture : Play fonctionne de nouveau après une lecture arrière.
+- Finitions visuelles de la 1.7 : triangle de redimensionnement, boutons, faders et aide.
+- Fenêtre de fermeture : points d'interrogation du titre et du bouton, titre sans halo, ZØNYX agrandi.
+- Journal des modifications de l'application mis à jour.
+
+### Interne
+
+- Compilation Windows validée aussi sur la branche de développement ; la validation Signalsmith ne bloque plus que main.
+- Nouveaux tests automatiques pour Pop/Clic (clics de 1 à 150 échantillons, signal propre, souffle, attaques de batterie, stéréo) et son propre workflow de vérification, qui publie trois fichiers WAV à écouter.
+- README refondu avec captures et description de chaque réglage.
+- Numéro de version : 1.8.0.
+
 ## 1.7
 
 ### Mises à jour

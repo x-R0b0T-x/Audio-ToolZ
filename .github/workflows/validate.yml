@@ -1,7 +1,7 @@
 name: Audio ToolZ - Windows validation
 on:
   push:
-    branches: [main]
+    branches: [main, 1.8-dev]
     paths: ['src/**','src-tauri/**','public/**','package.json','package-lock.json','vite.config.ts','tsconfig.json','index.html','.github/cleanup.py','.github/workflows/validate.yml','.github/release/package_v17.py','.github/maintenance/verify_pitcher_runtime.mjs']
   pull_request:
     branches: [main]
@@ -57,6 +57,7 @@ jobs:
         run: npx playwright install chromium
       - name: Signalsmith runtime validation under application CSP
         timeout-minutes: 10
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
         run: node .github/maintenance/verify_pitcher_runtime.mjs
       - name: Rust decoder and configuration tests
         run: cargo test --locked --manifest-path src-tauri/Cargo.toml -- --nocapture

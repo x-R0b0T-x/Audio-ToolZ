@@ -1,0 +1,28 @@
+name: Z-Clics - verification du traitement
+on:
+  push:
+    branches: [main, 1.8-dev]
+    paths: ['src/audio/declick.mjs','src/audio/declick.test.mjs','.github/maintenance/declick_report.mjs','.github/workflows/declick.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  declick:
+    if: github.repository == 'x-R0b0T-x/Audio-ToolZ'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Regression tests on synthetic clicks
+        run: node --test src/audio/declick.test.mjs
+      - name: Measurements and demonstration files
+        run: node .github/maintenance/declick_report.mjs
+      - name: Upload report and listening files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Z-Clics.report
+          path: declick-report/
+          if-no-files-found: warn
