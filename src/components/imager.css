@@ -1,0 +1,16 @@
+.zonyx-imager-body{display:flex;flex-direction:column;align-items:center;gap:18px}
+.zonyx-imager-top{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:28px}
+.zonyx-imager-gonio{display:flex;flex-direction:column;align-items:center;gap:6px;width:200px}
+.zonyx-imager-gonio svg{width:200px;height:200px;border-radius:6px}
+.zonyx-imager-corr{position:relative;width:200px;height:8px;border-radius:4px;background:linear-gradient(90deg,#f43f5e,#fbbf24 50%,#39ff14)}
+.zonyx-imager-corr i{position:absolute;top:-3px;width:3px;height:14px;border-radius:2px;background:#fff;transform:translateX(-50%)}
+.zonyx-imager-corr-labels{display:flex;justify-content:space-between;align-items:center;width:200px;font-size:11px;color:var(--text-muted)}
+.zonyx-imager-corr-labels output{color:var(--accent-secondary)}
+.zonyx-imager-corr-labels output.is-warning{color:#f43f5e}
+.zonyx-imager-bands{display:flex;gap:18px;align-items:flex-start}
+.zonyx-imager-band{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:84px}
+.zonyx-imager-band-name{font-size:12px;font-weight:600}
+.zonyx-imager-band-range{font-size:10px;color:var(--text-muted);white-space:nowrap}
+.zonyx-imager-fader{display:flex;justify-content:center}
+.zonyx-imager-value{font-size:12px;font-variant-numeric:tabular-nums;color:var(--accent-secondary)}
+.zonyx-imager-modes{display:flex;gap:8px;align-self:center}
