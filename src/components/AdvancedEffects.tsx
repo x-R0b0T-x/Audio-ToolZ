@@ -75,7 +75,7 @@ export function AdvancedEffects(props: Props) {
   };
   const control = (key: keyof Omit<Dynamics, 'mode'>, caption: string, min: number, max: number, step: number, fine: number, digits: number, unit = '') =>
     <EffectParameter label={caption} value={params[key]} initial={neutralDynamics(params.mode)[key]} spec={{ min, max, step, fine, digits }} unit={unit} onChange={value => setParams(old => ({ ...old, [key]: value }))}/>;
-  const graph = eq ? <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/> : <DynamicsPeakGraph original={doc.channels} output={output} offset={range.startSample} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll}/>;
+  const graph = eq ? <DetailedEffectGraph eq={eq} bands={bands} source={source} output={output} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onBandChange={update}/> : <DynamicsPeakGraph original={doc.channels} output={output} offset={range.startSample} rate={doc.sampleRate} params={params} trace={trace} scroll={scroll} onParamsChange={patch => setParams(old => ({ ...old, ...patch }))}/>;
   return <div className="zonyx-advanced-backdrop"><EffectPanel className={`zonyx-advanced ${eq ? 'zonyx-equalizer' : 'zonyx-dynamics'}`} minWidth={eq ? 900 : 760} minHeight={eq ? 560 : 400} role="dialog" aria-modal="true" aria-labelledby="advanced-title">
     <header><h2 id="advanced-title">{eq ? label : 'Z-Limit/Comp'}</h2><button type="button" aria-label="Fermer" onClick={props.onClose}>×</button></header>
     <main><fieldset className="zonyx-effect-body" disabled={applying} inert={applying}>

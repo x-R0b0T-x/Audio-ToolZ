@@ -3,10 +3,28 @@ import {audioEngine} from '../audio/engine';
 import type {Dynamics,Trace} from '../audio/advancedDsp';
 import {PeakTrail} from '../utils/peakTrail';
 import {signedDb} from '../utils/presentationFormat';
-type Props={original:Float32Array[];output:Float32Array[]|null;offset:number;rate:number;params:Dynamics;trace:Trace|null;scroll:number};
+import {roundTo} from './useFineSlider';
+type Props={original:Float32Array[];output:Float32Array[]|null;offset:number;rate:number;params:Dynamics;trace:Trace|null;scroll:number;onParamsChange?:(patch:Partial<Dynamics>)=>void};
 type Session={start:number;segmentLength:number;originalLoop:boolean;previewChannels:Float32Array[]};
+type LineKey='threshold'|'ceiling'|'input';
+const MIN_DB=-18,MAX_DB=12,LIMITS:Record<LineKey,[number,number]>={threshold:[-18,0],ceiling:[-18,12],input:[-18,12]};
+const plot=(w:number,h:number)=>({left:50,top:60,width:Math.max(1,w-62),height:Math.max(1,h-84)});
 export function DynamicsPeakGraph(props:Props){
  const canvas=useRef<HTMLCanvasElement>(null),latest=useRef(props);latest.current=props;
+ const drag=useRef<{key:LineKey;y:number;acc:number}|null>(null);
+ const pick=(e:React.PointerEvent<HTMLElement>):LineKey|null=>{
+  const node=canvas.current;if(!node)return null;
+  const r=node.getBoundingClientRect(),p=latest.current,g=plot(r.width,r.height),x=e.clientX-r.left,y=e.clientY-r.top;
+  if(x<g.left||x>g.left+g.width)return null;
+  const at=(db:number)=>g.top+(MAX_DB-Math.max(MIN_DB,Math.min(MAX_DB,db)))/(MAX_DB-MIN_DB)*g.height;
+  const lines:Array<[LineKey,number]>=[];
+  if(p.params.mode==='compressor')lines.push(['threshold',p.params.threshold]);
+  lines.push(['ceiling',p.params.ceiling],['input',p.params.input]);
+  let best:{key:LineKey;d:number}|null=null;
+  for(const [key,value] of lines){if(value<MIN_DB||value>MAX_DB)continue;const d=Math.abs(at(value)-y);if(d<=7&&(!best||d<best.d))best={key,d};}
+  return best?best.key:null;
+ };
+ const end=()=>{drag.current=null;};
  useEffect(()=>{
   const history=new PeakTrail();let frame=0,last:number|null=null,previousSource:Float32Array[]|null=null;
   const db=(peak:number)=>20*Math.log10(Math.max(1e-9,peak));
@@ -58,5 +76,16 @@ export function DynamicsPeakGraph(props:Props){
   };
   frame=requestAnimationFrame(draw);return()=>cancelAnimationFrame(frame);
  },[]);
- return <div className="zonyx-graph-block"><div className="zonyx-graph detailed"><canvas ref={canvas} role="img" aria-label="Crêtes d’entrée et de sortie, réduction de gain, seuil et plafond en temps réel"/></div></div>;
+ return <div className="zonyx-graph-block"><div className="zonyx-graph detailed" style={{touchAction:'none'}}
+  onPointerDown={e=>{if(e.button!==0||!latest.current.onParamsChange)return;const key=pick(e);if(!key)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);drag.current={key,y:e.clientY,acc:latest.current.params[key]};}}
+  onPointerMove={e=>{
+   const d=drag.current;
+   if(!d){e.currentTarget.style.cursor=latest.current.onParamsChange&&pick(e)?'ns-resize':'';return;}
+   const r=canvas.current?.getBoundingClientRect();if(!r)return;
+   const g=plot(r.width,r.height),[lo,hi]=LIMITS[d.key];
+   d.acc=Math.max(lo,Math.min(hi,d.acc+(d.y-e.clientY)*(MAX_DB-MIN_DB)/g.height*(e.shiftKey?.1:1)));d.y=e.clientY;
+   const value=e.ctrlKey?Math.max(lo,Math.min(hi,Math.round(d.acc/3)*3)):roundTo(d.acc,e.shiftKey?.1:.5);
+   latest.current.onParamsChange?.({[d.key]:value} as Partial<Dynamics>);
+  }}
+  onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end}><canvas ref={canvas} role="img" aria-label="Crêtes d’entrée et de sortie, réduction de gain, seuil et plafond en temps réel"/></div></div>;
 }
