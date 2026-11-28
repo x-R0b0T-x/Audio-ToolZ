@@ -8,6 +8,7 @@ import img2 from '../medias/02.png?url';
 import img3 from '../medias/03.png?url';
 import img4 from '../medias/04.png?url';
 import img5 from '../medias/05.png?url';
+import mouse from '../medias/Mouse.png?url';
 import professor from '../medias/pro.png?url';
 import scanner from '../medias/test.png?url';
 import {ConfigurationScan} from './ConfigurationScan';
@@ -44,6 +45,22 @@ const STEPS:Step[]=[
     ["Réduction de bruit spectrale :","pour nettoyer une prise."],
     ["Oscilloscope, spectre et forme d’onde colorée :","pour voir ce que vous entendez."]]}
   ]},
+ {image:mouse,alt:'ZØNYX vous montre la souris, qui suffit presque à tout régler',title:'Tout se règle à la souris !',
+  intro:['Bonne nouvelle : dans Audio ToolZ, presque tout se fait d’une seule main, sur la souris.','Pas de raccourcis à apprendre par cœur : vous cliquez, vous écoutez, vous ajustez. Je vous montre !'],
+  sections:[
+   {heading:'Sur la forme d’onde',items:[
+    ['Clic gauche :','il sélectionne une zone et pose le point de départ de la lecture. Cliquez où vous voulez entendre, et c’est parti.'],
+    ['Clic droit :','il crée une boucle. Restez appuyé sur le clic droit et glissez pour la déplacer, sans perdre votre passage préféré.'],
+    ['Molette :','zoomez et dézoomez sur une boucle pour la caler au plus juste.'],
+    ['Double-clic gauche :','il annule la boucle, et la lecture reprend normalement.']]},
+   {heading:'Dans les fenêtres d’effet',items:[
+    ['Molette :','elle fait bouger les potards et les faders, pas à pas.'],
+    ['Clic gauche :','un simple clic suffit aussi pour régler un potard ou un fader.'],
+    ['Touche Maj :','appuyez dessus pour des réglages beaucoup plus fins, environ dix fois plus précis.']]},
+   {heading:'Pendant tout ce temps',items:[
+    ['Barre d’espace :','elle lance ou arrête la musique. Vos mains restent libres, ou presque !']]}
+  ],
+  outro:'Réglez, écoutez, recommencez : l’oreille décide, la souris suit. À vous de jouer !'},
  {image:professor,alt:'ZØNYX vous guide dans les effets',title:'Je suis là pour vous guider',intro:['Un réglage vous intrigue ? Cliquez sur le « ? » en haut à droite de la fenêtre d’effet : je vous guide pas à pas.','Je vous explique le rôle des commandes et vous aide à explorer les réglages, à votre rythme.']},
  {image:img3,alt:"ZØNYX se gratte la tête, l’air confus",title:"Pas de panique !",
   intro:["Une fausse manip, ça arrive même aux pros. Prenez votre temps : vous pouvez essayer un réglage, l’écouter et revenir en arrière. Je vous accompagne, un réglage à la fois."],
