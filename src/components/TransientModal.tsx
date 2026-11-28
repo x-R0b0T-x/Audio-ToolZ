@@ -52,7 +52,7 @@ function TransientGraph({ source, rendered, rangeStart, rate, span, onZoom, onRe
       }
       const peaks = new Float32Array(W), peaksP = new Float32Array(W);
       [left, right].forEach((orig, li) => {
-        const proc = buf ? (buf.channels[li] ?? buf.channels[0]) : null, top = li ? LANE + 6 : 2, mid = top + LANE / 2, amp = LANE / 2 - 2, color = li ? GREEN : VIOLET, lane = new Float32Array(W);
+        const proc = buf ? (buf.channels[li] ?? buf.channels[0]) : null, top = li ? LANE + 6 : 2, mid = top + LANE / 2, amp = LANE / 2 - 2, color = li ? GREEN : VIOLET;
         ctx.fillStyle = color;
         for (let x = 0; x < W; x++) {
           const i0 = start + Math.floor(x * sp / W), i1 = Math.min(total, start + Math.floor((x + 1) * sp / W) + 1);
@@ -60,22 +60,14 @@ function TransientGraph({ source, rendered, rangeStart, rate, span, onZoom, onRe
           for (let i = i0; i < i1; i++) { const v = orig[i]; if (v > omx) omx = v; if (v < omn) omn = v; }
           ctx.globalAlpha = .3; ctx.fillRect(x, mid - Math.min(1, omx) * amp, 1, (Math.min(1, omx) - Math.max(-1, omn)) * amp + 1);
           const oa = Math.max(omx, -omn); if (oa > peaks[x]) peaks[x] = oa;
-          lane[x] = oa;
           if (proc && buf && i0 >= buf.from && i1 <= buf.to) {
             let pmx = 0, pmn = 0;
             for (let i = i0; i < i1; i++) { const v = proc[i]; if (v > pmx) pmx = v; if (v < pmn) pmn = v; }
             ctx.globalAlpha = .95; ctx.fillRect(x, mid - Math.min(1, pmx) * amp, 1, (Math.min(1, pmx) - Math.max(-1, pmn)) * amp + 1);
             const pa = Math.max(pmx, -pmn); if (pa > peaksP[x]) peaksP[x] = pa;
-            lane[x] = pa;
           }
         }
         ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(W, mid); ctx.stroke();
-        ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1;
-        for (const sign of [-1, 1]) {
-          let e = 0; ctx.beginPath();
-          for (let x = 0; x < W; x++) { e = Math.max(lane[x], e * .92); const y = mid + sign * Math.min(1, e) * amp; if (x) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
-          ctx.stroke();
-        }
         ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.textAlign = 'left'; ctx.fillText(li ? 'D' : 'G', 6, top + 13); ctx.textAlign = 'center';
       });
       const sMid = STRIP_Y + STRIP_H / 2, half = STRIP_H / 2 - 6;
@@ -98,7 +90,7 @@ function TransientGraph({ source, rendered, rangeStart, rate, span, onZoom, onRe
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
   }, [rendered]);
-  return <div className="zonyx-trans-graph"><canvas ref={canvas} onDoubleClick={onReset} title="Molette : zoom. Double-clic : retour à 4000 ms." role="img" aria-label="Forme d’onde stéréo, gauche en violet et droite en vert : signal d’origine pâle, signal traité plein, enveloppe en blanc, gain appliqué en vert dessous, curseur de lecture" /></div>;
+  return <div className="zonyx-trans-graph"><canvas ref={canvas} onDoubleClick={onReset} title="Molette : zoom. Double-clic : retour à 4000 ms." role="img" aria-label="Forme d’onde stéréo, gauche en violet et droite en vert : signal d’origine pâle, signal traité plein, gain appliqué en vert dessous, curseur de lecture" /></div>;
 }
 export function TransientModal(p: Props) {
   const doc = p.document;
@@ -171,7 +163,7 @@ export function TransientModal(p: Props) {
   };
   const par = (key: 'attack' | 'sustain' | 'sens' | 'inDb' | 'outDb' | 'mix', name: string, min: number, max: number, step: number, fine: number, digits: number, unit: string) =>
     <EffectParameter label={name} value={s[key]} initial={START[key]} spec={{ min, max, step, fine, digits, logarithmic: false }} unit={unit} onChange={v => change({ [key]: v })} />;
-  return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-transient" minWidth={820} minHeight={720} role="dialog" aria-modal="true" aria-labelledby="transient-title">
+  return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-transient" minWidth={820} minHeight={640} role="dialog" aria-modal="true" aria-labelledby="transient-title">
     <header><h2 id="transient-title">{LABEL}</h2><button type="button" aria-label="Fermer" onClick={p.onClose}>×</button></header>
     <main><fieldset className="zonyx-effect-body" disabled={applying}><div className="zonyx-trans">
       <TransientGraph source={source} rendered={rendered} rangeStart={range.start} rate={doc.sampleRate} span={span} onZoom={f => setSpan(v => clamp(Math.round(v * f), 20, DEFAULT_SPAN))} onReset={() => setSpan(DEFAULT_SPAN)} />
