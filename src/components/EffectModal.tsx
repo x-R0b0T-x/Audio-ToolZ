@@ -12,6 +12,7 @@ import {EffectActiveContext} from './effectActive';
 import {ReverbModal} from './ReverbModal';
 import {PitcherModal} from './PitcherModal';
 import {ModulationModal} from './ModulationModal';
+import {TransientModal} from './TransientModal';
 import {ImagerModal} from './ImagerModal';
 import {DenoiserModal} from './DenoiserModal';
 import {ClickModal} from './ClickModal';
@@ -35,7 +36,7 @@ function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:
  const state=useMemo(()=>({active,setActive}),[active]);
  useEffect(()=>{const timer=window.setInterval(relay.poll,80);return()=>{window.clearInterval(timer);relay.clear();};},[relay]);
  const props={...p,onStartPreview:submit};
- const view=p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='imager'?<ImagerModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='declick'?<ClickModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
+ const view=p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='transient'?<TransientModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='imager'?<ImagerModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='declick'?<ClickModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
  return p.effect==='declick'?view:<EffectActiveContext.Provider value={state}>{view}</EffectActiveContext.Provider>;
 }
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
