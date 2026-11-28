@@ -1,7 +1,7 @@
 name: Audio ToolZ - Windows validation
 on:
   push:
-    branches: [main, 1.8-dev, 1.9-dev]
+    branches: [main, 1.8-dev, '1.9-*']
     paths: ['src/**','src-tauri/**','public/**','package.json','package-lock.json','vite.config.ts','tsconfig.json','index.html','.github/cleanup.py','.github/workflows/validate.yml','.github/release/package_v17.py','.github/maintenance/verify_pitcher_runtime.mjs']
   pull_request:
     branches: [main]
@@ -73,7 +73,7 @@ jobs:
       - name: Upload rebuilt validation ZIP without publishing a release
         uses: actions/upload-artifact@v4
         with:
-          name: Audio.ToolZ.validation.windows
+          name: Audio.ToolZ.${{ github.ref_name }}.windows
           path: single-output/*.zip
           if-no-files-found: error
       - name: Record cleanup only after complete validation
@@ -110,7 +110,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Audio.ToolZ.validation.reports
+          name: Audio.ToolZ.reports.${{ github.ref_name }}
           path: |
             audit-output/
             .github/diagnostics/repository-cleanup.json
