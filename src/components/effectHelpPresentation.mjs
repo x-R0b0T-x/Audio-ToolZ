@@ -1,6 +1,8 @@
+import {transientTopics} from './effectHelpTransient.mjs';
 export function presentEffectHelp(title,topics){
  const clean=label=>label.replace(/_/g,' ').replace(/[.·•]+$/u,'').trim();
  const base=topics.filter(([label])=>!['Fermer','Redimensionner la fenêtre d’effet','Appliquer','Annuler'].includes(label)).map(([label,text])=>[clean(label),text]);
+ if(/transient/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return {title,topics:[transientTopics[0],...base.filter(([label])=>label==='Effet actif / inactif'),...transientTopics.slice(1)]};
  if(!/reverb/i.test(title.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))return {title,topics:base};
  const result=base.filter(([label])=>!['Préécouter avec la queue','Arrêter'].includes(label)).map(([label,text])=>{
   if(label==='Vitesse de modulation')return ['Vitesse',text];if(label==='Amortissement aigu')return ['Amort. aigu',text];if(label==='Réflexions')return ['Réflex.',text];if(label==='Réverbération')return ['Réverb.',text];
