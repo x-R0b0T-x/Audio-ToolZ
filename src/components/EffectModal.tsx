@@ -36,7 +36,7 @@ function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:
  useEffect(()=>{const timer=window.setInterval(relay.poll,80);return()=>{window.clearInterval(timer);relay.clear();};},[relay]);
  const props={...p,onStartPreview:submit};
  const view=p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='imager'?<ImagerModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='declick'?<ClickModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
- return <EffectActiveContext.Provider value={state}>{view}</EffectActiveContext.Provider>;
+ return p.effect==='declick'?view:<EffectActiveContext.Provider value={state}>{view}</EffectActiveContext.Provider>;
 }
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const {document:doc,effect}=p,[c,set]=useState({direction:null as FadeDirection|null,fade:defaultFade(),speed:1,pitch:0,reduction:0,division:DEFAULT_DIVISION,mode:'off' as DelayMode,repetitions:0,wet:0,pan:0}),[touched,setTouched]=useState(false);
