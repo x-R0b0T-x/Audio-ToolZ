@@ -1,0 +1,5 @@
+#root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle{flex:0 0 auto;min-width:132px;border:2px solid #39ff14!important;background:#10240d!important;color:#fff!important;text-shadow:none!important;box-shadow:0 0 6px #39ff14,0 0 16px #39ff14,0 0 30px #39ff1480!important;opacity:1;filter:none;transition:box-shadow .18s ease,border-color .18s ease,background .18s ease,color .18s ease,opacity .18s ease}
+#root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle.is-on:is(:hover,:focus-visible){box-shadow:0 0 8px #39ff14,0 0 22px #39ff14,0 0 40px #39ff14aa!important}
+#root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle:not(.is-on){border-color:#4b4e58!important;background:#1a1b21!important;color:#8d9099!important;box-shadow:none!important;opacity:.75;filter:grayscale(1)}
+#root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle:not(.is-on):is(:hover,:focus-visible){border-color:#6b6f7b!important;color:#b4b7c0!important;box-shadow:none!important}
+#root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle::before{display:none!important}

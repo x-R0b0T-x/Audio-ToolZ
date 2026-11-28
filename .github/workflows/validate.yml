@@ -40,6 +40,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Locked installation failed' }
           npm install --no-save @tauri-apps/cli@2 playwright
           if ($LASTEXITCODE -ne 0) { throw 'Validation tool installation failed' }
+      - name: Generate application icons from src/medias/logo.png
+        shell: pwsh
+        run: |
+          npx tauri icon src/medias/logo.png --output src-tauri/icons
+          if ($LASTEXITCODE -ne 0) { throw 'Icon generation failed' }
       - name: Source audit
         run: node src/utils/reviewAudit.mjs
       - name: All Node regression tests

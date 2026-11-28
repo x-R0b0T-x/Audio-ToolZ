@@ -1,4 +1,4 @@
-import React,{useEffect,useMemo,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {audioEngine,type PreviewBand} from '../audio/engine';
 import {createPreviewRelay} from '../audio/livePreviewRelay';
 import {applySpeedAndPitch} from '../audio/dsp';
@@ -8,6 +8,7 @@ import type {AudioDocument,EffectModalId,FadeDirection} from '../audio/types';
 import {Fader,Knob,DelayModeSwitch} from './EffectControls';
 import {AdvancedEffects} from './AdvancedEffects';
 import {EffectPanel} from './EffectPanel';
+import {EffectActiveContext} from './effectActive';
 import {ReverbModal} from './ReverbModal';
 import {PitcherModal} from './PitcherModal';
 import {ModulationModal} from './ModulationModal';
@@ -25,9 +26,17 @@ export const EffectModal:React.FC<Props>=p=>!p.effect||!p.document?null:p.effect
 function LiveEffectSession(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const latest=useRef(p);latest.current=p;
  const relay=useMemo(()=>createPreviewRelay(()=>audioEngine.isPlaying,(...args:Parameters<Props['onStartPreview']>)=>latest.current.onStartPreview(...args)),[]);
+ const [active,setActive]=useState(true),activeRef=useRef(true),lastWet=useRef<Parameters<Props['onStartPreview']>|null>(null),first=useRef(true);
+ activeRef.current=active;
+ const dry=useMemo(()=>{const r=targetRange(p.document.selection,p.document.channels[0]?.length??0);return p.document.channels.map(ch=>ch.subarray(r.start,r.end));},[p.document]);
+ const dryRef=useRef(dry);dryRef.current=dry;
+ const submit=useCallback((...args:Parameters<Props['onStartPreview']>)=>{lastWet.current=args;if(activeRef.current)relay.submit(...args);else relay.submit(dryRef.current,args[1],args[2],[]);},[relay]);
+ useEffect(()=>{if(first.current){first.current=false;return;}const last=lastWet.current;if(!last)return;if(active)relay.submit(...last);else relay.submit(dryRef.current,last[1],last[2],[]);},[active,relay]);
+ const state=useMemo(()=>({active,setActive}),[active]);
  useEffect(()=>{const timer=window.setInterval(relay.poll,80);return()=>{window.clearInterval(timer);relay.clear();};},[relay]);
- const props={...p,onStartPreview:relay.submit};
- return p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='imager'?<ImagerModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='declick'?<ClickModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
+ const props={...p,onStartPreview:submit};
+ const view=p.effect==='eq'||p.effect==='filter'||p.effect==='compressor'?<AdvancedEffects {...props} effect={p.effect}/>:p.effect==='chorus'||p.effect==='flanger'?<ModulationModal {...props} effect={p.effect}/>:p.effect==='imager'?<ImagerModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='declick'?<ClickModal document={p.document} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:p.effect==='noise-reduction'?<DenoiserModal document={p.document} profile={p.noiseProfile??lastNoiseProfile} onProfile={profile=>{lastNoiseProfile=profile;p.onCaptureNoiseProfile?.(profile);}} onStartPreview={props.onStartPreview} onApply={p.onApply} onClose={p.onClose}/>:<Legacy {...props}/>;
+ return <EffectActiveContext.Provider value={state}>{view}</EffectActiveContext.Provider>;
 }
 function Legacy(p:Props&{effect:Exclude<EffectModalId,null>;document:AudioDocument}){
  const {document:doc,effect}=p,[c,set]=useState({direction:null as FadeDirection|null,fade:defaultFade(),speed:1,pitch:0,reduction:0,division:DEFAULT_DIVISION,mode:'off' as DelayMode,repetitions:0,wet:0,pan:0}),[touched,setTouched]=useState(false);
