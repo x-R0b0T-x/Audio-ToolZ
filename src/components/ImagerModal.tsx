@@ -90,26 +90,34 @@ function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampl
   frame=requestAnimationFrame(draw);
   return()=>cancelAnimationFrame(frame);
  },[rendered]);
- return <div className="zonyx-imager-graph">
-  <canvas ref={canvas}/>
-  <svg ref={svg} viewBox={`0 0 ${W} ${GH}`} role="group" aria-label="Bandes de fréquences, spectre du centre et des côtés, points de croisement">
-   {ticks.map(f=><g key={f}><path d={`M${xOf(f)} 40V${GH-16}`} stroke="#fff" strokeOpacity=".12"/><text x={xOf(f)} y={GH-4} textAnchor="middle" fill="#fff" fillOpacity=".6" fontSize="11">{hz(f)}</text></g>)}
-   {COLORS.map((c,b)=><text key={b} x={(xOf(edges[b])+xOf(edges[b+1]))/2} y={16} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">{BAND_NAMES[b]}</text>)}
-   {crossovers.map((f,i)=>{
-    const x=xOf(f),[lo,hi]=limits(i);
-    return <g key={i} className="zonyx-imager-cross" tabIndex={0} role="slider" aria-label={`Croisement ${i+1}`} aria-valuemin={Math.round(lo)} aria-valuemax={Math.round(hi)} aria-valuenow={f} aria-valuetext={hz(f)}
-     onPointerDown={e=>{if(e.button!==0)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.focus();drag.current=i;}}
-     onPointerMove={e=>{if(drag.current!==i||!svg.current)return;const r=svg.current.getBoundingClientRect();move(i,fOf((e.clientX-r.left)/r.width*W));}}
-     onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end} onDoubleClick={()=>onReset(i)}
-     onKeyDown={e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();move(i,f*(e.shiftKey?1.01:1.06)**(e.key==='ArrowRight'?1:-1));}}>
-     <rect x={x-9} y={0} width={18} height={GH} fill="transparent"/>
-     <path d={`M${x} 0V${GH}`} stroke="#fff" strokeOpacity=".9" strokeWidth="1.5"/>
-     <rect x={x-24} y={26} width={48} height={17} rx="4" fill="#21182c" stroke="#bd93f9"/>
-     <text x={x} y={39} textAnchor="middle" fill="#fff" fontSize="11">{hz(f)}</text>
-    </g>;
+ return <>
+  <div className="zonyx-imager-graph">
+   <canvas ref={canvas}/>
+   <svg ref={svg} viewBox={`0 0 ${W} ${GH}`} role="group" aria-label="Bandes de fréquences, spectre du centre et des côtés, points de croisement">
+    {ticks.map(f=><g key={f}><path d={`M${xOf(f)} 40V${GH-16}`} stroke="#fff" strokeOpacity=".12"/><text x={xOf(f)} y={GH-4} textAnchor="middle" fill="#fff" fillOpacity=".6" fontSize="11">{hz(f)}</text></g>)}
+    {COLORS.map((c,b)=><text key={b} x={(xOf(edges[b])+xOf(edges[b+1]))/2} y={16} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">{BAND_NAMES[b]}</text>)}
+    {crossovers.map((f,i)=>{
+     const x=xOf(f),[lo,hi]=limits(i);
+     return <g key={i} className="zonyx-imager-cross" tabIndex={0} role="slider" aria-label={`Croisement ${i+1}`} aria-valuemin={Math.round(lo)} aria-valuemax={Math.round(hi)} aria-valuenow={f} aria-valuetext={hz(f)}
+      onPointerDown={e=>{if(e.button!==0)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.focus();drag.current=i;}}
+      onPointerMove={e=>{if(drag.current!==i||!svg.current)return;const r=svg.current.getBoundingClientRect();move(i,fOf((e.clientX-r.left)/r.width*W));}}
+      onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end} onDoubleClick={()=>onReset(i)}
+      onKeyDown={e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();move(i,f*(e.shiftKey?1.01:1.06)**(e.key==='ArrowRight'?1:-1));}}>
+      <rect x={x-9} y={0} width={18} height={GH} fill="transparent"/>
+      <path d={`M${x} 0V${GH}`} stroke="#fff" strokeOpacity=".9" strokeWidth="1.5"/>
+      <rect x={x-24} y={26} width={48} height={17} rx="4" fill="#21182c" stroke="#bd93f9"/>
+      <text x={x} y={39} textAnchor="middle" fill="#fff" fontSize="11">{hz(f)}</text>
+     </g>;
+    })}
+   </svg>
+  </div>
+  <div aria-hidden="true" style={{position:'relative',height:8,margin:'-4px 1px 0'}}>
+   {COLORS.map((c,b)=>{
+    const left=xOf(edges[b])/W*100,width=(xOf(edges[b+1])-xOf(edges[b]))/W*100;
+    return <div key={b} style={{position:'absolute',top:0,bottom:0,left:`calc(${left}% + 1px)`,width:`calc(${width}% - 2px)`,borderRadius:3,background:c,boxShadow:`0 0 6px ${c}`}}/>;
    })}
-  </svg>
- </div>;
+  </div>
+ </>;
 }
 function BandColumn({label,range,color,value,onChange}:{label:string;range:string;color:string;value:number;onChange:(v:number)=>void}){
  const activity=useControlActivity(),ref=useRef<HTMLDivElement>(null),valueRef=useRef(value),[hover,setHover]=useState(false),clamp=(v:number)=>Math.max(-100,Math.min(100,v)),nudge=useRef((direction:number,fine:boolean)=>{void direction;void fine;});
