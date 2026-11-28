@@ -4,14 +4,16 @@
   <p>Sampling · Mastering · Boucles · Remix · 100 % local · Windows portable</p>
   <img src="src/medias/ZØNYXRobot..png" alt="ZØNYX, la mascotte d'Audio ToolZ" width="200" />
   <p>
-    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger la dernière version" src="https://img.shields.io/badge/Télécharger-v1.9-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
+    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/latest"><img alt="Télécharger Audio ToolZ v1.9" src="https://img.shields.io/badge/Télécharger-v1.9-0B0B0B?style=for-the-badge&logo=github&logoColor=white"></a>
+    &nbsp;
+    <a href="https://github.com/x-R0b0T-x/Audio-ToolZ/releases/tag/v1.9"><img alt="Nouveautés de la version 1.9" src="https://img.shields.io/badge/Nouveautés-v1.9-982CFF?style=for-the-badge&logo=github&logoColor=white"></a>
     &nbsp;
     <a href="https://t.me/Audio_ToolZ"><img alt="Rejoindre la communauté Telegram" src="https://img.shields.io/badge/Telegram-communauté-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"></a>
     &nbsp;
     <a href="https://www.paypal.com/ncp/payment/GAUJE54VM28T8"><img alt="Soutenir le projet" src="https://img.shields.io/badge/PayPal-soutenir-00457C?style=for-the-badge&logo=paypal&logoColor=white"></a>
   </p>
   <p>
-    <img alt="Version 1.9" src="https://img.shields.io/badge/version-1.8-0B0B0B?style=flat-square&labelColor=1F1F1F">
+    <img alt="Version 1.9" src="https://img.shields.io/badge/version-1.9-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Licence GPL v3" src="https://img.shields.io/badge/licence-GPL%20v3-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Windows 64 bits" src="https://img.shields.io/badge/Windows-64%20bits-0B0B0B?style=flat-square&labelColor=1F1F1F">
     <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-0B0B0B?style=flat-square&labelColor=1F1F1F">
@@ -21,7 +23,7 @@
     <a href="#le-point-fort--le-tempo-et-laimant-à-kicks">Le point fort</a> ·
     <a href="#pourquoi-audio-toolz">Pourquoi Audio ToolZ ?</a> ·
     <a href="#linterface">L'interface</a> ·
-    <a href="#les-6-effets-studio">Les effets</a> ·
+    <a href="#les-9-effets-studio">Les effets</a> ·
     <a href="#outils-dédiés-au-rythme-et-à-lassemblage">Outils</a> ·
     <a href="#formats">Formats</a> ·
     <a href="#télécharger">Télécharger</a> ·
@@ -75,9 +77,11 @@ Ce que vous voyez ici :
 
 ---
 
-## Les 6 effets studio
+## Les 9 effets studio
 
-Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer**, et seulement à ce moment-là, la modification est écrite dans la forme d'onde.
+Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer**, et seulement à ce moment-là, la modification est écrite dans la forme d'onde. Les trois nouveaux effets de la version 1.9 — Z-Stéréo, Z-Transient et Z-DeEsser — rejoignent les six outils déjà présents.
+
+Chaque fenêtre d'effet dispose désormais d'une **LED « Effet actif / inactif »** pour comparer rapidement le son traité et le son d'origine. Les aides contextuelles **« ? »** ont également été détaillées pour les trois nouveaux effets.
 
 ---
 
@@ -224,6 +228,59 @@ Le Z-Reverbe est une **réverbération numérique** avec un contrôle chirurgica
 - **Pad et nappes** : Taille 80, Décroissance 4 s, Diffusion haute, votre nappe flotte dans l'espace.
 - **Percussion** : Prédélai 0, Décroissance 0.3 s, Coupe-bas à 200 Hz, la reverbe colle au kick sans boucher les graves.
 - **Ambiance** : Tempo actif sur le Prédélai, les réflexions tombent en rythme avec votre groove.
+
+---
+
+### Z-Stéréo : Maîtriser la largeur et l'image stéréo
+
+Le Z-Stéréo permet de travailler précisément la largeur du signal sur **quatre bandes de fréquences** : graves, médiums, médiums aigus et aigus. Les fréquences de croisement se règlent directement à la souris.
+
+**Ses outils de contrôle :**
+- **Quatre bandes indépendantes** pour ajuster la largeur dans chaque zone du spectre.
+- **Stereoize**, avec deux modes pour élargir le signal.
+- **Spectre Mid/Side** pour visualiser séparément le centre et les côtés.
+- **Vectorscope à trois vues** pour contrôler l'image stéréo.
+- **Mesure de corrélation** pour surveiller la compatibilité mono.
+
+**Dans quel cas l'utiliser ?**
+- **Mastering** : resserrez les graves et ouvrez progressivement les aigus pour donner de l'ampleur sans fragiliser le centre.
+- **Sampling** : élargissez un pad ou une texture tout en conservant un kick bien centré.
+- **Remix** : contrôlez les éléments latéraux et vérifiez la cohérence mono de votre mix.
+
+---
+
+### Z-Transient : Façonner l'attaque et le sustain
+
+Le Z-Transient permet de renforcer ou d'adoucir séparément **l'attaque** et **le sustain** d'un son. Il est particulièrement utile sur les kicks, caisses claires et percussions.
+
+**Ce que vous voyez et réglez :**
+- **Forme d'onde stéréo** pour suivre le signal gauche et droit.
+- **Gain appliqué en direct** pour visualiser l'action du traitement.
+- **Détection stéréo ou mono** selon le comportement souhaité.
+- **Écoute de la différence** pour entendre précisément ce que le traitement ajoute ou retire.
+
+**Dans quel cas l'utiliser ?**
+- **Kick** : accentuez l'attaque pour obtenir davantage d'impact.
+- **Caisse claire** : renforcez le claquant ou prolongez la sensation de corps.
+- **Percussions** : réduisez les transitoires trop agressifs ou faites ressortir la matière sonore.
+
+---
+
+### Z-DeEsser : Atténuer les sifflantes
+
+Le Z-DeEsser réduit les sifflantes vocales et les hautes fréquences agressives sans assombrir inutilement toute la prise.
+
+**Ce que vous voyez et réglez :**
+- **Analyseur spectral en temps réel** pour repérer les zones sifflantes.
+- **Bande de détection déplaçable à la souris** pour cibler précisément la fréquence à traiter.
+- **Réduction progressive** pour éviter un effet artificiel ou un son vocal trop mat.
+- **Mode bande seule** ou **large bande**, selon que vous souhaitez agir uniquement sur la zone détectée ou sur le signal complet.
+- **Écoute de la détection** pour isoler les sifflantes ciblées.
+
+**Dans quel cas l'utiliser ?**
+- **Voix parlée ou chantée** : atténuez les sons « s », « ch » et les sifflantes trop présentes.
+- **Samples vocaux** : rendez une boucle plus agréable à écouter sans perdre sa brillance.
+- **Enregistrements** : corrigez les aigus agressifs tout en préservant le naturel de la voix.
 
 ---
 
