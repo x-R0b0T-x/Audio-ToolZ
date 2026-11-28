@@ -32,9 +32,14 @@ const stereo=[
  ['Fichier mono','Un fichier mono n’a pas de côtés : seul Stereoize peut l’élargir. À l’application, le document devient stéréo.'],
  ['Écouter en réglant','Lancez la lecture : tous les réglages s’entendent et se voient en direct. Vérifiez aussi le résultat en mono avant de valider.']
 ];
-export function getEffectHelp(title){
+const activeTopic=['Effet actif / inactif','Le bouton en haut à droite, juste avant le point d’interrogation, sert à comparer le son avec et sans l’effet. « Effet actif » (cadre vert lumineux) : vous entendez l’effet. « Effet inactif » (gris, sans lumière) : la préécoute rejoue le son d’origine, sans aucun traitement. Cliquez dessus pour passer de l’un à l’autre, même pendant la lecture. Dès que vous touchez un réglage, l’effet se réactive tout seul. Ce bouton ne modifie pas le document : Appliquer valide toujours l’effet.'];
+function build(title){
  const help=baseHelp(title),name=normalize(title);
  if(name.includes('stereo'))return {...help,topics:[...stereo,...help.topics.slice(1)]};
  if(!name.includes('clic'))return help;
  return {...help,topics:[...popClick,...help.topics.slice(1).filter(([label])=>label!=='Zone traitée')]};
+}
+export function getEffectHelp(title){
+ const help=build(title);
+ return {...help,topics:[help.topics[0],activeTopic,...help.topics.slice(1)]};
 }

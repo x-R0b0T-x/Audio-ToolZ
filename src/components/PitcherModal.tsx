@@ -6,6 +6,7 @@ import {targetRange} from '../audio/effectsModel.mjs';
 import {createPreviewExit,restoreUnappliedPreview} from '../utils/effectReview.mjs';
 import {PitcherFader} from './PitcherFader';
 import {EffectPanel} from './EffectPanel';
+import {EffectActiveContext} from './effectActive';
 type Props={document:AudioDocument;onStopPreview:()=>void;onClose:()=>void;onApply:(channels:Float32Array[],label:string,selection?:AudioSelection)=>void};
 type Geometry={ws:number;we:number;segLen:number};
 type Result=Geometry&{id:number;speed:number;pitch:number;channels:Float32Array[]};
@@ -14,6 +15,7 @@ const toSource=(at:number,g:Geometry|null)=>{if(!g||at<=g.ws)return at;if(at<g.w
 const toShown=(src:number,g:Geometry)=>{if(src<=g.ws)return src;if(src<g.we)return g.ws+(src-g.ws)*g.segLen/Math.max(1,g.we-g.ws);return src+(g.segLen-(g.we-g.ws));};
 export function PitcherModal(p:Props){
  const doc=p.document,[speed,setSpeed]=useState(1),[pitch,setPitch]=useState(0),[touched,setTouched]=useState(false),[busy,setBusy]=useState(false),[applying,setApplying]=useState(false),[error,setError]=useState('');
+ const [active,setActive]=useState(true),activeRef=useRef(true),state=useMemo(()=>({active,setActive}),[active]);activeRef.current=active;
  const latest=useRef(p);latest.current=p;
  const original=useRef({channels:doc.channels,rate:doc.sampleRate});
  const range=useMemo(()=>targetRange(doc.selection,doc.channels[0]?.length??0),[doc]);
@@ -50,6 +52,9 @@ export function PitcherModal(p:Props){
   const tick=()=>{
    if(exit.current!.settled)return;
    if(!audioEngine.isPlaying)shown.current=null;
+   else if(!activeRef.current){
+    if(shown.current&&audioEngine.replacePreviewAudio(original.current.channels,doc.sampleRate,{position:toSource(audioEngine.getCurrentSample(),shown.current),loopStart:range.start,loopEnd:range.end}))shown.current=null;
+   }
    else if(wanted.current.touched&&!applyingRef.current&&!failed.current){
     const r=cache.current,src=toSource(audioEngine.getCurrentSample(),shown.current),same=!!r&&r.id===serial.current&&r.speed===wanted.current.speed&&r.pitch===wanted.current.pitch;
     if(same&&r){
@@ -81,5 +86,5 @@ export function PitcherModal(p:Props){
    setError(`Échec de Signalsmith Stretch : ${String(e)}. Aucun autre moteur n’a été utilisé.`);
   }
  };
- return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-pitcher" role="dialog" aria-modal="true" aria-labelledby="pitcher-title"><header><h2 id="pitcher-title">Z-Pitcher</h2><button type="button" aria-label="Fermer" onClick={cancel}>×</button></header><main><div className="zonyx-legacy-controls"><PitcherFader kind="speed" value={speed} onChange={v=>{setTouched(true);setSpeed(v);}}/><PitcherFader kind="pitch" value={pitch} onChange={v=>{setTouched(true);setPitch(v);}}/></div><span className="zonyx-pitcher-progress" aria-busy={busy||applying}/>{error&&<p role="alert">{error}</p>}</main><footer><span role="status">{applying?'Application…':''}</span><button type="button" onClick={cancel}>Annuler</button><button type="button" disabled={!ready} onClick={apply}>Appliquer</button></footer></EffectPanel></div>;
+ return <div className="zonyx-advanced-backdrop"><EffectActiveContext.Provider value={state}><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-pitcher" role="dialog" aria-modal="true" aria-labelledby="pitcher-title"><header><h2 id="pitcher-title">Z-Pitcher</h2><button type="button" aria-label="Fermer" onClick={cancel}>×</button></header><main><div className="zonyx-legacy-controls"><PitcherFader kind="speed" value={speed} onChange={v=>{setTouched(true);setSpeed(v);}}/><PitcherFader kind="pitch" value={pitch} onChange={v=>{setTouched(true);setPitch(v);}}/></div><span className="zonyx-pitcher-progress" aria-busy={busy||applying}/>{error&&<p role="alert">{error}</p>}</main><footer><span role="status">{applying?'Application…':''}</span><button type="button" onClick={cancel}>Annuler</button><button type="button" disabled={!ready} onClick={apply}>Appliquer</button></footer></EffectPanel></EffectActiveContext.Provider></div>;
 }
