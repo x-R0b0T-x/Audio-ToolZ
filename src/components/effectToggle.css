@@ -5,5 +5,5 @@
 #root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle:not(.is-on)::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:2px;border-radius:1px;background:#fff;transform:translate(-50%,-50%)}
 #root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #root#root#root#root .zonyx-advanced>footer>button.zonyx-effect-toggle::before{display:none!important}
-#root#root#root#root .zonyx-advanced>main{transition:filter .2s ease}
-#root#root#root#root .zonyx-advanced.zonyx-bypassed>main{filter:saturate(.45) brightness(.8)}
+#root#root#root#root .zonyx-advanced>header,#root#root#root#root .zonyx-advanced>main,#root#root#root#root .zonyx-advanced>footer>:not(.zonyx-effect-toggle){transition:filter .2s ease}
+#root#root#root#root .zonyx-advanced.zonyx-bypassed>header,#root#root#root#root .zonyx-advanced.zonyx-bypassed>main,#root#root#root#root .zonyx-advanced.zonyx-bypassed>footer>:not(.zonyx-effect-toggle){filter:grayscale(.95) brightness(.6)}
