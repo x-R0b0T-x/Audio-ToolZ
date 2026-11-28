@@ -5,9 +5,9 @@
 #root#root .zonyx-status-badge{display:block;flex:0 0 76px;height:36px;margin:0;filter:none}
 #root#root .zonyx-status-badge svg{display:block;width:76px;height:36px;overflow:visible}
 #root#root .zonyx-status-shape{fill:#39ff14;stroke:#39ff14;stroke-width:1.5}
-#root#root .zonyx-status-chevron{fill:none;stroke:#4a148c;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse 1.5s linear infinite;opacity:1;filter:none}
-#root#root .zonyx-status-chevron-1{animation-delay:-1s}
-#root#root .zonyx-status-chevron-2{animation-delay:-.5s}
+#root#root .zonyx-status-chevron{fill:none;stroke:#4a148c;stroke-width:4;stroke-linecap:square;stroke-linejoin:miter;animation:zonyx-chevron-pulse .6s linear infinite;opacity:1;filter:none}
+#root#root .zonyx-status-chevron-1{animation-delay:-.4s}
+#root#root .zonyx-status-chevron-2{animation-delay:-.2s}
 @keyframes zonyx-chevron-pulse{0%,32%{stroke:#39ff14}33%,100%{stroke:#4a148c}}
 #root#root .zonyx-effect-status.is-control-active .zonyx-status-badge{animation:zonyx-control-halo .7s ease-in-out infinite alternate}
 @keyframes zonyx-control-halo{from{filter:drop-shadow(0 0 5px #39ff14)}to{filter:drop-shadow(0 0 12px #39ff14)}}

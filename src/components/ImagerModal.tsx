@@ -4,7 +4,6 @@ import type {AudioDocument} from '../audio/types';
 import {targetRange} from '../audio/effectsModel.mjs';
 import {isImagerNeutral,normalizeImager,type ImagerSettings} from '../audio/imager.mjs';
 import {useControlActivity} from '../utils/useControlActivity';
-import {SourceSpectrum} from './effectUiMath';
 import {EffectPanel} from './EffectPanel';
 import {EffectParameter} from './EffectParameter';
 import {roundTo,useFineSlider} from './useFineSlider';
@@ -15,12 +14,37 @@ type Request={id:number;settings:ImagerSettings;from:number;to:number};
 type Rendered={channels:Float32Array[];from:number;to:number};
 const WINDOW_SECONDS=8,LABEL='Z-Stéréo',W=560,GH=170,FMIN=20,FMAX=20000;
 const BAND_NAMES=['Graves','Médiums','Médiums aigus','Aigus'];
-const COLORS=['#df69b3','#df8762','#84c866','#6499df'];
+const COLORS=['#ff2d95','#ff9500','#39ff14','#00cfff'];
 const VIEWS=['Polaire (échantillons)','Polaire (niveau)','Lissajous'];
 const START_CROSS=[120,1000,5000];
 const xOf=(f:number)=>W*Math.log(f/FMIN)/Math.log(FMAX/FMIN);
 const fOf=(x:number)=>FMIN*(FMAX/FMIN)**(Math.max(0,Math.min(W,x))/W);
 const hz=(f:number)=>f>=1000?`${(f/1000).toFixed(f>=10000?0:1).replace('.',',')} kHz`:`${Math.round(f)} Hz`;
+function createSpectrum(N:number){
+ const re=new Float64Array(N),im=new Float64Array(N),win=new Float64Array(N),cos=new Float64Array(N/2),sin=new Float64Array(N/2),rev=new Uint32Array(N),mid=new Float64Array(N/2+1),side=new Float64Array(N/2+1),bits=Math.round(Math.log2(N));
+ let sum=0;
+ for(let i=0;i<N;i++){win[i]=.5-.5*Math.cos(2*Math.PI*i/(N-1));sum+=win[i];let r=0;for(let b=0;b<bits;b++)r|=((i>>b)&1)<<(bits-1-b);rev[i]=r;}
+ for(let i=0;i<N/2;i++){cos[i]=Math.cos(2*Math.PI*i/N);sin[i]=-Math.sin(2*Math.PI*i/N);}
+ const norm=2/sum;
+ return (left:Float32Array,right:Float32Array,begin:number)=>{
+  for(let i=0;i<N;i++){const l=left[begin+i],r=right[begin+i],j=rev[i];re[j]=(l+r)/2*win[i];im[j]=(l-r)/2*win[i];}
+  for(let size=2;size<=N;size<<=1){
+   const half=size>>1,step=N/size;
+   for(let base=0;base<N;base+=size){
+    for(let k=0,t=0;k<half;k++,t+=step){
+     const a=base+k,b=a+half,xr=re[b]*cos[t]-im[b]*sin[t],xi=re[b]*sin[t]+im[b]*cos[t];
+     re[b]=re[a]-xr;im[b]=im[a]-xi;re[a]+=xr;im[a]+=xi;
+    }
+   }
+  }
+  for(let k=0;k<=N/2;k++){
+   const k2=(N-k)%N,zr=re[k],zi=im[k],cr=re[k2],ci=-im[k2];
+   mid[k]=Math.hypot((zr+cr)/2,(zi+ci)/2)*norm;
+   side[k]=Math.hypot((zi-ci)/2,(zr-cr)/2)*norm;
+  }
+  return {mid,side};
+ };
+}
 function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampleRate}:{crossovers:number[];onChange:(i:number,f:number)=>void;onReset:(i:number)=>void;rendered:React.MutableRefObject<Rendered|null>;source:Float32Array[];rangeStart:number;sampleRate:number}){
  const canvas=useRef<HTMLCanvasElement>(null),svg=useRef<SVGSVGElement>(null),drag=useRef(-1),edges=[FMIN,...crossovers,FMAX],ticks=[50,100,500,1000,5000,10000];
  const live=useRef({edges,source,rangeStart,sampleRate});live.current={edges,source,rangeStart,sampleRate};
@@ -29,32 +53,37 @@ function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampl
  const end=()=>{drag.current=-1;};
  useEffect(()=>{
   const cv=canvas.current,ctx=cv?.getContext('2d');if(!cv||!ctx)return;
-  const dpr=window.devicePixelRatio||1,N=8192,COLS=280,colW=W/COLS,centre=GH/2;
+  const dpr=window.devicePixelRatio||1,N=32768,centre=GH/2,spectrum=createSpectrum(N),pm=new Float32Array(W),ps=new Float32Array(W);
   cv.width=Math.round(W*dpr);cv.height=Math.round(GH*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
-  const bg=getComputedStyle(document.documentElement).getPropertyValue('--wave-bg').trim()||'#080a14',mid=new Float32Array(N),side=new Float32Array(N),sm=new SourceSpectrum(),ss=new SourceSpectrum(),pm=new Float32Array(COLS),ps=new Float32Array(COLS);
-  const level=(v:number)=>v>0?Math.max(0,Math.min(1,(20*Math.log10(v)+96)/80)):0;
+  const bg=getComputedStyle(document.documentElement).getPropertyValue('--wave-bg').trim()||'#080a14';
+  const level=(v:number)=>v>0?Math.max(0,Math.min(1,(20*Math.log10(v)+105)/85)):0;
   let frame=0,last=0;
   const draw=(now:number)=>{
    frame=requestAnimationFrame(draw);
-   if(now-last<33)return;
+   if(now-last<40)return;
    last=now;
    const {edges:e,source:src,rangeStart:rs,sampleRate:sr}=live.current,buf=rendered.current,ch=buf?buf.channels:src,left=ch[0],right=ch[1]??ch[0];
    ctx.fillStyle=bg;ctx.fillRect(0,0,W,GH);
-   for(let b=0;b<4;b++){ctx.fillStyle=`${COLORS[b]}2a`;ctx.fillRect(xOf(e[b]),0,xOf(e[b+1])-xOf(e[b]),GH);}
-   let a:Float64Array|null=null,c:Float64Array|null=null;
-   if(left&&left.length>=N){
-    const at=Math.floor(audioEngine.getCurrentSample()-rs),stop=Math.max(N,Math.min(left.length,at+N/2)),begin=stop-N;
-    for(let i=0;i<N;i++){const l=left[begin+i],r=right[begin+i];mid[i]=(l+r)/2;side[i]=(l-r)/2;}
-    a=sm.read([mid],N);c=ss.read([side],N);
-   }
-   for(let col=0;col<COLS;col++){
+   for(let b=0;b<4;b++){ctx.fillStyle=`${COLORS[b]}30`;ctx.fillRect(xOf(e[b]),0,xOf(e[b+1])-xOf(e[b]),GH);}
+   let sp:{mid:Float64Array;side:Float64Array}|null=null;
+   if(left&&left.length>=N){const at=Math.floor(audioEngine.getCurrentSample()-rs),stop=Math.max(N,Math.min(left.length,at+N/2));sp=spectrum(left,right,stop-N);}
+   let band=0;
+   for(let x=0;x<W;x++){
     let lm=0,ls=0;
-    if(a&&c){const k0=Math.max(1,Math.floor(fOf(col*colW)*N/sr)),k1=Math.min(N/2,Math.max(k0+1,Math.ceil(fOf((col+1)*colW)*N/sr)));for(let k=k0;k<k1;k++){if(a[k]>lm)lm=a[k];if(c[k]>ls)ls=c[k];}}
-    pm[col]=Math.max(level(lm),pm[col]-.05);ps[col]=Math.max(level(ls),ps[col]-.05);
-    const x=col*colW;let band=0;while(band<3&&x+colW/2>=xOf(e[band+1]))band++;
-    ctx.fillStyle=COLORS[band];ctx.globalAlpha=.9;ctx.fillRect(x,centre-pm[col]*(centre-8),colW-.6,pm[col]*(centre-8));
-    ctx.globalAlpha=.55;ctx.fillRect(x,centre,colW-.6,ps[col]*(centre-8));ctx.globalAlpha=1;
+    if(sp){
+     const b0=fOf(x)*N/sr,b1=fOf(x+1)*N/sr;
+     if(b0<N/2-1){
+      if(b1-b0<1){const p=(b0+b1)/2,i0=Math.min(N/2-1,Math.floor(p)),t=p-i0;lm=sp.mid[i0]*(1-t)+sp.mid[i0+1]*t;ls=sp.side[i0]*(1-t)+sp.side[i0+1]*t;}
+      else{const i0=Math.ceil(b0),i1=Math.min(N/2,Math.floor(b1));for(let k=i0;k<=i1;k++){if(sp.mid[k]>lm)lm=sp.mid[k];if(sp.side[k]>ls)ls=sp.side[k];}}
+     }
+    }
+    pm[x]=Math.max(level(lm),pm[x]-.06);ps[x]=Math.max(level(ls),ps[x]-.06);
+    while(band<3&&x+.5>=xOf(e[band+1]))band++;
+    ctx.fillStyle=COLORS[band];
+    ctx.globalAlpha=.95;ctx.fillRect(x,centre-pm[x]*(centre-8),1,pm[x]*(centre-8));
+    ctx.globalAlpha=.6;ctx.fillRect(x,centre,1,ps[x]*(centre-8));
    }
+   ctx.globalAlpha=1;
    ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,centre);ctx.lineTo(W,centre);ctx.stroke();
    ctx.font='11px system-ui,sans-serif';ctx.fillStyle='rgba(255,255,255,.75)';ctx.textAlign='left';ctx.fillText('Centre',6,centre-6);ctx.fillText('Côtés',6,centre+14);
   };
@@ -65,7 +94,7 @@ function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampl
   <canvas ref={canvas}/>
   <svg ref={svg} viewBox={`0 0 ${W} ${GH}`} role="group" aria-label="Bandes de fréquences, spectre du centre et des côtés, points de croisement">
    {ticks.map(f=><g key={f}><path d={`M${xOf(f)} 40V${GH-16}`} stroke="#fff" strokeOpacity=".12"/><text x={xOf(f)} y={GH-4} textAnchor="middle" fill="#fff" fillOpacity=".6" fontSize="11">{hz(f)}</text></g>)}
-   {COLORS.map((c,b)=><text key={b} x={(xOf(edges[b])+xOf(edges[b+1]))/2} y={16} textAnchor="middle" fill={c} fontSize="13" fontWeight="600">{BAND_NAMES[b]}</text>)}
+   {COLORS.map((c,b)=><text key={b} x={(xOf(edges[b])+xOf(edges[b+1]))/2} y={16} textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">{BAND_NAMES[b]}</text>)}
    {crossovers.map((f,i)=>{
     const x=xOf(f),[lo,hi]=limits(i);
     return <g key={i} className="zonyx-imager-cross" tabIndex={0} role="slider" aria-label={`Croisement ${i+1}`} aria-valuemin={Math.round(lo)} aria-valuemax={Math.round(hi)} aria-valuenow={f} aria-valuetext={hz(f)}
@@ -184,7 +213,7 @@ export function ImagerModal(p:Props){
  const callbacks=useRef(p);callbacks.current=p;
  const range=useMemo(()=>{const r=targetRange(doc.selection,doc.channels[0]?.length??0);return {start:r.start,end:r.end};},[doc]);
  const source=useMemo(()=>doc.channels.map(ch=>ch.subarray(range.start,range.end)),[doc,range]);
- const n=source[0]?.length??0,mono=doc.channels.length<2,eff=useMemo(()=>normalizeImager(settings),[settings]),neutral=isImagerNeutral(settings);
+ const n=source[0]?.length??0,eff=useMemo(()=>normalizeImager(settings),[settings]),neutral=isImagerNeutral(settings);
  const latest=useRef(settings);latest.current=settings;
  const rendered=useRef<Rendered|null>(null);
  const worker=useRef<Worker|null>(null),busy=useRef(false),wanted=useRef<Request|null>(null),serial=useRef(0),shown=useRef(0),applyId=useRef(-1),win=useRef({from:0,to:0});
@@ -245,7 +274,7 @@ export function ImagerModal(p:Props){
   wanted.current={id,settings:latest.current,from:0,to:n};dispatch();
  };
  const ranges=[`< ${hz(eff.crossovers[0])}`,`${hz(eff.crossovers[0])} à ${hz(eff.crossovers[1])}`,`${hz(eff.crossovers[1])} à ${hz(eff.crossovers[2])}`,`> ${hz(eff.crossovers[2])}`];
- return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-imager" minWidth={900} minHeight={700} role="dialog" aria-modal="true" aria-labelledby="imager-title">
+ return <div className="zonyx-advanced-backdrop"><EffectPanel className="zonyx-advanced zonyx-legacy zonyx-imager" minWidth={900} minHeight={680} role="dialog" aria-modal="true" aria-labelledby="imager-title">
   <header><h2 id="imager-title">{LABEL}</h2><button type="button" aria-label="Fermer" onClick={p.onClose}>×</button></header>
   <main><fieldset className="zonyx-effect-body" disabled={applying}><div className="zonyx-imager-body">
    <div className="zonyx-imager-top">
@@ -262,7 +291,6 @@ export function ImagerModal(p:Props){
     <div className={`zonyx-imager-modes${on?'':' zonyx-imager-dim'}`} role="group" aria-label="Mode de Stereoize">{(['I','II'] as const).map(mode=><button type="button" key={mode} className="zonyx-mod-toggle" aria-pressed={s.mode===mode} onClick={()=>change({mode})}>{`Mode ${mode}`}</button>)}</div>
     {s.mode==='I'&&<div className={on?'':'zonyx-imager-dim'} aria-disabled={!on}><EffectParameter label="Délai" value={s.delayMs} initial={6} spec={{min:.5,max:30,step:.5,fine:.1,digits:1}} unit="ms" onChange={v=>change({delayMs:v})}/></div>}
    </div>
-   <output className="zonyx-hint" aria-live="off">{mono?'Fichier mono : activez Stereoize pour obtenir une image stéréo.':'Faders à 0 % : le son ne change pas. Pendant la lecture, chaque réglage s’entend tout de suite.'}</output>
    {error&&<p role="alert">{error}</p>}
   </div></fieldset></main>
   <footer><span role="status">{applying?'Application…':pending&&touched?'Calcul…':''}</span><button type="button" onClick={p.onClose}>Annuler</button><button type="button" onClick={apply} disabled={!n||!touched||neutral||pending||applying||!!error}>Appliquer</button></footer>
