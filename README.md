@@ -57,7 +57,7 @@ Vous faites du **sampling** ? Vous avez besoin de couper net un kick, de pitcher
 
 Vous faites du **mastering** ? Vous voulez sculpter les fréquences sur une courbe visuelle, compresser intelligemment en voyant la réduction de gain en temps réel, puis limiter proprement avant d'exporter en WAV 32 bits float.
 
-> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, six effets studio, traitement par lots, six visualisations temps réel.
+> Audio ToolZ n'est pas un énième lecteur audio. C'est un **atelier de travail** : forme d'onde précise, neuf effets studio, traitement par lots, six visualisations temps réel.
 
 ---
 
@@ -79,7 +79,7 @@ Ce que vous voyez ici :
 
 ## Les 9 effets studio
 
-Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer**, et seulement à ce moment-là, la modification est écrite dans la forme d'onde. Les trois nouveaux effets de la version 1.9 — Z-Stéréo, Z-Transient et Z-DeEsser — rejoignent les six outils déjà présents.
+Chaque effet s'ouvre depuis le menu **Effets**. Vous réglez **pendant la lecture**, sur la sélection ou sur le fichier entier. Quand le résultat vous convient, vous cliquez **Appliquer**, et seulement à ce moment-là, la modification est écrite dans la forme d'onde. Les trois nouveaux effets de la version 1.9 (Z-Stéréo, Z-Transient et Z-DeEsser) rejoignent les six outils déjà présents.
 
 Chaque fenêtre d'effet dispose désormais d'une **LED « Effet actif / inactif »** pour comparer rapidement le son traité et le son d'origine. Les aides contextuelles **« ? »** ont également été détaillées pour les trois nouveaux effets.
 
