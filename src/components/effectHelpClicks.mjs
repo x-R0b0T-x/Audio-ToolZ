@@ -32,7 +32,7 @@ const stereo=[
  ['Fichier mono','Un fichier mono n’a pas de côtés : seul Stereoize peut l’élargir. À l’application, le document devient stéréo.'],
  ['Écouter en réglant','Lancez la lecture : tous les réglages s’entendent et se voient en direct. Vérifiez aussi le résultat en mono avant de valider.']
 ];
-const activeTopic=['Effet actif / inactif','Le bouton en haut à droite, juste avant le point d’interrogation, sert à comparer le son avec et sans l’effet. « Effet actif » (cadre vert lumineux) : vous entendez l’effet. « Effet inactif » (gris, sans lumière) : la préécoute rejoue le son d’origine, sans aucun traitement. Cliquez dessus pour passer de l’un à l’autre, même pendant la lecture. Dès que vous touchez un réglage, l’effet se réactive tout seul. Ce bouton ne modifie pas le document : Appliquer valide toujours l’effet.'];
+const activeTopic=['Effet actif / inactif','La petite LED en bas à droite, juste à gauche du triangle de redimensionnement, sert à comparer le son avec et sans l’effet. LED verte lumineuse : l’effet est actif et vous l’entendez. LED rouge lumineuse avec une petite barre blanche : l’effet est inactif, la préécoute rejoue le son d’origine sans aucun traitement et la zone des réglages est légèrement grisée. Cliquez sur la LED pour passer de l’un à l’autre, même pendant la lecture. Dès que vous touchez un réglage, l’effet se réactive tout seul. La LED ne modifie pas le document : Appliquer valide toujours l’effet.'];
 function build(title){
  const help=baseHelp(title),name=normalize(title);
  if(name.includes('stereo'))return {...help,topics:[...stereo,...help.topics.slice(1)]};
