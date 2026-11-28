@@ -111,10 +111,10 @@ function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampl
     })}
    </svg>
   </div>
-  <div aria-hidden="true" style={{position:'relative',height:8,margin:'-4px 1px 0'}}>
+  <div style={{position:'relative',height:8,margin:'-4px 1px 0'}}>
    {COLORS.map((c,b)=>{
     const left=xOf(edges[b])/W*100,width=(xOf(edges[b+1])-xOf(edges[b]))/W*100;
-    return <div key={b} style={{position:'absolute',top:0,bottom:0,left:`calc(${left}% + 1px)`,width:`calc(${width}% - 2px)`,borderRadius:3,background:c,boxShadow:`0 0 6px ${c}`}}/>;
+    return <div key={b} title={`Double-clic : remet le début de « ${BAND_NAMES[b]} » à sa position d’origine`} onDoubleClick={()=>onReset(b===0?0:b-1)} style={{position:'absolute',top:0,bottom:0,left:`calc(${left}% + 1px)`,width:`calc(${width}% - 2px)`,borderRadius:3,background:c,boxShadow:`0 0 6px ${c}`,cursor:'pointer'}}/>;
    })}
   </div>
  </>;
