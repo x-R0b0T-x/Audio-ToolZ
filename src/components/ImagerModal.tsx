@@ -112,18 +112,28 @@ function BandGraph({crossovers,onChange,onReset,rendered,source,rangeStart,sampl
  </div>;
 }
 function BandColumn({label,range,color,value,onChange}:{label:string;range:string;color:string;value:number;onChange:(v:number)=>void}){
- const activity=useControlActivity(),ref=useRef<HTMLDivElement>(null),clamp=(v:number)=>Math.max(-100,Math.min(100,v)),nudge=useRef((direction:number,fine:boolean)=>{void direction;void fine;});
+ const activity=useControlActivity(),ref=useRef<HTMLDivElement>(null),valueRef=useRef(value),[hover,setHover]=useState(false),clamp=(v:number)=>Math.max(-100,Math.min(100,v)),nudge=useRef((direction:number,fine:boolean)=>{void direction;void fine;});
+ valueRef.current=value;
  nudge.current=(direction,fine)=>{activity.pulse();onChange(clamp(roundTo(value+direction*(fine?.1:2),.1)));};
  useEffect(()=>{
   const node=ref.current;if(!node)return;
   const wheel=(e:WheelEvent)=>{const d=e.deltaY||e.deltaX;if(!d||e.ctrlKey||e.metaKey||e.altKey)return;e.preventDefault();nudge.current(d<0?1:-1,e.shiftKey);};
+  const track=node.querySelector('.zonyx-fader-track');
+  const over=(e:PointerEvent)=>{
+   if(!track)return;
+   const r=track.getBoundingClientRect(),f=(valueRef.current+100)/200,cy=r.top+14+(1-f)*(r.height-28);
+   setHover(Math.abs(e.clientY-cy)<=18&&Math.abs(e.clientX-(r.left+r.width/2))<=28);
+  };
+  const out=()=>setHover(false);
   node.addEventListener('wheel',wheel,{passive:false});
-  return()=>node.removeEventListener('wheel',wheel);
+  node.addEventListener('pointermove',over);
+  node.addEventListener('pointerleave',out);
+  return()=>{node.removeEventListener('wheel',wheel);node.removeEventListener('pointermove',over);node.removeEventListener('pointerleave',out);};
  },[]);
  const slider=useFineSlider({min:-100,max:100,value,step:1,fineStep:.1,onChange,onStart:()=>activity.begin(),onEnd:()=>activity.end()});
- return <div className="zonyx-imager-band" style={{'--zonyx-control-color':color} as React.CSSProperties}>
+ return <div className="zonyx-imager-band" style={{'--zonyx-control-color':color,'--zonyx-fader-glow':color} as React.CSSProperties}>
   <strong>{label}</strong><small>{range}</small>
-  <div ref={ref} className={`zonyx-gain${activity.active?' is-adjusting':''}`} onDoubleClick={()=>onChange(0)}>
+  <div ref={ref} className={`zonyx-gain${activity.active?' is-adjusting is-grabbed':''}${hover?' is-thumb-hover':''}`} onDoubleClick={()=>onChange(0)}>
    <div className="zonyx-fader-track" {...slider} style={{touchAction:'none'}}>
     <div className="zonyx-fader-ticks" aria-hidden="true">{Array.from({length:9},(_,i)=><i key={i} className={i===4?'zero':''} style={{top:`${i*100/8}%`}}>{i===4?<span>0</span>:null}</i>)}</div>
     <input type="range" aria-label={`Largeur ${label}`} aria-orientation="vertical" min={-100} max={100} step={.1} value={value} style={{'--zonyx-f':(value+100)/200,pointerEvents:'none'} as React.CSSProperties}

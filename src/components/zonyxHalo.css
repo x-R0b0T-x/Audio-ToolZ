@@ -46,6 +46,6 @@
 /* Pastille d'etat en bas a gauche : nettement plus petite, fleches plus rapides. */
 #root#root#root .zonyx-status-badge{flex:0 0 52px;height:25px}
 #root#root#root .zonyx-status-badge svg{width:52px;height:25px}
-#root#root#root .zonyx-status-chevron{animation-duration:1.15s}
-#root#root#root .zonyx-status-chevron-1{animation-delay:-.767s}
-#root#root#root .zonyx-status-chevron-2{animation-delay:-.383s}
+#root#root#root .zonyx-status-chevron{animation-duration:.5s}
+#root#root#root .zonyx-status-chevron-1{animation-delay:-.333s}
+#root#root#root .zonyx-status-chevron-2{animation-delay:-.167s}
